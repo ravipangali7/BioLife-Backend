@@ -1,0 +1,78 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">CMS Page Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:cmspage_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:cmspage_edit' page.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:cmspage_delete' page.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            {% if page.image %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Page Image</h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ page.image.url }}" alt="{{ page.title }}" class="img-fluid rounded">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Page Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ page.title }}</h3>
+                    <hr>
+                    <p><strong>Slug:</strong> {{ page.slug }}</p>
+                    <p><strong>Status:</strong>
+                        {% if page.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>In Footer:</strong>
+                        {% if page.in_footer %}
+                        <span class="badge bg-info">Yes</span>
+                        {% else %}
+                        <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>In Header:</strong>
+                        {% if page.in_header %}
+                        <span class="badge bg-info">Yes</span>
+                        {% else %}
+                        <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Created:</strong> {{ page.created_at|date:"M d, Y" }}</p>
+                    <hr>
+                    <div>
+                        <strong>Content:</strong>
+                        <div class="mt-2 p-3 bg-light rounded">
+                            {{ page.content|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

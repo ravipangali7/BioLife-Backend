@@ -1,0 +1,85 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Brand Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:brand_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:brand_edit' brand.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:brand_delete' brand.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Brand Logo</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if brand.logo %}
+                    <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="img-fluid rounded">
+                    {% else %}
+                    <span class="text-muted">No Logo</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Brand Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ brand.name }}</h3>
+                    <hr>
+                    <p><strong>Created:</strong> {{ brand.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Products ({{ products.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if products %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>SKU</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td>{{ product.sku }}</td>
+                                <td>Rs {{ product.regular_price|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'myadmin:product_detail' product.pk %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No products for this brand</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

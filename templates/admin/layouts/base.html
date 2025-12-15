@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5" />
+    <meta name="author" content="AdminKit" />
+    <meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+
+    <title>BIO LIFE</title>
+
+    <link href="/static/core/css/app.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="wrapper">
+      {% include 'admin/layouts/sidebar.html' %}
+
+      <div class="main">
+        {% include 'admin/layouts/header.html' %}
+
+        <main class="content">
+          {% block content %}{% endblock %}
+        </main>
+
+        {% include 'admin/layouts/footer.html' %}
+      </div>
+    </div>
+
+    <!-- Feather Icons Library -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+    // Initialize Feather icons after library loads
+    function initializeFeatherIcons() {
+        if (typeof feather === 'undefined') {
+            return;
+        }
+        
+        try {
+            // Use feather.replace() with options
+            feather.replace({
+                class: 'align-middle',
+                'stroke-width': 2
+            });
+        } catch(e) {
+            // Fallback: individual replacement if batch fails
+            const featherElements = document.querySelectorAll('[data-feather]');
+            featherElements.forEach((el) => {
+                try {
+                    const iconName = el.getAttribute('data-feather');
+                    if (iconName && feather.icons[iconName]) {
+                        el.innerHTML = feather.icons[iconName].toSvg({
+                            class: 'align-middle',
+                            'stroke-width': 2
+                        });
+                    }
+                } catch(err) {
+                    console.warn('Failed to render icon:', err);
+                }
+            });
+        }
+    }
+    
+    // Wait for Feather library to load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initializeFeatherIcons, 100);
+        });
+    } else {
+        setTimeout(initializeFeatherIcons, 100);
+    }
+    
+    // Also try on window load as fallback
+    window.addEventListener('load', function() {
+        setTimeout(initializeFeatherIcons, 50);
+    });
+    </script>
+    <script src="/static/core/js/app.js"></script>
+  </body>
+</html>

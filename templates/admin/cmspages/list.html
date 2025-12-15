@@ -1,0 +1,83 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">CMS Pages</h1>
+        <a href="{% url 'myadmin:cmspage_create' %}" class="btn btn-primary ms-2">
+            <i class="align-middle" data-feather="plus"></i> Add CMS Page
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">CMS Page List</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Slug</th>
+                                <th>Status</th>
+                                <th>Footer</th>
+                                <th>Header</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for page in pages %}
+                            <tr>
+                                <td><strong>{{ page.title }}</strong></td>
+                                <td>{{ page.slug }}</td>
+                                <td>
+                                    {% if page.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if page.in_footer %}
+                                    <span class="badge bg-info">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if page.in_header %}
+                                    <span class="badge bg-info">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:cmspage_detail' page.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:cmspage_edit' page.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:cmspage_delete' page.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="align-middle" data-feather="trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No CMS pages found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

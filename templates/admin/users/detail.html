@@ -1,0 +1,148 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">User Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:user_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:user_edit' user.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">User Image</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if user.image %}
+                    <img src="{{ user.image.url }}" alt="{{ user.name }}" class="img-fluid rounded-circle" width="150">
+                    {% else %}
+                    <span class="text-muted">No Image</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">User Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ user.name }}</h3>
+                    <hr>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Phone:</strong> {{ user.phone|default:"-" }}</p>
+                    <p><strong>Date of Birth:</strong> {{ user.date_of_birth|default:"-" }}</p>
+                    <p><strong>Points:</strong> {{ user.points }}</p>
+                    <p><strong>Status:</strong>
+                        {% if user.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                        {% if user.is_influencer %}
+                        <span class="badge bg-info">Influencer</span>
+                        {% endif %}
+                    </p>
+                    {% if user.address %}
+                    <p><strong>Address:</strong> {{ user.address }}</p>
+                    {% endif %}
+                    {% if user.is_influencer %}
+                    <hr>
+                    <p><strong>Social Media Links:</strong></p>
+                    {% if user.tiktok_link %}<p><a href="{{ user.tiktok_link }}" target="_blank">TikTok</a></p>{% endif %}
+                    {% if user.facebook_link %}<p><a href="{{ user.facebook_link }}" target="_blank">Facebook</a></p>{% endif %}
+                    {% if user.instagram_link %}<p><a href="{{ user.instagram_link }}" target="_blank">Instagram</a></p>{% endif %}
+                    {% if user.youtube_link %}<p><a href="{{ user.youtube_link }}" target="_blank">YouTube</a></p>{% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Addresses ({{ addresses.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if addresses %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Address</th>
+                                <th>City</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for address in addresses %}
+                            <tr>
+                                <td>{{ address.title }}</td>
+                                <td>{{ address.address }}</td>
+                                <td>{{ address.city }}</td>
+                                <td>
+                                    <a href="{% url 'myadmin:address_detail' address.pk %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No addresses</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Orders ({{ orders.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>Rs {{ order.total|floatformat:2 }}</td>
+                                <td>
+                                    {% if order.order_status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif order.order_status == 'delivered' %}
+                                    <span class="badge bg-success">Delivered</span>
+                                    {% else %}
+                                    <span class="badge bg-info">{{ order.order_status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'myadmin:order_detail' order.pk %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No orders</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

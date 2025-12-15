@@ -1,0 +1,86 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Register - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-md mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <div class="text-center mb-8">
+                <img src="{% static 'core/logo.png' %}" alt="BioLife" class="h-16 mx-auto mb-4">
+                <h1 class="text-3xl font-bold text-gray-800">Create Account</h1>
+                <p class="text-gray-600 mt-2">Join BioLife and start shopping today</p>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="name" class="block text-gray-700 font-semibold mb-2">Full Name</label>
+                    <input type="text" 
+                           id="name" 
+                           name="name" 
+                           required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
+                           placeholder="John Doe">
+                </div>
+                
+                <div>
+                    <label for="email" class="block text-gray-700 font-semibold mb-2">Email Address</label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
+                           placeholder="your@email.com">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-gray-700 font-semibold mb-2">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           required
+                           minlength="8"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
+                           placeholder="At least 8 characters">
+                    <p class="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                </div>
+                
+                <div>
+                    <label for="password_confirm" class="block text-gray-700 font-semibold mb-2">Confirm Password</label>
+                    <input type="password" 
+                           id="password_confirm" 
+                           name="password_confirm" 
+                           required
+                           minlength="8"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
+                           placeholder="Confirm your password">
+                </div>
+                
+                <div class="flex items-start">
+                    <input type="checkbox" id="terms" required class="mt-1 mr-2">
+                    <label for="terms" class="text-sm text-gray-600">
+                        I agree to the <a href="#" class="text-biolife-green hover:underline">Terms & Conditions</a> 
+                        and <a href="#" class="text-biolife-green hover:underline">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-biolife-green text-white py-3 rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold text-lg">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">Already have an account? 
+                    <a href="{% url 'website:login' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+                        Login Here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

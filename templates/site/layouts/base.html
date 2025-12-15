@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BioLife - Your Health & Wellness Store{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config for Logo Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'biolife-green': '#00C853',
+                        'biolife-blue': '#1976D2',
+                        'biolife-green-light': '#C8E6C9',
+                        'biolife-blue-light': '#BBDEFB',
+                        'biolife-green-dark': '#007E33',
+                        'biolife-blue-dark': '#0D47A1',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS (minimal, only when necessary) -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'website/css/style.css' %}">
+    
+    <!-- Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    
+    <!-- Enhanced Global Styles -->
+    <style>
+        /* Smooth transitions for all interactive elements */
+        * {
+            transition-property: color, background-color, border-color, transform, box-shadow;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+        
+        /* Enhanced button styles */
+        .btn-primary {
+            @apply bg-biolife-green text-white px-6 py-3 rounded-lg font-semibold hover:bg-biolife-green-dark transform hover:scale-105 active:scale-100 shadow-md hover:shadow-lg transition-all duration-200;
+        }
+        
+        /* Enhanced card styles */
+        .card {
+            @apply bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100;
+        }
+        
+        /* Enhanced input styles */
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="password"],
+        select,
+        textarea {
+            @apply border-gray-300 rounded-lg focus:ring-2 focus:ring-biolife-green focus:border-transparent transition-all duration-200;
+        }
+        
+        /* Image hover effects */
+        .product-image {
+            @apply transition-transform duration-300 hover:scale-105;
+        }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Better focus states */
+        *:focus {
+            outline: none;
+        }
+        
+        *:focus-visible {
+            @apply ring-2 ring-biolife-green ring-offset-2;
+        }
+        
+        /* Hide scrollbar for thumbnail gallery */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased">
+    {% include 'site/layouts/header.html' %}
+    
+    <main>
+        {% if messages %}
+            <div class="container mx-auto px-4 mt-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} p-4 mb-4 rounded-xl shadow-md {% if message.tags == 'error' %}bg-red-50 text-red-800 border-l-4 border-red-500{% elif message.tags == 'success' %}bg-green-50 text-green-800 border-l-4 border-green-500{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border-l-4 border-yellow-500{% else %}bg-blue-50 text-blue-800 border-l-4 border-blue-500{% endif %} flex items-center space-x-2">
+                        <i data-feather="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-5 h-5"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% include 'site/layouts/footer.html' %}
+    
+    <!-- Initialize Feather Icons -->
+    <script>
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

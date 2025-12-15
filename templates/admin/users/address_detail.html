@@ -1,0 +1,44 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Address Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:address_list' address.user.pk %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:address_edit' address.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:address_delete' address.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Address Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ address.title }}</h3>
+                    <hr>
+                    <p><strong>User:</strong> <a href="{% url 'myadmin:user_detail' address.user.pk %}">{{ address.user.email }}</a></p>
+                    <p><strong>Phone:</strong> {{ address.phone }}</p>
+                    <p><strong>Address:</strong> {{ address.address }}</p>
+                    <p><strong>City:</strong> {{ address.city }}</p>
+                    <p><strong>State:</strong> {{ address.state }}</p>
+                    <p><strong>Country:</strong> {{ address.country }}</p>
+                    <hr>
+                    <p><strong>Created:</strong> {{ address.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Updated:</strong> {{ address.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

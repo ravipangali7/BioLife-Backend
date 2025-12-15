@@ -1,0 +1,75 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Banners</h1>
+        <a href="{% url 'myadmin:banner_create' %}" class="btn btn-primary ms-2">
+            <i class="align-middle" data-feather="plus"></i> Add Banner
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Banner List</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Title</th>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for banner in banners %}
+                            <tr>
+                                <td>
+                                    {% if banner.image %}
+                                    <img src="{{ banner.image.url }}" alt="{{ banner.title }}" width="100" height="50" class="rounded">
+                                    {% else %}
+                                    <span class="text-muted">No Image</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ banner.title }}</strong></td>
+                                <td>{{ banner.url|default:"-" }}</td>
+                                <td>
+                                    {% if banner.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:banner_detail' banner.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:banner_edit' banner.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:banner_delete' banner.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="align-middle" data-feather="trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No banners found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Product Images - {{ product.name }}</h1>
+        <a href="{% url 'myadmin:product_detail' product.pk %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Product
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Images ({{ images.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if images %}
+                    <div class="row">
+                        {% for image in images %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card">
+                                <img src="{{ image.image.url }}" alt="Product Image" class="card-img-top">
+                                <div class="card-body">
+                                    <small class="text-muted">{{ image.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No additional images for this product</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

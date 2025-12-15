@@ -1,0 +1,243 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Product Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:product_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:product_edit' product.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:product_delete' product.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Image</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded">
+                    {% else %}
+                    <span class="text-muted">No Image</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>SKU:</strong> {{ product.sku }}</p>
+                    <p><strong>Status:</strong>
+                        {% if product.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                        {% if product.is_featured %}
+                        <span class="badge bg-warning">Featured</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Stock:</strong> {{ product.stock }}</p>
+                    <p><strong>Regular Price:</strong> Rs {{ product.regular_price|floatformat:2 }}</p>
+                    {% if product.discount %}
+                    <p><strong>Discount:</strong> 
+                        {{ product.discount }}{% if product.discount_type == 'percentage' %}%{% else %}Rs {% endif %}
+                    </p>
+                    <p><strong>Final Price:</strong> Rs {{ product.get_final_price|floatformat:2 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ product.name }}</h3>
+                    <hr>
+                    <p><strong>Category:</strong> {{ product.category.name|default:"-" }}</p>
+                    {% if product.sub_category %}
+                    <p><strong>Sub Category:</strong> {{ product.sub_category.name }}</p>
+                    {% endif %}
+                    {% if product.child_category %}
+                    <p><strong>Child Category:</strong> {{ product.child_category.name }}</p>
+                    {% endif %}
+                    <p><strong>Brand:</strong> {{ product.brand.name|default:"-" }}</p>
+                    <p><strong>Unit:</strong> {{ product.unit.title|default:"-" }}</p>
+                    <hr>
+                    <p><strong>Short Description:</strong></p>
+                    <p>{{ product.short_description|default:"-" }}</p>
+                    <hr>
+                    <p><strong>Long Description:</strong></p>
+                    <p>{{ product.long_description|default:"-"|linebreaks }}</p>
+                </div>
+            </div>
+
+            {% if product.product_varient and product.product_varient.enabled %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Variants</h5>
+                </div>
+                <div class="card-body">
+                    {% if product.product_varient.variants %}
+                    <!-- Variant Types -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Variant Types</h6>
+                        <div class="row">
+                            {% for variant in product.product_varient.variants %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <strong>{{ variant.name }}</strong>
+                                        <div class="mt-2">
+                                            {% for value in variant.values %}
+                                            <span class="badge bg-primary me-1">{{ value }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if product.product_varient.combinations %}
+                    <!-- Variant Combinations Table -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Variant Combinations</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Variant</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Image</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for combo_key, combo_data in product.product_varient.combinations.items %}
+                                    <tr>
+                                        <td><strong>{{ combo_key }}</strong></td>
+                                        <td>Rs {{ combo_data.price|floatformat:2 }}</td>
+                                        <td>
+                                            <span class="badge {% if combo_data.stock > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ combo_data.stock }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if combo_data.image %}
+                                            <img src="{{ combo_data.image }}" alt="{{ combo_key }}" class="img-thumbnail" style="max-width: 80px; max-height: 80px; object-fit: cover;">
+                                            {% else %}
+                                            <span class="text-muted">No image</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Variant Images Gallery -->
+                    <div class="mb-3">
+                        <h6 class="mb-3">Variant Images</h6>
+                        <div class="variant-images-gallery">
+                            <div id="variantImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    {% for combo_key, combo_data in product.product_varient.combinations.items %}
+                                    {% if combo_data.image %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <div class="text-center p-3 bg-light rounded">
+                                            <img src="{{ combo_data.image }}" alt="{{ combo_key }}" class="img-fluid rounded mb-2" style="max-height: 400px; max-width: 100%; object-fit: contain;">
+                                            <p class="mt-2 mb-0"><strong>{{ combo_key }}</strong></p>
+                                            <small class="text-muted">Price: Rs {{ combo_data.price|floatformat:2 }} | Stock: {{ combo_data.stock }}</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#variantImageCarousel" data-bs-slide="prev" style="background-color: rgba(0,0,0,0.3); width: 50px;">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#variantImageCarousel" data-bs-slide="next" style="background-color: rgba(0,0,0,0.3); width: 50px;">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Images</h5>
+                </div>
+                <div class="card-body">
+                    {% if images %}
+                    <div class="row">
+                        {% for image in images %}
+                        <div class="col-md-3 mb-3">
+                            <img src="{{ image.image.url }}" alt="Product Image" class="img-fluid rounded">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No additional images</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Reviews ({{ reviews.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ review.user.email }}</strong>
+                            <span>
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= review.star %}
+                                <i class="align-middle text-warning" data-feather="star" style="width: 16px; height: 16px;"></i>
+                                {% else %}
+                                <i class="align-middle text-muted" data-feather="star" style="width: 16px; height: 16px;"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="mb-0">{{ review.message|default:"No message" }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No reviews yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

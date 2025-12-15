@@ -1,0 +1,82 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Sub Category Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:subcategory_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:subcategory_edit' subcategory.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:subcategory_delete' subcategory.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sub Category Image</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if subcategory.image %}
+                    <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="img-fluid rounded">
+                    {% else %}
+                    <span class="text-muted">No Image</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sub Category Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ subcategory.name }}</h3>
+                    <hr>
+                    <p><strong>Category:</strong> <a href="{% url 'myadmin:category_detail' subcategory.category.pk %}">{{ subcategory.category.name }}</a></p>
+                    <p><strong>Created:</strong> {{ subcategory.created_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Child Categories ({{ child_categories.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if child_categories %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for childcat in child_categories %}
+                            <tr>
+                                <td>{{ childcat.name }}</td>
+                                <td>
+                                    <a href="{% url 'myadmin:childcategory_detail' childcat.pk %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No child categories</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

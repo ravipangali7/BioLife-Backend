@@ -1,0 +1,72 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Addresses for {{ user.email }}</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:user_detail' user.pk %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back to User
+            </a>
+            <a href="{% url 'myadmin:address_create' user.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="plus"></i> Add Address
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Address List</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Address</th>
+                                <th>City</th>
+                                <th>State</th>
+                                <th>Country</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for address in addresses %}
+                            <tr>
+                                <td><strong>{{ address.title }}</strong></td>
+                                <td>{{ address.address }}</td>
+                                <td>{{ address.city }}</td>
+                                <td>{{ address.state }}</td>
+                                <td>{{ address.country }}</td>
+                                <td>{{ address.phone }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:address_detail' address.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:address_edit' address.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:address_delete' address.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="align-middle" data-feather="trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No addresses found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

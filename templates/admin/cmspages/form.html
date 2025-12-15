@@ -1,0 +1,83 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">{% if page %}Edit{% else %}Create{% endif %} CMS Page</h1>
+        <a href="{% url 'myadmin:cmspage_list' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">CMS Page Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Title *</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Slug</label>
+                            {{ form.slug }}
+                            <small class="form-text text-muted">Leave empty to auto-generate from title</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Content *</label>
+                            {{ form.content }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Image</label>
+                            {{ form.image }}
+                            {% if page and page.image %}
+                            <div class="mt-2">
+                                <img src="{{ page.image.url }}" alt="Current image" width="200">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form.is_active }}
+                                <span class="form-check-label">Active</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form.in_footer }}
+                                <span class="form-check-label">Show in Footer</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form.in_header }}
+                                <span class="form-check-label">Show in Header</span>
+                            </label>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <a href="{% url 'myadmin:cmspage_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

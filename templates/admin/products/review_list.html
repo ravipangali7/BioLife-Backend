@@ -1,0 +1,47 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Product Reviews - {{ product.name }}</h1>
+        <a href="{% url 'myadmin:product_detail' product.pk %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Product
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Reviews ({{ reviews.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ review.user.email }}</strong>
+                            <span>
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= review.star %}
+                                <i class="align-middle text-warning" data-feather="star" style="width: 16px; height: 16px;"></i>
+                                {% else %}
+                                <i class="align-middle text-muted" data-feather="star" style="width: 16px; height: 16px;"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="mb-0 mt-2">{{ review.message|default:"No message" }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No reviews for this product yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

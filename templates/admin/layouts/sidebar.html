@@ -1,0 +1,89 @@
+<nav id="sidebar" class="sidebar js-sidebar">
+    <div class="sidebar-content js-simplebar">
+        <a class="sidebar-brand" href="{% url 'myadmin:dashboard' %}">
+            <span class="align-middle">BioLife Admin</span>
+        </a>
+
+        <ul class="sidebar-nav">
+            <li class="sidebar-header">Main</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:dashboard' %}">
+                    <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Dashboard</span>
+                </a>
+            </li>
+
+            <li class="sidebar-header">Products</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:product_list' %}">
+                    <i class="align-middle" data-feather="package"></i> <span class="align-middle">Products</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:category_list' %}">
+                    <i class="align-middle" data-feather="grid"></i> <span class="align-middle">Categories</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:subcategory_list' %}">
+                    <i class="align-middle" data-feather="layers"></i> <span class="align-middle">Sub Categories</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:childcategory_list' %}">
+                    <i class="align-middle" data-feather="folder"></i> <span class="align-middle">Child Categories</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:brand_list' %}">
+                    <i class="align-middle" data-feather="tag"></i> <span class="align-middle">Brands</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:unit_list' %}">
+                    <i class="align-middle" data-feather="hash"></i> <span class="align-middle">Units</span>
+                </a>
+            </li>
+
+            <li class="sidebar-header">Orders & Users</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:order_list' %}">
+                    <i class="align-middle" data-feather="shopping-cart"></i> <span class="align-middle">Orders</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:user_list' %}">
+                    <i class="align-middle" data-feather="users"></i> <span class="align-middle">Users</span>
+                </a>
+            </li>
+
+            <li class="sidebar-header">Marketing</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:banner_list' %}">
+                    <i class="align-middle" data-feather="image"></i> <span class="align-middle">Banners</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:coupon_list' %}">
+                    <i class="align-middle" data-feather="percent"></i> <span class="align-middle">Coupons</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:cmspage_list' %}">
+                    <i class="align-middle" data-feather="file-text"></i> <span class="align-middle">CMS Pages</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

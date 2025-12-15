@@ -1,0 +1,681 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">{% if product %}Edit{% else %}Create{% endif %} Product</h1>
+        <a href="{% url 'myadmin:product_list' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">SKU *</label>
+                                {{ form.sku }}
+                                {% if form.sku.errors %}
+                                <div class="text-danger">{{ form.sku.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Category</label>
+                                {{ form.category }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Sub Category</label>
+                                {{ form.sub_category }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Child Category</label>
+                                {{ form.child_category }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Brand</label>
+                                {{ form.brand }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Unit</label>
+                                {{ form.unit }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Short Description</label>
+                            {{ form.short_description }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Long Description</label>
+                            {{ form.long_description }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Regular Price *</label>
+                                {{ form.regular_price }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Stock *</label>
+                                {{ form.stock }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Discount Type</label>
+                                {{ form.discount_type }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Discount</label>
+                                {{ form.discount }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Image</label>
+                                {{ form.image }}
+                                {% if product and product.image %}
+                                <div class="mt-2">
+                                    <img src="{{ product.image.url }}" alt="Current image" width="100">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Hide Django's product_varient field if it's a textarea -->
+                        <style>
+                            textarea[name="product_varient"] {
+                                display: none !important;
+                            }
+                        </style>
+                        
+                        <!-- Product Variants Section -->
+                        <div class="mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Product Variations</h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Enable Product Variants Toggle -->
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="enableVariants" style="cursor: pointer;">
+                                            <label class="form-check-label" for="enableVariants" style="cursor: pointer;">
+                                                <strong>Enable Product Variants</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="align-middle" data-feather="info"></i> Whenever you have multiple color/sizes/specs for any product.
+                                        </small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="align-middle" data-feather="info"></i> When using variations, the stock will be automatically calculated from the sum of all combination stocks.
+                                        </small>
+                                    </div>
+
+                                    <!-- Variant Management Section (hidden by default) -->
+                                    <div id="variantManagement" style="display: none;">
+                                        <!-- Variant Types Section -->
+                                        <div class="mb-4">
+                                            <h6 class="mb-3">Variant Types</h6>
+                                            <div id="variantTypesContainer">
+                                                <!-- Variant types will be added here dynamically -->
+                                            </div>
+                                            <button type="button" class="btn btn-success mt-2" id="addVariantType">
+                                                <i class="align-middle" data-feather="plus"></i> Add Variant Type
+                                            </button>
+                                        </div>
+
+                                        <!-- Product Variant Details Table -->
+                                        <div class="mb-3">
+                                            <h6 class="mb-3">Product Variant Details</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered" id="variantsTable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Variant</th>
+                                                            <th>Price</th>
+                                                            <th>Stock</th>
+                                                            <th>Image (Optional)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="variantsTableBody">
+                                                        <!-- Combinations will be added here dynamically -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden input to store JSON data -->
+                                    {% if product and variant_json %}
+                                    <input type="hidden" name="product_varient" id="productVarientJson" value='{{ variant_json|safe }}'>
+                                    {% else %}
+                                    <input type="hidden" name="product_varient" id="productVarientJson" value='{}'>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form.is_active }}
+                                <span class="form-check-label">Active</span>
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form.is_featured }}
+                                <span class="form-check-label">Featured</span>
+                            </label>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <a href="{% url 'myadmin:product_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let variantTypes = [];
+    let combinations = {};
+    let variantTypeCounter = 0;
+    let regularPriceInput = document.querySelector('input[name="regular_price"]');
+    let stockInput = document.querySelector('input[name="stock"]');
+    
+    // Initialize from existing data
+    function initializeFromExisting() {
+        // Try to get data from hidden input or form field
+        let existingData = document.getElementById('productVarientJson').value;
+        if (!existingData || existingData === '{}') {
+            // Try to get from form field if hidden input is empty
+            const formField = document.querySelector('textarea[name="product_varient"]');
+            if (formField && formField.value) {
+                existingData = formField.value;
+            }
+        }
+        
+        if (existingData && existingData !== '{}' && existingData.trim()) {
+            try {
+                const data = typeof existingData === 'string' ? JSON.parse(existingData) : existingData;
+                
+                // Check if variants are enabled
+                const enabled = data.enabled === true || (data.variants && data.variants.length > 0);
+                
+                if (enabled) {
+                    document.getElementById('enableVariants').checked = true;
+                    document.getElementById('variantManagement').style.display = 'block';
+                    
+                    // Load variant types
+                    if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
+                        variantTypes = data.variants;
+                        variantTypes.forEach((variant, index) => {
+                            const values = Array.isArray(variant.values) ? variant.values : [];
+                            addVariantTypeUI(variant.name || '', values, index);
+                        });
+                    }
+                    
+                    // Load combinations
+                    if (data.combinations && typeof data.combinations === 'object') {
+                        combinations = data.combinations;
+                        // Generate table if variants exist
+                        if (variantTypes.length > 0) {
+                            generateCombinations();
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error('Error parsing existing variant data:', e, existingData);
+            }
+        }
+    }
+    
+    // Toggle enable/disable variants
+    document.getElementById('enableVariants').addEventListener('change', function(e) {
+        const variantManagement = document.getElementById('variantManagement');
+        if (e.target.checked) {
+            variantManagement.style.display = 'block';
+        } else {
+            variantManagement.style.display = 'none';
+            variantTypes = [];
+            combinations = {};
+            document.getElementById('variantTypesContainer').innerHTML = '';
+            document.getElementById('variantsTableBody').innerHTML = '';
+            updateHiddenInput();
+        }
+    });
+    
+    // Add variant type
+    document.getElementById('addVariantType').addEventListener('click', function() {
+        addVariantTypeUI('', [], variantTypeCounter++);
+    });
+    
+    function addVariantTypeUI(name = '', values = [], index = null) {
+        const container = document.getElementById('variantTypesContainer');
+        const variantIndex = index !== null ? index : variantTypeCounter++;
+        const variantId = 'variant_' + variantIndex;
+        
+        const variantDiv = document.createElement('div');
+        variantDiv.className = 'card mb-3';
+        variantDiv.id = variantId;
+        variantDiv.innerHTML = `
+            <div class="card-body">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Variant Name *</label>
+                        <input type="text" class="form-control variant-name" placeholder="e.g., Color" value="${name}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Variant Values *</label>
+                        <input type="text" class="form-control variant-values" placeholder="Red, Green, Blue" value="${values.join(', ')}">
+                        <small class="form-text text-muted">Enter values separated by commas</small>
+                        <div class="mt-2 variant-tags"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger w-100 remove-variant" data-variant-id="${variantId}">
+                            <i class="align-middle" data-feather="x"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(variantDiv);
+        
+        // Initialize feather icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        // Update tags when values change
+        const valuesInput = variantDiv.querySelector('.variant-values');
+        valuesInput.addEventListener('input', function() {
+            updateVariantTags(variantDiv);
+            updateVariantTypes();
+            generateCombinations();
+        });
+        
+        // Remove variant type
+        variantDiv.querySelector('.remove-variant').addEventListener('click', function() {
+            variantDiv.remove();
+            updateVariantTypes();
+            generateCombinations();
+        });
+        
+        // Update variant name
+        variantDiv.querySelector('.variant-name').addEventListener('input', function() {
+            updateVariantTypes();
+            generateCombinations();
+        });
+        
+        // Initialize tags if values exist
+        if (values.length > 0) {
+            updateVariantTags(variantDiv);
+        }
+    }
+    
+    function updateVariantTags(variantDiv) {
+        const valuesInput = variantDiv.querySelector('.variant-values');
+        const tagsContainer = variantDiv.querySelector('.variant-tags');
+        const values = valuesInput.value.split(',').map(v => v.trim()).filter(v => v);
+        
+        tagsContainer.innerHTML = '';
+        if (values.length > 0) {
+            tagsContainer.innerHTML = '<strong>Values:</strong> ';
+            values.forEach(value => {
+                const tag = document.createElement('span');
+                tag.className = 'badge bg-primary me-1';
+                tag.textContent = value;
+                tagsContainer.appendChild(tag);
+            });
+        }
+    }
+    
+    function updateVariantTypes() {
+        variantTypes = [];
+        document.querySelectorAll('#variantTypesContainer .card').forEach(card => {
+            const name = card.querySelector('.variant-name').value.trim();
+            const valuesInput = card.querySelector('.variant-values').value;
+            const values = valuesInput.split(',').map(v => v.trim()).filter(v => v);
+            
+            if (name && values.length > 0) {
+                variantTypes.push({
+                    name: name,
+                    values: values
+                });
+            }
+        });
+    }
+    
+    function generateCombinations() {
+        if (variantTypes.length === 0) {
+            document.getElementById('variantsTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-muted">Add variant types to generate combinations</td></tr>';
+            combinations = {};
+            updateHiddenInput();
+            return;
+        }
+        
+        // Generate all combinations using Cartesian product
+        function cartesianProduct(arrays) {
+            return arrays.reduce((acc, arr) => {
+                return acc.flatMap(x => arr.map(y => [...x, y]));
+            }, [[]]);
+        }
+        
+        const valueArrays = variantTypes.map(v => v.values);
+        const allCombinations = cartesianProduct(valueArrays);
+        
+        const tbody = document.getElementById('variantsTableBody');
+        tbody.innerHTML = '';
+        
+        const regularPrice = parseFloat(regularPriceInput ? regularPriceInput.value : 0) || 0;
+        const stock = parseInt(stockInput ? stockInput.value : 0) || 0;
+        
+        allCombinations.forEach(combo => {
+            const comboKey = combo.join('/');
+            const row = document.createElement('tr');
+            row.dataset.combination = comboKey;
+            
+            // Get existing data if available
+            const existing = combinations[comboKey] || {};
+            const price = existing.price !== undefined ? existing.price : regularPrice;
+            const comboStock = existing.stock !== undefined ? existing.stock : stock;
+            const imageUrl = existing.image || '';
+            const safeId = comboKey.replace(/[\/\s]/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+            
+            row.innerHTML = `
+                <td><strong>${comboKey}</strong></td>
+                <td>
+                    <input type="number" class="form-control variant-price" step="0.01" value="${price}" data-combination="${comboKey}">
+                </td>
+                <td>
+                    <input type="number" class="form-control variant-stock" step="1" value="${comboStock}" data-combination="${comboKey}">
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <input type="file" class="form-control variant-image" accept="image/*" data-combination="${comboKey}" style="display: none;" id="img_${safeId}">
+                        <button type="button" class="btn btn-primary btn-sm me-2 variant-image-btn" data-target="img_${safeId}">
+                            <i class="align-middle" data-feather="camera"></i> Add Image
+                        </button>
+                        <span class="variant-image-name text-muted small"></span>
+                        ${imageUrl && imageUrl.startsWith('data:') ? `<img src="${imageUrl}" width="30" height="30" class="ms-2 rounded variant-image-preview">` : ''}
+                    </div>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+            
+            // Handle image button click
+            const imageBtn = row.querySelector('.variant-image-btn');
+            const fileInput = row.querySelector('.variant-image');
+            imageBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Handle image upload
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        let preview = row.querySelector('.variant-image-preview');
+                        if (preview) {
+                            preview.src = e.target.result;
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.width = 30;
+                            img.height = 30;
+                            img.className = 'ms-2 rounded variant-image-preview';
+                            const nameSpan = row.querySelector('.variant-image-name');
+                            nameSpan.textContent = file.name;
+                            nameSpan.after(img);
+                        }
+                        updateCombinationsData();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Handle price/stock changes
+            row.querySelector('.variant-price').addEventListener('input', updateCombinationsData);
+            row.querySelector('.variant-stock').addEventListener('input', updateCombinationsData);
+        });
+        
+        // Initialize feather icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        updateCombinationsData();
+    }
+    
+    function updateCombinationsData() {
+        combinations = {};
+        document.querySelectorAll('#variantsTableBody tr[data-combination]').forEach(row => {
+            const comboKey = row.dataset.combination;
+            if (comboKey) {
+                const priceInput = row.querySelector('.variant-price');
+                const stockInput = row.querySelector('.variant-stock');
+                const imagePreview = row.querySelector('.variant-image-preview');
+                
+                const price = priceInput ? parseFloat(priceInput.value) || 0 : 0;
+                const stock = stockInput ? parseInt(stockInput.value) || 0 : 0;
+                const image = imagePreview ? imagePreview.src : '';
+                
+                combinations[comboKey] = {
+                    price: price,
+                    stock: stock,
+                    image: image
+                };
+            }
+        });
+        updateHiddenInput();
+    }
+    
+    function updateHiddenInput() {
+        const enabled = document.getElementById('enableVariants').checked;
+        const data = {
+            enabled: enabled,
+            variants: variantTypes,
+            combinations: combinations
+        };
+        document.getElementById('productVarientJson').value = JSON.stringify(data);
+    }
+    
+    // Update hidden input on form submit
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            updateVariantTypes();
+            updateCombinationsData();
+            updateHiddenInput();
+            
+            // Also update any textarea field if it exists (for compatibility)
+            const textarea = form.querySelector('textarea[name="product_varient"]');
+            if (textarea) {
+                textarea.value = document.getElementById('productVarientJson').value;
+            }
+        });
+    }
+    
+    // Initialize on page load
+    function initVariants() {
+        // Wait a bit for form to be ready
+        setTimeout(function() {
+            regularPriceInput = document.querySelector('input[name="regular_price"]');
+            stockInput = document.querySelector('input[name="stock"]');
+            initializeFromExisting();
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }, 100);
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initVariants);
+    } else {
+        initVariants();
+    }
+})();
+
+// Dependent Category Dropdowns
+(function() {
+    // Load category data from template
+    const categoriesData = {{ categories_json|safe }};
+    const subcategoriesData = {{ subcategories_json|safe }};
+    const childcategoriesData = {{ childcategories_json|safe }};
+    const selectedData = {{ selected_json|safe }};
+    
+    const categorySelect = document.querySelector('select[name="category"]');
+    const subcategorySelect = document.querySelector('select[name="sub_category"]');
+    const childcategorySelect = document.querySelector('select[name="child_category"]');
+    
+    if (!categorySelect || !subcategorySelect || !childcategorySelect) {
+        return; // Exit if selects don't exist
+    }
+    
+    // Function to populate subcategory dropdown based on selected category
+    function updateSubcategories(preserveSelection = false) {
+        const selectedCategoryId = categorySelect.value ? parseInt(categorySelect.value) : null;
+        const currentSubcategoryValue = preserveSelection ? subcategorySelect.value : null;
+        
+        // Clear current options except the first empty option
+        subcategorySelect.innerHTML = '<option value="">---------</option>';
+        
+        if (selectedCategoryId) {
+            // Filter subcategories by category
+            const filteredSubcategories = subcategoriesData.filter(sub => sub.category_id === selectedCategoryId);
+            
+            filteredSubcategories.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.id;
+                option.textContent = sub.name;
+                subcategorySelect.appendChild(option);
+            });
+            
+            // Restore selection if it's still valid
+            if (preserveSelection && currentSubcategoryValue) {
+                const isValid = filteredSubcategories.some(sub => sub.id.toString() === currentSubcategoryValue);
+                if (isValid) {
+                    subcategorySelect.value = currentSubcategoryValue;
+                }
+            } else if (selectedData.sub_category) {
+                // If editing and selected subcategory exists, ensure it's available
+                const selectedSub = subcategoriesData.find(sub => 
+                    sub.id === selectedData.sub_category && sub.category_id === selectedCategoryId
+                );
+                if (selectedSub) {
+                    subcategorySelect.value = selectedData.sub_category;
+                }
+            }
+        }
+        
+        // Reset child category when subcategory changes
+        updateChildcategories(preserveSelection);
+    }
+    
+    // Function to populate child category dropdown based on selected subcategory
+    function updateChildcategories(preserveSelection = false) {
+        const selectedSubcategoryId = subcategorySelect.value ? parseInt(subcategorySelect.value) : null;
+        const currentChildcategoryValue = preserveSelection ? childcategorySelect.value : null;
+        
+        // Clear current options except the first empty option
+        childcategorySelect.innerHTML = '<option value="">---------</option>';
+        
+        if (selectedSubcategoryId) {
+            // Filter child categories by subcategory
+            const filteredChildcategories = childcategoriesData.filter(child => child.subcategory_id === selectedSubcategoryId);
+            
+            filteredChildcategories.forEach(child => {
+                const option = document.createElement('option');
+                option.value = child.id;
+                option.textContent = child.name;
+                childcategorySelect.appendChild(option);
+            });
+            
+            // Restore selection if it's still valid
+            if (preserveSelection && currentChildcategoryValue) {
+                const isValid = filteredChildcategories.some(child => child.id.toString() === currentChildcategoryValue);
+                if (isValid) {
+                    childcategorySelect.value = currentChildcategoryValue;
+                }
+            } else if (selectedData.child_category) {
+                // If editing and selected child category exists, ensure it's available
+                const selectedChild = childcategoriesData.find(child => 
+                    child.id === selectedData.child_category && child.subcategory_id === selectedSubcategoryId
+                );
+                if (selectedChild) {
+                    childcategorySelect.value = selectedData.child_category;
+                }
+            }
+        }
+    }
+    
+    // Event listeners
+    categorySelect.addEventListener('change', function() {
+        updateSubcategories(false); // Don't preserve selection when user changes category
+    });
+    
+    subcategorySelect.addEventListener('change', function() {
+        updateChildcategories(false); // Don't preserve selection when user changes subcategory
+    });
+    
+    // Initialize on page load (for edit mode)
+    function initializeDependentDropdowns() {
+        // Read current values from the form (Django may have already set them)
+        const currentCategory = categorySelect.value;
+        const currentSubcategory = subcategorySelect.value;
+        const currentChildcategory = childcategorySelect.value;
+        
+        // If category is already selected (edit mode), populate dependent dropdowns
+        if (currentCategory) {
+            // Update subcategories and preserve current selection
+            updateSubcategories(true);
+            
+            // If subcategory is also selected, populate child categories
+            if (currentSubcategory && subcategorySelect.value) {
+                updateChildcategories(true);
+            }
+        }
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeDependentDropdowns);
+    } else {
+        // Small delay to ensure form is fully rendered
+        setTimeout(initializeDependentDropdowns, 100);
+    }
+})();
+</script>
+{% endblock %}
+

@@ -1,0 +1,109 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q
+from core.models import Order, OrderItem
+from django.forms import modelform_factory
+from django import forms
+
+
+@login_required
+def order_list(request):
+    """List all orders"""
+    orders = Order.objects.select_related('user', 'billing_address', 'shipping_address').all()
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        orders = orders.filter(
+            Q(user__email__icontains=search_query) |
+            Q(user__name__icontains=search_query) |
+            Q(id__icontains=search_query)
+        )
+    
+    status_filter = request.GET.get('status')
+    if status_filter:
+        orders = orders.filter(order_status=status_filter)
+    
+    payment_filter = request.GET.get('payment')
+    if payment_filter:
+        orders = orders.filter(payment_status=payment_filter)
+    
+    paginator = Paginator(orders, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'orders': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'payment_filter': payment_filter,
+    }
+    
+    return render(request, 'admin/orders/list.html', context)
+
+
+@login_required
+def order_detail(request, pk):
+    """Order detail view"""
+    order = get_object_or_404(Order.objects.select_related(
+        'user', 'billing_address', 'shipping_address'
+    ), pk=pk)
+    
+    items = OrderItem.objects.filter(order=order).select_related('product')
+    
+    context = {
+        'order': order,
+        'items': items,
+    }
+    
+    return render(request, 'admin/orders/detail.html', context)
+
+
+@login_required
+def order_edit(request, pk):
+    """Edit order"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    OrderForm = modelform_factory(
+        Order,
+        fields=['payment_status', 'order_status', 'sub_total', 'shipping', 'tax', 'total',
+                'billing_address', 'shipping_address'],
+        widgets={
+            'payment_status': forms.Select(attrs={'class': 'form-select'}),
+            'order_status': forms.Select(attrs={'class': 'form-select'}),
+            'sub_total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'shipping': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'tax': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'billing_address': forms.Select(attrs={'class': 'form-select'}),
+            'shipping_address': forms.Select(attrs={'class': 'form-select'}),
+        }
+    )
+    
+    if request.method == 'POST':
+        form = OrderForm(request.POST, instance=order)
+        if form.is_valid():
+            order = form.save()
+            messages.success(request, f'Order #{order.id} updated successfully.')
+            return redirect('myadmin:order_detail', pk=order.pk)
+    else:
+        form = OrderForm(instance=order)
+    
+    return render(request, 'admin/orders/form.html', {'form': form, 'order': order})
+
+
+@login_required
+def order_delete(request, pk):
+    """Delete order"""
+    order = get_object_or_404(Order, pk=pk)
+    
+    if request.method == 'POST':
+        order_id = order.id
+        order.delete()
+        messages.success(request, f'Order #{order_id} deleted successfully.')
+        return redirect('myadmin:order_list')
+    
+    return render(request, 'admin/orders/delete.html', {'order': order})
+

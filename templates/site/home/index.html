@@ -1,0 +1,270 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Home - BioLife{% endblock %}
+
+{% block content %}
+<!-- Hero Banner Carousel -->
+{% if banners %}
+<div class="relative h-96 md:h-[500px] overflow-hidden">
+    <div id="banner-carousel" class="relative h-full">
+        {% for banner in banners %}
+        <div class="banner-slide {% if forloop.first %}block{% else %}hidden{% endif %} absolute inset-0">
+            <a href="{% if banner.url %}{{ banner.url }}{% else %}#{% endif %}">
+                <img src="{{ banner.image.url }}" alt="{{ banner.title }}" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                    <div class="text-center text-white px-4">
+                        <h2 class="text-3xl md:text-5xl font-bold mb-4">{{ banner.title }}</h2>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Carousel Controls -->
+    {% if banners|length > 1 %}
+    <button id="prev-banner" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 transition-all">
+        <i data-feather="chevron-left" class="w-6 h-6"></i>
+    </button>
+    <button id="next-banner" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 transition-all">
+        <i data-feather="chevron-right" class="w-6 h-6"></i>
+    </button>
+    
+    <!-- Indicators -->
+    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {% for banner in banners %}
+        <button class="banner-indicator w-3 h-3 rounded-full {% if forloop.first %}bg-biolife-green{% else %}bg-white bg-opacity-50{% endif %} transition-all"></button>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Featured Categories -->
+{% if categories %}
+<section class="container mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Shop by Category</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        {% for category in categories %}
+        <a href="{% url 'website:category_detail' category.id %}" class="group text-center">
+            <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow mb-2">
+                {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-24 object-cover rounded-lg mb-2 group-hover:scale-105 transition-transform">
+                {% else %}
+                    <div class="w-full h-24 bg-biolife-green-light rounded-lg mb-2 flex items-center justify-center">
+                        <i data-feather="package" class="w-12 h-12 text-biolife-green"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <h3 class="text-sm font-medium text-gray-700 group-hover:text-biolife-green transition-colors">{{ category.name }}</h3>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="bg-gray-50 py-12">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Featured Products</h2>
+            <a href="{% url 'website:product_list' %}" class="text-biolife-green hover:text-biolife-green-dark font-medium">
+                View All <i data-feather="arrow-right" class="w-4 h-4 inline"></i>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for product in featured_products %}
+            <div class="card overflow-hidden group">
+                <a href="{% url 'website:product_detail' product.id %}">
+                    <div class="relative overflow-hidden">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-64 object-cover product-image">
+                        {% else %}
+                            <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+                                <i data-feather="image" class="w-16 h-16 text-gray-400"></i>
+                            </div>
+                        {% endif %}
+                        {% if product.discount %}
+                            <span class="absolute top-3 right-3 bg-biolife-blue text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-md">
+                                {% if product.discount_type == 'percentage' %}
+                                    -{{ product.discount }}%
+                                {% else %}
+                                    -Rs {{ product.discount }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                        {% if product.brand %}
+                        <div class="absolute top-3 left-3 bg-white bg-opacity-90 backdrop-blur-sm px-2.5 py-1 rounded-md shadow-sm">
+                            <span class="text-xs font-semibold text-gray-700">{{ product.brand.name }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-4">
+                        {% if product.category %}
+                        <span class="text-xs font-medium text-biolife-green mb-2 block">{{ product.category.name }}</span>
+                        {% endif %}
+                        <h3 class="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-biolife-green transition-colors">{{ product.name }}</h3>
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <span class="text-xl font-bold text-biolife-green">Rs {{ product.get_final_price|floatformat:2 }}</span>
+                                {% if product.discount %}
+                                    <span class="text-sm text-gray-500 line-through ml-2">Rs {{ product.regular_price|floatformat:2 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if product.stock > 0 %}
+                            <span class="text-xs text-green-600 flex items-center">
+                                <i data-feather="check-circle" class="w-3 h-3 mr-1"></i>
+                                In Stock
+                            </span>
+                        {% else %}
+                            <span class="text-xs text-red-600 flex items-center">
+                                <i data-feather="x-circle" class="w-3 h-3 mr-1"></i>
+                                Out of Stock
+                            </span>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- New Arrivals -->
+{% if new_arrivals %}
+<section class="container mx-auto px-4 py-12">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">New Arrivals</h2>
+        <a href="{% url 'website:product_list' %}?sort=created_at" class="text-biolife-green hover:text-biolife-green-dark font-medium">
+            View All <i data-feather="arrow-right" class="w-4 h-4 inline"></i>
+        </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for product in new_arrivals %}
+        <div class="card overflow-hidden group">
+            <a href="{% url 'website:product_detail' product.id %}">
+                <div class="relative overflow-hidden">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-64 object-cover product-image">
+                    {% else %}
+                        <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+                            <i data-feather="image" class="w-16 h-16 text-gray-400"></i>
+                        </div>
+                    {% endif %}
+                    {% if product.discount %}
+                        <span class="absolute top-3 right-3 bg-biolife-blue text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-md">
+                            {% if product.discount_type == 'percentage' %}
+                                -{{ product.discount }}%
+                            {% else %}
+                                -Rs {{ product.discount }}
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                    {% if product.brand %}
+                    <div class="absolute top-3 left-3 bg-white bg-opacity-90 backdrop-blur-sm px-2.5 py-1 rounded-md shadow-sm">
+                        <span class="text-xs font-semibold text-gray-700">{{ product.brand.name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    {% if product.category %}
+                    <span class="text-xs font-medium text-biolife-green mb-2 block">{{ product.category.name }}</span>
+                    {% endif %}
+                    <h3 class="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-biolife-green transition-colors">{{ product.name }}</h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <span class="text-xl font-bold text-biolife-green">Rs {{ product.get_final_price|floatformat:2 }}</span>
+                            {% if product.discount %}
+                                <span class="text-sm text-gray-500 line-through ml-2">Rs {{ product.regular_price|floatformat:2 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if product.stock > 0 %}
+                        <span class="text-xs text-green-600 flex items-center">
+                            <i data-feather="check-circle" class="w-3 h-3 mr-1"></i>
+                            In Stock
+                        </span>
+                    {% else %}
+                        <span class="text-xs text-red-600 flex items-center">
+                            <i data-feather="x-circle" class="w-3 h-3 mr-1"></i>
+                            Out of Stock
+                        </span>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Brands -->
+{% if brands %}
+<section class="bg-gray-50 py-12">
+    <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Our Brands</h2>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {% for brand in brands %}
+            <a href="{% url 'website:brand_detail' brand.id %}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex items-center justify-center">
+                {% if brand.logo %}
+                    <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" class="max-h-16 w-auto object-contain">
+                {% else %}
+                    <span class="text-gray-700 font-medium">{{ brand.name }}</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if banners|length > 1 %}
+<script>
+    let currentBanner = 0;
+    const banners = document.querySelectorAll('.banner-slide');
+    const indicators = document.querySelectorAll('.banner-indicator');
+    const totalBanners = banners.length;
+    
+    function showBanner(index) {
+        banners.forEach((banner, i) => {
+            banner.classList.toggle('hidden', i !== index);
+        });
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('bg-biolife-green', i === index);
+            indicator.classList.toggle('bg-white', i !== index);
+            indicator.classList.toggle('bg-opacity-50', i !== index);
+        });
+    }
+    
+    function nextBanner() {
+        currentBanner = (currentBanner + 1) % totalBanners;
+        showBanner(currentBanner);
+    }
+    
+    function prevBanner() {
+        currentBanner = (currentBanner - 1 + totalBanners) % totalBanners;
+        showBanner(currentBanner);
+    }
+    
+    document.getElementById('next-banner')?.addEventListener('click', nextBanner);
+    document.getElementById('prev-banner')?.addEventListener('click', prevBanner);
+    
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            currentBanner = index;
+            showBanner(currentBanner);
+        });
+    });
+    
+    // Auto-rotate every 5 seconds
+    setInterval(nextBanner, 5000);
+</script>
+{% endif %}
+{% endblock %}

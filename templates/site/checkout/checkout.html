@@ -1,0 +1,296 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Checkout - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Checkout</h1>
+    
+    <form method="post" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {% csrf_token %}
+        
+        <!-- Billing & Shipping Addresses -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Billing Address -->
+            <div class="card p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Billing Address</h2>
+                {% if addresses %}
+                    <div class="space-y-4 mb-4" id="billing-addresses">
+                        {% for address in addresses %}
+                        <label class="block cursor-pointer">
+                            <input type="radio" 
+                                   name="billing_address" 
+                                   value="{{ address.id }}" 
+                                   required
+                                   class="sr-only billing-address-radio"
+                                   {% if forloop.first %}checked{% endif %}>
+                            <div class="address-card border-2 border-gray-200 rounded-xl p-5 hover:border-biolife-green transition-all duration-200 hover:shadow-md">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-2">
+                                            <h3 class="font-semibold text-gray-800 mr-3">{{ address.title }}</h3>
+                                            <span class="px-2 py-1 bg-biolife-green-light text-biolife-green-dark text-xs font-medium rounded-full">Billing</span>
+                                        </div>
+                                        <div class="text-gray-700 space-y-1">
+                                            <p class="font-medium">{{ address.user.name|default:address.user.email }}</p>
+                                            <p>{{ address.address }}</p>
+                                            <p>{{ address.city }}, {{ address.state }}</p>
+                                            <p class="text-sm text-gray-600">
+                                                <i data-feather="phone" class="w-4 h-4 inline mr-1"></i>
+                                                {{ address.phone }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center address-radio-indicator">
+                                            <div class="w-3 h-3 rounded-full bg-biolife-green hidden address-radio-dot"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'website:account_address_create' %}" class="inline-flex items-center text-biolife-green hover:text-biolife-green-dark font-medium transition-colors">
+                        <i data-feather="plus-circle" class="w-5 h-5 mr-2"></i>
+                        Add New Address
+                    </a>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i data-feather="map-pin" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600 mb-4">No addresses found. Please add an address first.</p>
+                        <a href="{% url 'website:account_address_create' %}" class="inline-block bg-biolife-green text-white px-6 py-3 rounded-lg hover:bg-biolife-green-dark transition-all font-semibold shadow-md hover:shadow-lg">
+                            <i data-feather="plus" class="w-5 h-5 inline mr-2"></i>
+                            Add Address
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Shipping Address -->
+            <div class="card p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Shipping Address</h2>
+                <div class="mb-6">
+                    <label class="flex items-center cursor-pointer group">
+                        <input type="checkbox" 
+                               name="use_same_address" 
+                               id="use-same-address"
+                               checked 
+                               class="w-5 h-5 text-biolife-green border-gray-300 rounded focus:ring-biolife-green">
+                        <span class="ml-3 text-gray-700 font-medium group-hover:text-biolife-green transition-colors">Use same as billing address</span>
+                    </label>
+                </div>
+                {% if addresses %}
+                    <div class="space-y-4" id="shipping-addresses">
+                        {% for address in addresses %}
+                        <label class="block cursor-pointer shipping-address-label">
+                            <input type="radio" 
+                                   name="shipping_address" 
+                                   value="{{ address.id }}" 
+                                   class="sr-only shipping-address-radio"
+                                   disabled>
+                            <div class="address-card border-2 border-gray-200 rounded-xl p-5 hover:border-biolife-green transition-all duration-200 hover:shadow-md opacity-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-2">
+                                            <h3 class="font-semibold text-gray-800 mr-3">{{ address.title }}</h3>
+                                            <span class="px-2 py-1 bg-biolife-blue-light text-biolife-blue-dark text-xs font-medium rounded-full">Shipping</span>
+                                        </div>
+                                        <div class="text-gray-700 space-y-1">
+                                            <p class="font-medium">{{ address.user.name|default:address.user.email }}</p>
+                                            <p>{{ address.address }}</p>
+                                            <p>{{ address.city }}, {{ address.state }}</p>
+                                            <p class="text-sm text-gray-600">
+                                                <i data-feather="phone" class="w-4 h-4 inline mr-1"></i>
+                                                {{ address.phone }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center shipping-radio-indicator">
+                                            <div class="w-3 h-3 rounded-full bg-biolife-green hidden shipping-radio-dot"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">No addresses available</p>
+                {% endif %}
+            </div>
+            
+            <!-- Payment Method (Placeholder) -->
+            <div class="card p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Payment Method</h2>
+                <div class="border-2 border-gray-200 rounded-xl p-6 bg-gray-50">
+                    <div class="flex items-center mb-3">
+                        <i data-feather="credit-card" class="w-6 h-6 text-gray-400 mr-3"></i>
+                        <p class="text-gray-700 font-medium">Payment integration coming soon</p>
+                    </div>
+                    <p class="text-sm text-gray-600">For now, orders will be marked as "Pending" payment and processed manually.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="card p-6 sticky top-20">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Order Summary</h2>
+                
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between text-gray-700">
+                        <span>Subtotal:</span>
+                        <span>Rs {{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-700">
+                        <span>Shipping:</span>
+                        <span>Rs {{ shipping|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-700">
+                        <span>Tax:</span>
+                        <span>Rs {{ tax|floatformat:2 }}</span>
+                    </div>
+                    {% if discount > 0 %}
+                    <div class="flex justify-between text-green-600">
+                        <span>Discount:</span>
+                        <span>-Rs {{ discount|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="border-t pt-3 flex justify-between text-lg font-bold text-gray-800">
+                        <span>Total:</span>
+                        <span class="text-biolife-green">Rs {{ total|floatformat:2 }}</span>
+                    </div>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-biolife-green text-white py-3 rounded-lg hover:bg-biolife-green-dark transition-all duration-200 font-semibold text-lg shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-100">
+                    <i data-feather="check-circle" class="w-5 h-5 inline mr-2"></i>
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Address card selection styles */
+    .address-card input[type="radio"]:checked + .address-card,
+    .address-card:has(input[type="radio"]:checked) {
+        border-color: #00C853;
+        background-color: #f0fdf4;
+        box-shadow: 0 4px 6px -1px rgba(0, 200, 83, 0.1);
+    }
+    
+    .address-card input[type="radio"]:checked ~ .address-radio-indicator,
+    .address-card:has(input[type="radio"]:checked) .address-radio-indicator {
+        border-color: #00C853;
+    }
+    
+    .address-card input[type="radio"]:checked ~ .address-radio-indicator .address-radio-dot,
+    .address-card:has(input[type="radio"]:checked) .address-radio-dot {
+        display: block;
+    }
+    
+    .shipping-address-label:has(input:disabled) {
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    // Handle same address checkbox
+    const useSameAddressCheckbox = document.getElementById('use-same-address');
+    const shippingAddressLabels = document.querySelectorAll('.shipping-address-label');
+    const shippingAddressRadios = document.querySelectorAll('.shipping-address-radio');
+    const billingAddressRadios = document.querySelectorAll('.billing-address-radio');
+    
+    function updateShippingAddresses() {
+        if (useSameAddressCheckbox.checked) {
+            shippingAddressRadios.forEach(radio => {
+                radio.disabled = true;
+                radio.required = false;
+            });
+            shippingAddressLabels.forEach(label => {
+                label.style.opacity = '0.5';
+                label.style.pointerEvents = 'none';
+            });
+        } else {
+            shippingAddressRadios.forEach(radio => {
+                radio.disabled = false;
+                radio.required = true;
+            });
+            shippingAddressLabels.forEach(label => {
+                label.style.opacity = '1';
+                label.style.pointerEvents = 'auto';
+            });
+        }
+    }
+    
+    useSameAddressCheckbox?.addEventListener('change', updateShippingAddresses);
+    
+    // Update address card visual states
+    function updateAddressCardStates() {
+        // Billing addresses
+        billingAddressRadios.forEach(radio => {
+            const card = radio.closest('label')?.querySelector('.address-card');
+            const indicator = radio.closest('label')?.querySelector('.address-radio-indicator');
+            const dot = radio.closest('label')?.querySelector('.address-radio-dot');
+            
+            if (radio.checked) {
+                card?.classList.add('border-biolife-green', 'bg-green-50', 'shadow-md');
+                indicator?.classList.add('border-biolife-green');
+                dot?.classList.remove('hidden');
+            } else {
+                card?.classList.remove('border-biolife-green', 'bg-green-50', 'shadow-md');
+                indicator?.classList.remove('border-biolife-green');
+                dot?.classList.add('hidden');
+            }
+        });
+        
+        // Shipping addresses
+        shippingAddressRadios.forEach(radio => {
+            if (!radio.disabled) {
+                const card = radio.closest('label')?.querySelector('.address-card');
+                const indicator = radio.closest('label')?.querySelector('.shipping-radio-indicator');
+                const dot = radio.closest('label')?.querySelector('.shipping-radio-dot');
+                
+                if (radio.checked) {
+                    card?.classList.add('border-biolife-green', 'bg-green-50', 'shadow-md');
+                    card?.classList.remove('opacity-50');
+                    indicator?.classList.add('border-biolife-green');
+                    dot?.classList.remove('hidden');
+                } else {
+                    card?.classList.remove('border-biolife-green', 'bg-green-50', 'shadow-md');
+                    indicator?.classList.remove('border-biolife-green');
+                    dot?.classList.add('hidden');
+                }
+            }
+        });
+    }
+    
+    // Add event listeners to all address radios
+    [...billingAddressRadios, ...shippingAddressRadios].forEach(radio => {
+        radio.addEventListener('change', updateAddressCardStates);
+    });
+    
+    // When billing address changes and "use same" is checked, update shipping
+    billingAddressRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (useSameAddressCheckbox?.checked) {
+                // Shipping will use billing address, so no need to select shipping
+            }
+        });
+    });
+    
+    // Initialize states
+    updateShippingAddresses();
+    updateAddressCardStates();
+    
+    // Initialize feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+</script>
+{% endblock %}

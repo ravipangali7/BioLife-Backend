@@ -1,0 +1,197 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <h1 class="h3 mb-3"><strong>Analytics</strong> Dashboard</h1>
+
+    <div class="row">
+        <div class="col-xl-6 col-xxl-5 d-flex">
+            <div class="w-100">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col mt-0">
+                                        <h5 class="card-title">Total Sales</h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stat text-primary">
+                                            <i class="align-middle" data-feather="dollar-sign"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h1 class="mt-1 mb-3">Rs {{ total_sales|floatformat:2 }}</h1>
+                                <div class="mb-0">
+                                    <span class="text-muted">All time sales</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col mt-0">
+                                        <h5 class="card-title">Total Users</h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stat text-primary">
+                                            <i class="align-middle" data-feather="users"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h1 class="mt-1 mb-3">{{ total_users }}</h1>
+                                <div class="mb-0">
+                                    <span class="text-muted">Registered users</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col mt-0">
+                                        <h5 class="card-title">Total Products</h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stat text-primary">
+                                            <i class="align-middle" data-feather="package"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h1 class="mt-1 mb-3">{{ total_products }}</h1>
+                                <div class="mb-0">
+                                    <span class="text-success">
+                                        <i class="mdi mdi-arrow-bottom-right"></i> {{ active_products }} Active
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col mt-0">
+                                        <h5 class="card-title">Total Orders</h5>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="stat text-primary">
+                                            <i class="align-middle" data-feather="shopping-cart"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h1 class="mt-1 mb-3">{{ total_orders }}</h1>
+                                <div class="mb-0">
+                                    <span class="text-muted">{{ recent_orders }} orders in last 7 days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-xxl-7">
+            <div class="card flex-fill w-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Order Status</h5>
+                </div>
+                <div class="card-body py-3">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <span class="badge bg-warning">Pending: {{ pending_orders }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="badge bg-info">Processing: {{ processing_orders }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <span class="badge bg-primary">Shipped: {{ shipped_orders }}</span>
+                            </div>
+                            <div class="mb-3">
+                                <span class="badge bg-success">Delivered: {{ delivered_orders }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-8 col-xxl-9 d-flex">
+            <div class="card flex-fill">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                </div>
+                <table class="table table-hover my-0">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th class="d-none d-xl-table-cell">User</th>
+                            <th class="d-none d-xl-table-cell">Date</th>
+                            <th>Status</th>
+                            <th class="d-none d-md-table-cell">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders_list %}
+                        <tr>
+                            <td><a href="{% url 'myadmin:order_detail' order.pk %}">#{{ order.id }}</a></td>
+                            <td class="d-none d-xl-table-cell">{{ order.user.email }}</td>
+                            <td class="d-none d-xl-table-cell">{{ order.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if order.order_status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif order.order_status == 'processing' %}
+                                    <span class="badge bg-info">Processing</span>
+                                {% elif order.order_status == 'shipped' %}
+                                    <span class="badge bg-primary">Shipped</span>
+                                {% elif order.order_status == 'delivered' %}
+                                    <span class="badge bg-success">Delivered</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td class="d-none d-md-table-cell">Rs {{ order.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No orders yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4 col-xxl-3 d-flex">
+            <div class="card flex-fill w-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Categories:</strong> {{ categories_count }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Sub Categories:</strong> {{ subcategories_count }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Child Categories:</strong> {{ childcategories_count }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Featured Products:</strong> {{ featured_products }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Active Banners:</strong> {{ active_banners }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Active Coupons:</strong> {{ active_coupons }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

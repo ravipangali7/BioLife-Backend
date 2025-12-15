@@ -1,0 +1,100 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Address - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'website:account_addresses' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+            <i data-feather="arrow-left" class="w-4 h-4 inline"></i> Back to Addresses
+        </a>
+    </div>
+    
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">{{ action }} Address</h1>
+    
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="title" class="block text-gray-700 font-semibold mb-2">Address Title</label>
+                    <input type="text" 
+                           id="title" 
+                           name="title" 
+                           value="{{ address.title|default:'' }}"
+                           required
+                           placeholder="Home, Office, etc."
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                </div>
+                
+                <div>
+                    <label for="phone" class="block text-gray-700 font-semibold mb-2">Phone Number</label>
+                    <input type="tel" 
+                           id="phone" 
+                           name="phone" 
+                           value="{{ address.phone|default:'' }}"
+                           required
+                           placeholder="+977 98XXXXXXXX"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                </div>
+                
+                <div>
+                    <label for="address" class="block text-gray-700 font-semibold mb-2">Street Address</label>
+                    <textarea id="address" 
+                              name="address" 
+                              rows="3"
+                              required
+                              placeholder="123 Main Street"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">{{ address.address|default:'' }}</textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="city" class="block text-gray-700 font-semibold mb-2">City</label>
+                        <input type="text" 
+                               id="city" 
+                               name="city" 
+                               value="{{ address.city|default:'' }}"
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                    </div>
+                    
+                    <div>
+                        <label for="state" class="block text-gray-700 font-semibold mb-2">State</label>
+                        <input type="text" 
+                               id="state" 
+                               name="state" 
+                               value="{{ address.state|default:'' }}"
+                               required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="country" class="block text-gray-700 font-semibold mb-2">Country</label>
+                    <input type="text" 
+                           id="country" 
+                           name="country" 
+                           value="{{ address.country|default:'' }}"
+                           required
+                           placeholder="Nepal"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" 
+                            class="flex-1 bg-biolife-green text-white py-3 rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold text-lg">
+                        Save Address
+                    </button>
+                    <a href="{% url 'website:account_addresses' %}" 
+                       class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold text-lg text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Addresses - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">My Addresses</h1>
+        <a href="{% url 'website:account_address_create' %}" 
+           class="bg-biolife-green text-white px-6 py-3 rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold">
+            + Add New Address
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <nav class="space-y-2">
+                    <a href="{% url 'website:account_dashboard' %}" 
+                       class="block px-4 py-2 text-gray-700 hover:bg-biolife-green-light rounded-lg transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="{% url 'website:account_profile' %}" 
+                       class="block px-4 py-2 text-gray-700 hover:bg-biolife-green-light rounded-lg transition-colors">
+                        Profile
+                    </a>
+                    <a href="{% url 'website:account_orders' %}" 
+                       class="block px-4 py-2 text-gray-700 hover:bg-biolife-green-light rounded-lg transition-colors">
+                        Orders
+                    </a>
+                    <a href="{% url 'website:account_addresses' %}" 
+                       class="block px-4 py-2 bg-biolife-green text-white rounded-lg font-semibold">
+                        Addresses
+                    </a>
+                </nav>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            {% if addresses %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for address in addresses %}
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <h3 class="text-lg font-bold text-gray-800">{{ address.title }}</h3>
+                            <div class="flex space-x-2">
+                                <a href="{% url 'website:account_address_edit' address.id %}" 
+                                   class="text-biolife-green hover:text-biolife-green-dark">
+                                    <i data-feather="edit" class="w-5 h-5"></i>
+                                </a>
+                                <a href="{% url 'website:account_address_delete' address.id %}" 
+                                   class="text-red-600 hover:text-red-800">
+                                    <i data-feather="trash-2" class="w-5 h-5"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-gray-700 space-y-1">
+                            <p>{{ address.address }}</p>
+                            <p>{{ address.city }}, {{ address.state }}</p>
+                            <p>{{ address.country }}</p>
+                            <p class="mt-2">Phone: {{ address.phone }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                    <i data-feather="map-pin" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">No Addresses</h2>
+                    <p class="text-gray-600 mb-6">Add an address to make checkout faster</p>
+                    <a href="{% url 'website:account_address_create' %}" 
+                       class="inline-block bg-biolife-green text-white px-6 py-3 rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold">
+                        Add Address
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
