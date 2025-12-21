@@ -1,0 +1,126 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Withdrawals - {{ user.email }}</h1>
+        <a href="{% url 'myadmin:user_detail' user.pk %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to User
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Withdrawal History</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{% url 'myadmin:user_withdrawals' user.pk %}" class="btn btn-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Amount</th>
+                                    <th>Payment Info</th>
+                                    <th>Payment Status</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for withdrawal in withdrawals %}
+                                <tr>
+                                    <td>#{{ withdrawal.id }}</td>
+                                    <td class="fw-bold">Rs {{ withdrawal.amount|floatformat:2 }}</td>
+                                    <td>
+                                        {% if withdrawal.user.esewa_number %}Esewa: {{ withdrawal.user.esewa_number }}<br>{% endif %}
+                                        {% if withdrawal.user.khalti_number %}Khalti: {{ withdrawal.user.khalti_number }}<br>{% endif %}
+                                        {% if withdrawal.user.qr_code %}QR Code: ✓<br>{% endif %}
+                                        {% if not withdrawal.user.esewa_number and not withdrawal.user.khalti_number and not withdrawal.user.qr_code %}
+                                        <span class="text-muted">No payment info</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if withdrawal.payment_status == 'paid' %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% elif withdrawal.payment_status == 'failed' %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% elif withdrawal.payment_status == 'refunded' %}
+                                        <span class="badge bg-info">Refunded</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ withdrawal.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if withdrawal.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                        {% elif withdrawal.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                        {% if withdrawal.reject_reason %}
+                                        <br><small class="text-muted">{{ withdrawal.reject_reason|truncatewords:10 }}</small>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'myadmin:withdrawal_detail' withdrawal.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i> Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No withdrawals found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a></li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Influencer Report</h1>
+        <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="kyc_status" class="form-label">KYC Status</label>
+                            <select name="kyc_status" id="kyc_status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="pending" {% if kyc_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="approved" {% if kyc_status == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="rejected" {% if kyc_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{% url 'myadmin:influencer_report' %}" class="btn btn-secondary">Clear</a>
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" class="btn btn-success">
+                                <i class="align-middle" data-feather="download"></i> Export CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Influencers</h5>
+                    <h2 class="mb-0">{{ total_influencers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Earnings</h5>
+                    <h2 class="mb-0 text-success">Rs {{ total_earnings_all|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Task Submissions</h5>
+                    <h2 class="mb-0">{{ total_task_submissions }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Average Earnings</h5>
+                    <h2 class="mb-0">Rs {{ avg_earnings|floatformat:2 }}</h2>
+                    <small class="text-muted">Per influencer</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Influencers by Earnings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Total Earnings</th>
+                                    <th>Task Earnings</th>
+                                    <th>Commission Earnings</th>
+                                    <th>Task Count</th>
+                                    <th>Commission Count</th>
+                                    <th>KYC Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for influencer in top_influencers %}
+                                <tr>
+                                    <td><strong>#{{ forloop.counter }}</strong></td>
+                                    <td>{{ influencer.name|default:"-" }}</td>
+                                    <td>{{ influencer.email }}</td>
+                                    <td class="text-success"><strong>Rs {{ influencer.total_earnings|default:0|floatformat:2 }}</strong></td>
+                                    <td>Rs {{ influencer.task_earnings|default:0|floatformat:2 }}</td>
+                                    <td>Rs {{ influencer.commission_earnings|default:0|floatformat:2 }}</td>
+                                    <td>{{ influencer.task_count|default:0 }}</td>
+                                    <td>{{ influencer.commission_count|default:0 }}</td>
+                                    <td>
+                                        {% if influencer.kyc_status %}
+                                        <span class="badge bg-{% if influencer.kyc_status == 'approved' %}success{% elif influencer.kyc_status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ influencer.get_kyc_status_display }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Not Submitted</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center">No influencers found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Task Submissions by Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Count</th>
+                                    <th>Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in tasks_by_status %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{% if item.status == 'approved' %}success{% elif item.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ item.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.count }}</td>
+                                    <td>Rs {{ item.total_amount|default:0|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">KYC Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>KYC Status</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in kyc_distribution %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{% if item.kyc_status == 'approved' %}success{% elif item.kyc_status == 'rejected' %}danger{% elif item.kyc_status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                            {{ item.kyc_status|default:"Not Submitted"|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">All Influencers Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Total Earnings</th>
+                                    <th>Task Earnings</th>
+                                    <th>Commission Earnings</th>
+                                    <th>Task Count</th>
+                                    <th>Commission Count</th>
+                                    <th>KYC Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for influencer in influencer_stats %}
+                                <tr>
+                                    <td>{{ influencer.name|default:"-" }}</td>
+                                    <td>{{ influencer.email }}</td>
+                                    <td class="text-success"><strong>Rs {{ influencer.total_earnings|default:0|floatformat:2 }}</strong></td>
+                                    <td>Rs {{ influencer.task_earnings|default:0|floatformat:2 }}</td>
+                                    <td>Rs {{ influencer.commission_earnings|default:0|floatformat:2 }}</td>
+                                    <td>{{ influencer.task_count|default:0 }}</td>
+                                    <td>{{ influencer.commission_count|default:0 }}</td>
+                                    <td>
+                                        {% if influencer.kyc_status %}
+                                        <span class="badge bg-{% if influencer.kyc_status == 'approved' %}success{% elif influencer.kyc_status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ influencer.get_kyc_status_display }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Not Submitted</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No influencers found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

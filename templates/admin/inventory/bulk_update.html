@@ -1,0 +1,46 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Bulk Stock Operations</h1>
+        <a href="{% url 'myadmin:inventory_dashboard' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Export Stock Data</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Export all product stock information to CSV file for external editing or backup.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" name="export" class="btn btn-primary">
+                            <i class="align-middle" data-feather="download"></i> Export to CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Import Stock Data</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Import stock data from CSV file. CSV format: SKU, Stock Quantity</p>
+                    <p class="text-warning"><strong>Note:</strong> CSV import functionality will be available in a future update.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

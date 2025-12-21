@@ -10,20 +10,6 @@
                 <p class="text-sm mb-4">
                     Your trusted source for health and wellness products. Quality products for a better life.
                 </p>
-                <div class="flex space-x-4">
-                    <a href="#" class="hover:text-biolife-green transition-colors">
-                        <i data-feather="facebook" class="w-5 h-5"></i>
-                    </a>
-                    <a href="#" class="hover:text-biolife-green transition-colors">
-                        <i data-feather="instagram" class="w-5 h-5"></i>
-                    </a>
-                    <a href="#" class="hover:text-biolife-green transition-colors">
-                        <i data-feather="twitter" class="w-5 h-5"></i>
-                    </a>
-                    <a href="#" class="hover:text-biolife-green transition-colors">
-                        <i data-feather="youtube" class="w-5 h-5"></i>
-                    </a>
-                </div>
             </div>
             
             <!-- Quick Links -->
@@ -58,42 +44,82 @@
             </div>
             
             <!-- Customer Service -->
+            {% if customer_service_pages %}
             <div>
                 <h3 class="text-white font-semibold mb-4">Customer Service</h3>
                 <ul class="space-y-2 text-sm">
-                    <li>
-                        <a href="#" class="hover:text-biolife-green transition-colors">Contact Us</a>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-biolife-green transition-colors">Shipping Info</a>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-biolife-green transition-colors">Returns</a>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-biolife-green transition-colors">FAQ</a>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-biolife-green transition-colors">Privacy Policy</a>
-                    </li>
-                    <li>
-                        <a href="#" class="hover:text-biolife-green transition-colors">Terms & Conditions</a>
-                    </li>
+                    {% for page in customer_service_pages %}
+                        <li>
+                            <a href="{% url 'website:cms_page' slug=page.slug %}" class="hover:text-biolife-green transition-colors">{{ page.title }}</a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </div>
+            {% endif %}
             
-            <!-- CMS Pages -->
+            <!-- Information -->
+            {% if information_pages %}
             <div>
                 <h3 class="text-white font-semibold mb-4">Information</h3>
                 <ul class="space-y-2 text-sm">
-                    {% for page in cms_pages %}
+                    {% for page in information_pages %}
                         <li>
-                            <a href="#" class="hover:text-biolife-green transition-colors">{{ page.title }}</a>
+                            <a href="{% url 'website:cms_page' slug=page.slug %}" class="hover:text-biolife-green transition-colors">{{ page.title }}</a>
                         </li>
-                    {% empty %}
-                        <li class="text-gray-500">No pages available</li>
                     {% endfor %}
                 </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Contact Information & Social Media -->
+            <div>
+                <h3 class="text-white font-semibold mb-4">Contact Us</h3>
+                {% if site_settings.email or site_settings.phone or site_settings.address %}
+                <div class="text-sm mb-4 space-y-2">
+                    {% if site_settings.email %}
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i data-feather="mail" class="w-4 h-4"></i>
+                            <span>{{ site_settings.email }}</span>
+                        </div>
+                    {% endif %}
+                    {% if site_settings.phone %}
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i data-feather="phone" class="w-4 h-4"></i>
+                            <span>{{ site_settings.phone }}</span>
+                        </div>
+                    {% endif %}
+                    {% if site_settings.address %}
+                        <div class="flex items-start space-x-2 mb-2">
+                            <i data-feather="map-pin" class="w-4 h-4 mt-1"></i>
+                            <span>{{ site_settings.address|linebreaks }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if site_settings.facebook_url or site_settings.instagram_url or site_settings.youtube_url or site_settings.tiktok_url %}
+                <div class="flex space-x-4">
+                    {% if site_settings.facebook_url %}
+                        <a href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-biolife-green transition-colors">
+                            <i data-feather="facebook" class="w-5 h-5"></i>
+                        </a>
+                    {% endif %}
+                    {% if site_settings.instagram_url %}
+                        <a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-biolife-green transition-colors">
+                            <i data-feather="instagram" class="w-5 h-5"></i>
+                        </a>
+                    {% endif %}
+                    {% if site_settings.youtube_url %}
+                        <a href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-biolife-green transition-colors">
+                            <i data-feather="youtube" class="w-5 h-5"></i>
+                        </a>
+                    {% endif %}
+                    {% if site_settings.tiktok_url %}
+                        <a href="{{ site_settings.tiktok_url }}" target="_blank" rel="noopener noreferrer" class="hover:text-biolife-green transition-colors">
+                            <i data-feather="video" class="w-5 h-5"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
         </div>
         

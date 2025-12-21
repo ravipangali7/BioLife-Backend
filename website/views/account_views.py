@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from core.models import Order, Address, Wishlist, Product
+from core.models import Order, Address, Wishlist, Product, Setting, Withdrawal, Transaction
 
 
 @login_required
@@ -34,6 +34,15 @@ def account_profile(request):
         
         if request.FILES.get('image'):
             user.image = request.FILES['image']
+            
+        # KYC Fields
+        user.citizenship_no = request.POST.get('citizenship_no', user.citizenship_no)
+        if request.FILES.get('citizenship_front'):
+            user.citizenship_front = request.FILES['citizenship_front']
+        if request.FILES.get('citizenship_back'):
+            user.citizenship_back = request.FILES['citizenship_back']
+        
+        # KYC status is managed in the dedicated KYC page
         
         user.save()
         messages.success(request, 'Profile updated successfully')
@@ -206,3 +215,184 @@ def remove_from_wishlist(request, product_id):
             })
     
     return redirect('website:wishlist')
+
+
+@login_required
+def account_kyc(request):
+    """Dedicated KYC verification page"""
+    user = request.user
+    
+    if request.method == 'POST':
+        # Store previous status for messaging
+        previous_status = user.kyc_status
+        
+        # Update KYC fields
+        user.citizenship_no = request.POST.get('citizenship_no', '').strip()
+        
+        if request.FILES.get('citizenship_front'):
+            user.citizenship_front = request.FILES['citizenship_front']
+        if request.FILES.get('citizenship_back'):
+            user.citizenship_back = request.FILES['citizenship_back']
+        
+        # Validate and set status
+        if user.citizenship_no and user.citizenship_front and user.citizenship_back:
+            # If all fields provided, set to pending and clear reject reason
+            user.kyc_status = 'pending'
+            user.kyc_reject_reason = None
+            user.save()
+            
+            # Provide appropriate success messages based on previous status
+            if previous_status == 'approved':
+                messages.success(request, 'KYC documents updated successfully. Your account will be re-verified by our admin team. You will be notified once verification is complete.')
+            elif previous_status == 'rejected':
+                messages.success(request, 'KYC documents resubmitted successfully. Our admin team will review and verify your account. You will be notified once verification is complete.')
+            else:
+                messages.success(request, 'KYC documents submitted successfully. Our admin team will review and verify your account. You will be notified once verification is complete.')
+        else:
+            messages.warning(request, 'Please complete all KYC fields (Citizenship Number, Front, and Back) to submit for verification.')
+        
+        return redirect('website:account_kyc')
+    
+    context = {
+        'user': user,
+    }
+    
+    return render(request, 'site/account/kyc.html', context)
+
+
+@login_required
+def account_payment(request):
+    """Payment setup page for influencers"""
+    user = request.user
+    
+    # Only allow influencers to access this page
+    if not user.is_influencer:
+        messages.error(request, 'This page is only available for influencers.')
+        return redirect('website:account_dashboard')
+    
+    if request.method == 'POST':
+        # Update payment fields
+        user.esewa_number = request.POST.get('esewa_number', '').strip() or None
+        user.khalti_number = request.POST.get('khalti_number', '').strip() or None
+        
+        if request.FILES.get('qr_code'):
+            user.qr_code = request.FILES['qr_code']
+        
+        user.save()
+        messages.success(request, 'Payment information updated successfully.')
+        return redirect('website:account_payment')
+    
+    context = {
+        'user': user,
+    }
+    
+    return render(request, 'site/account/payment.html', context)
+
+
+@login_required
+def account_withdrawals(request):
+    """Withdrawal request page for influencers"""
+    user = request.user
+    
+    # Check if user is influencer with approved KYC
+    if not user.is_influencer:
+        messages.error(request, 'This page is only available for influencers.')
+        return redirect('website:account_dashboard')
+    
+    if user.kyc_status != 'approved':
+        if user.kyc_status == 'pending':
+            messages.warning(request, 'Your KYC verification is pending review. Please wait for admin approval to access withdrawal features.')
+        elif user.kyc_status == 'rejected':
+            reason = f": {user.kyc_reject_reason}" if user.kyc_reject_reason else ""
+            messages.warning(request, f'Your KYC verification was rejected{reason}. Please update your documents and resubmit.')
+        else:
+            messages.warning(request, 'Please complete your KYC verification to access withdrawal features.')
+        return redirect('website:account_kyc')
+    
+    # Get settings
+    setting = Setting.objects.first() or Setting.objects.create()
+    
+    # Get withdrawal history
+    withdrawals = Withdrawal.objects.filter(user=user).order_by('-created_at')
+    
+    # Handle POST request for withdrawal submission
+    if request.method == 'POST':
+        if not setting.is_withdrawal:
+            messages.error(request, 'Withdrawals are currently disabled.')
+            return redirect('website:account_withdrawals')
+        
+        try:
+            amount = float(request.POST.get('amount', 0))
+        except (ValueError, TypeError):
+            messages.error(request, 'Invalid amount entered.')
+            return redirect('website:account_withdrawals')
+        
+        # Check if payment details are set
+        if not user.esewa_number and not user.khalti_number and not user.qr_code:
+            messages.error(request, 'Please set up your payment details first.')
+            return redirect('website:account_payment')
+        
+        # Validation
+        if amount < float(setting.min_withdrawal):
+            messages.error(request, f'Minimum withdrawal is Rs {setting.min_withdrawal}')
+        elif amount > float(setting.max_withdrawal):
+            messages.error(request, f'Maximum withdrawal is Rs {setting.max_withdrawal}')
+        elif amount > float(user.balance):
+            messages.error(request, 'Insufficient balance.')
+        else:
+            # Create Withdrawal
+            withdrawal = Withdrawal.objects.create(
+                user=user,
+                amount=amount,
+                status='pending',
+                payment_status='pending'
+            )
+            
+            # Deduct balance immediately (pending state)
+            user.balance = float(user.balance) - amount
+            user.save()
+            
+            # Create transaction record
+            Transaction.objects.create(
+                user=user,
+                amount=amount,
+                transaction_type='out',
+                remarks=f'Withdrawal Request (ID: {withdrawal.id})',
+                status='success'  # Transaction success, withdrawal pending
+            )
+            
+            messages.success(request, 'Withdrawal request submitted successfully.')
+            return redirect('website:account_withdrawals')
+    
+    context = {
+        'user': user,
+        'setting': setting,
+        'withdrawals': withdrawals,
+    }
+    
+    return render(request, 'site/account/withdrawals.html', context)
+
+
+@login_required
+def account_withdrawal_detail(request, withdrawal_id):
+    """Withdrawal detail view for influencers"""
+    user = request.user
+    
+    # Check if user is influencer with approved KYC
+    if not user.is_influencer:
+        messages.error(request, 'This page is only available for influencers.')
+        return redirect('website:account_dashboard')
+    
+    if user.kyc_status != 'approved':
+        messages.warning(request, 'Please complete your KYC verification to access withdrawal details.')
+        return redirect('website:account_kyc')
+    
+    # Get withdrawal - ensure it belongs to the user
+    withdrawal = get_object_or_404(Withdrawal, pk=withdrawal_id, user=user)
+    
+    context = {
+        'user': user,
+        'withdrawal': withdrawal,
+    }
+    
+    return render(request, 'site/account/withdrawal_detail.html', context)

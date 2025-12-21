@@ -1,0 +1,131 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Submission Detail</h1>
+        <a href="{% url 'myadmin:usertask_list' %}" class="btn btn-secondary ms-2">Back to List</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Task Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Task:</div>
+                        <div class="col-md-8">{{ usertask.task.title }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Social Media:</div>
+                        <div class="col-md-8">{{ usertask.task.get_social_media_display }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Amount:</div>
+                        <div class="col-md-8">Rs {{ usertask.task.amount }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">User:</div>
+                        <div class="col-md-8">
+                            <a href="{% url 'myadmin:user_detail' usertask.user.pk %}">{{ usertask.user.email }}</a>
+                            <br>
+                            <small>{{ usertask.user.name }}</small>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Description:</div>
+                        <div class="col-md-8">{{ usertask.description|default:"-" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            {% if usertask.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif usertask.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            <div class="text-danger mt-1">Reason: {{ usertask.reject_reason }}</div>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Proofs (Images)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for img in usertask.images.all %}
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ img.image.url }}" target="_blank">
+                                <img src="{{ img.image.url }}" class="img-fluid rounded border" alt="Proof">
+                            </a>
+                            {% if img.title %}<h6 class="mt-2 text-dark">{{ img.title }}</h6>{% endif %}
+                            {% if img.description %}<p class="small text-muted mb-0">{{ img.description }}</p>{% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-muted">No image proofs uploaded.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Proofs (Links)</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for link in usertask.links.all %}
+                        <li class="list-group-item">
+                            {% if link.title %}<div class="fw-bold">{{ link.title }}</div>{% endif %}
+                            <a href="{{ link.url }}" target="_blank" class="text-break">{{ link.url }}</a>
+                            {% if link.description %}<p class="small mt-1 mb-0 text-muted">{{ link.description }}</p>{% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No link proofs provided.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            {% if usertask.status == 'pending' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="d-grid gap-2">
+                        {% csrf_token %}
+                        <button type="submit" name="action" value="approve" class="btn btn-success">
+                            <i class="align-middle" data-feather="check"></i> Approve Task
+                        </button>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">Rejection Reason</label>
+                            <textarea name="reject_reason" class="form-control" rows="2"
+                                placeholder="Why is this rejected?"></textarea>
+                        </div>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger">
+                            <i class="align-middle" data-feather="x"></i> Reject Task
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

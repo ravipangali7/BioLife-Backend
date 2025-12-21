@@ -1,4 +1,5 @@
-from core.models import Category, CMSPage, Wishlist
+from django.db.models import Q
+from core.models import Category, CMSPage, Wishlist, Setting
 
 
 def cart_count(request):
@@ -26,5 +27,20 @@ def categories(request):
 
 def cms_pages(request):
     """Add CMS pages to context for footer"""
-    pages = CMSPage.objects.filter(is_active=True, in_footer=True).order_by('title')
-    return {'cms_pages': pages}
+    all_pages = CMSPage.objects.filter(is_active=True, in_footer=True).order_by('title')
+    customer_service_pages = all_pages.filter(footer_section='customer_service')
+    information_pages = all_pages.filter(
+        Q(footer_section='information') | Q(footer_section__isnull=True) | Q(footer_section='')
+    )
+    
+    return {
+        'cms_pages': all_pages,
+        'customer_service_pages': customer_service_pages,
+        'information_pages': information_pages,
+    }
+
+
+def site_settings(request):
+    """Add site settings to context for all templates"""
+    setting = Setting.objects.first()
+    return {'site_settings': setting}

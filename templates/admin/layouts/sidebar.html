@@ -35,7 +35,8 @@
 
             <li class="sidebar-item">
                 <a class="sidebar-link" href="{% url 'myadmin:childcategory_list' %}">
-                    <i class="align-middle" data-feather="folder"></i> <span class="align-middle">Child Categories</span>
+                    <i class="align-middle" data-feather="folder"></i> <span class="align-middle">Child
+                        Categories</span>
                 </a>
             </li>
 
@@ -65,6 +66,12 @@
                 </a>
             </li>
 
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:kyc_list' %}">
+                    <i class="align-middle" data-feather="shield"></i> <span class="align-middle">KYC Verification</span>
+                </a>
+            </li>
+
             <li class="sidebar-header">Marketing</li>
 
             <li class="sidebar-item">
@@ -82,6 +89,97 @@
             <li class="sidebar-item">
                 <a class="sidebar-link" href="{% url 'myadmin:cmspage_list' %}">
                     <i class="align-middle" data-feather="file-text"></i> <span class="align-middle">CMS Pages</span>
+                </a>
+            </li>
+
+            <li class="sidebar-header">System & Earnings</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:settings_view' %}">
+                    <i class="align-middle" data-feather="settings"></i> <span class="align-middle">Settings</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:task_list' %}">
+                    <i class="align-middle" data-feather="check-square"></i> <span class="align-middle">Tasks</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:usertask_list' %}">
+                    <i class="align-middle" data-feather="users"></i> <span class="align-middle">Submissions</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:withdrawal_list' %}">
+                    <i class="align-middle" data-feather="dollar-sign"></i> <span
+                        class="align-middle">Withdrawals</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:transaction_list' %}">
+                    <i class="align-middle" data-feather="list"></i> <span class="align-middle">Transactions</span>
+                </a>
+            </li>
+
+            <li class="sidebar-header">Inventory</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:inventory_dashboard' %}">
+                    <i class="align-middle" data-feather="box"></i> <span class="align-middle">Inventory Dashboard</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:low_stock_list' %}">
+                    <i class="align-middle" data-feather="alert-triangle"></i> <span class="align-middle">Low Stock Alerts</span>
+                </a>
+            </li>
+
+            <li class="sidebar-header">Reports</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:reports_index' %}">
+                    <i class="align-middle" data-feather="bar-chart-2"></i> <span class="align-middle">Reports</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:sales_report' %}">
+                    <i class="align-middle" data-feather="dollar-sign"></i> <span class="align-middle">Sales Report</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:inventory_report' %}">
+                    <i class="align-middle" data-feather="package"></i> <span class="align-middle">Inventory Report</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:product_performance_report' %}">
+                    <i class="align-middle" data-feather="trending-up"></i> <span class="align-middle">Product Performance</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:customer_report' %}">
+                    <i class="align-middle" data-feather="users"></i> <span class="align-middle">Customer Report</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:finance_report' %}">
+                    <i class="align-middle" data-feather="credit-card"></i> <span class="align-middle">Finance Report</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="{% url 'myadmin:influencer_report' %}">
+                    <i class="align-middle" data-feather="star"></i> <span class="align-middle">Influencer Report</span>
                 </a>
             </li>
         </ul>

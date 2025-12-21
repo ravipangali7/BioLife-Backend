@@ -1,0 +1,125 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Low Stock Products</h1>
+        <a href="{% url 'myadmin:inventory_dashboard' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Products with Low Stock</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ search_query }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="low_stock" {% if status_filter == 'low_stock' %}selected{% endif %}>Low Stock</option>
+                                    <option value="out_of_stock" {% if status_filter == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{% url 'myadmin:low_stock_list' %}" class="btn btn-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Product Name</th>
+                                    <th>SKU</th>
+                                    <th>Current Stock</th>
+                                    <th>Low Stock Threshold</th>
+                                    <th>Status</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>
+                                        {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="50" height="50" class="rounded">
+                                        {% else %}
+                                        <span class="text-muted">No Image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ product.name }}</strong></td>
+                                    <td>{{ product.sku }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                        <span class="badge bg-danger">{{ product.stock }}</span>
+                                        {% elif product.stock <= low_stock_threshold %}
+                                        <span class="badge bg-warning">{{ product.stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success">{{ product.stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ low_stock_threshold }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Low Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>Rs {{ product.regular_price|floatformat:2 }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'myadmin:product_edit' product.id %}" class="btn btn-sm btn-primary">
+                                                <i class="align-middle" data-feather="edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'myadmin:product_detail' product.id %}" class="btn btn-sm btn-secondary">
+                                                <i class="align-middle" data-feather="eye"></i> View
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No low stock products found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-3">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a></li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

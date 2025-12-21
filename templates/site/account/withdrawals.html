@@ -1,0 +1,181 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Withdrawals - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-4 md:py-8 overflow-x-hidden max-w-full w-full">
+    <h1 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8">Withdrawals</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8 w-full max-w-full">
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1 w-full max-w-full">
+            <div class="card p-4 md:p-6">
+                <div class="text-center mb-6">
+                    {% if user.image %}
+                    <img src="{{ user.image.url }}" alt="{{ user.name }}"
+                        class="w-24 h-24 rounded-full mx-auto mb-4 object-cover shadow-md">
+                    {% else %}
+                    <div
+                        class="w-24 h-24 bg-biolife-green-light rounded-full mx-auto mb-4 flex items-center justify-center shadow-md">
+                        <i data-feather="user" class="w-8 h-8 md:w-12 md:h-12 text-biolife-green"></i>
+                    </div>
+                    {% endif %}
+                    <h2 class="font-bold text-gray-800">{{ user.name }}</h2>
+                    <p class="text-sm text-gray-600">{{ user.email }}</p>
+                </div>
+
+                {% include 'site/layouts/account_sidebar.html' %}
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3 w-full max-w-full overflow-hidden">
+            <!-- Balance Card -->
+            <div class="bg-gradient-to-br from-biolife-green to-biolife-green-dark rounded-2xl shadow-lg p-8 text-white mb-6">
+                <p class="text-green-100 mb-1 font-medium">Available Balance</p>
+                <h1 class="text-4xl font-bold mb-4">Rs {{ user.balance|floatformat:2 }}</h1>
+                <div class="pt-4 border-t border-green-400 border-opacity-30">
+                    <p class="text-sm text-green-100 mb-2">Earn Code</p>
+                    <div class="flex items-center bg-white bg-opacity-20 rounded p-2">
+                        <code class="font-mono text-lg flex-1">{{ user.earn_code|default:"No Code" }}</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-6">
+                <!-- Withdrawal Form (1 Column) -->
+                <div class="xl:col-span-1">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-base md:text-xl font-bold text-gray-800 mb-2 md:mb-4">Request Withdrawal</h3>
+                        
+                        {% if setting.is_withdrawal %}
+                        <!-- Payment Details Display -->
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-sm font-semibold text-gray-700">Payment Details</h4>
+                                <a href="{% url 'website:account_payment' %}" class="text-xs text-biolife-green hover:text-biolife-green-dark font-medium">
+                                    <i data-feather="edit-2" class="inline w-3 h-3 mr-1"></i>Edit
+                                </a>
+                            </div>
+                            <div class="space-y-1 text-xs text-gray-600">
+                                {% if user.esewa_number %}
+                                <p><span class="font-medium">Esewa:</span> {{ user.esewa_number }}</p>
+                                {% endif %}
+                                {% if user.khalti_number %}
+                                <p><span class="font-medium">Khalti:</span> {{ user.khalti_number }}</p>
+                                {% endif %}
+                                {% if user.qr_code %}
+                                <p><span class="font-medium">QR Code:</span> <span class="text-green-600">✓ Set</span></p>
+                                {% endif %}
+                                {% if not user.esewa_number and not user.khalti_number and not user.qr_code %}
+                                <p class="text-yellow-600 font-medium">No payment details set. <a href="{% url 'website:account_payment' %}" class="underline">Set up payment</a></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <form method="post" class="space-y-4">
+                            {% csrf_token %}
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (Rs)</label>
+                                <input type="number" name="amount" step="0.01" required
+                                    min="{{ setting.min_withdrawal }}" max="{{ setting.max_withdrawal }}"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green">
+                                <p class="text-xs text-gray-500 mt-1">Min: Rs {{ setting.min_withdrawal }} / Max: Rs {{ setting.max_withdrawal }}</p>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-biolife-green text-white py-3 rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold">
+                                Submit Request
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="text-center py-4 text-gray-500">
+                            <i data-feather="lock" class="w-8 h-8 mx-auto mb-2 text-gray-400"></i>
+                            <p class="font-semibold">Withdrawals Disabled</p>
+                            <p class="text-sm mt-1">Withdrawals are currently disabled by the administrator.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Withdrawal History (2 Columns) -->
+                <div class="xl:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="font-bold text-gray-800">Withdrawal History</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-gray-600 text-sm">
+                                    <tr>
+                                        <th class="px-6 py-3">ID</th>
+                                        <th class="px-6 py-3">Date</th>
+                                        <th class="px-6 py-3">Amount</th>
+                                        <th class="px-6 py-3">Status</th>
+                                        <th class="px-6 py-3">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    {% for withdrawal in withdrawals %}
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm font-medium">#{{ withdrawal.id }}</td>
+                                        <td class="px-6 py-4 text-sm">{{ withdrawal.created_at|date:"M d, Y" }}</td>
+                                        <td class="px-6 py-4 font-medium">Rs {{ withdrawal.amount|floatformat:2 }}</td>
+                                        <td class="px-6 py-4">
+                                            {% if withdrawal.status == 'approved' %}
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i data-feather="check-circle" class="w-3 h-3 mr-1"></i>
+                                                Approved
+                                            </span>
+                                            {% elif withdrawal.status == 'rejected' %}
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <i data-feather="x-circle" class="w-3 h-3 mr-1"></i>
+                                                Rejected
+                                            </span>
+                                            {% else %}
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <i data-feather="clock" class="w-3 h-3 mr-1"></i>
+                                                Pending
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <a href="{% url 'website:account_withdrawal_detail' withdrawal.id %}"
+                                                class="inline-flex items-center px-3 py-1.5 bg-biolife-green text-white text-sm font-semibold rounded-lg hover:bg-biolife-green-dark transition-colors">
+                                                <i data-feather="eye" class="w-4 h-4 mr-1"></i>
+                                                View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                            <i data-feather="inbox" class="w-8 h-8 md:w-12 md:h-12 mx-auto mb-2 text-gray-400"></i>
+                                            <p>No withdrawals yet</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize feather icons
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    });
+</script>
+{% endblock %}

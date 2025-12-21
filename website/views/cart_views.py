@@ -104,11 +104,17 @@ def add_to_cart(request, product_id):
             
             cart = get_cart(request)
             
+            # Get earn_code from session if available (from affiliate link)
+            earn_code = request.session.get('affiliate_earn_code', '')
+            
             # Check if item already exists
             item_found = False
             for item in cart['items']:
                 if item['product_id'] == product_id and item.get('variant') == variant:
                     item['quantity'] += quantity
+                    # Preserve existing earn_code or set new one if not present
+                    if not item.get('earn_code') and earn_code:
+                        item['earn_code'] = earn_code
                     item_found = True
                     break
             
@@ -118,6 +124,7 @@ def add_to_cart(request, product_id):
                     'variant': variant,
                     'quantity': quantity,
                     'price': price,
+                    'earn_code': earn_code,
                 })
             
             request.session.modified = True

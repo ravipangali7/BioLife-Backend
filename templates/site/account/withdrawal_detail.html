@@ -1,0 +1,214 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Withdrawal #{{ withdrawal.id }} - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-4 md:py-8 overflow-x-hidden max-w-full w-full">
+    <div class="mb-6">
+        <a href="{% url 'website:account_withdrawals' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+            <i data-feather="arrow-left" class="w-4 h-4 inline"></i> Back to Withdrawals
+        </a>
+    </div>
+    
+    <h1 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8">Withdrawal #{{ withdrawal.id }}</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 w-full max-w-full">
+        <!-- Withdrawal Details -->
+        <div class="lg:col-span-2 space-y-6 w-full max-w-full overflow-hidden">
+            <!-- Withdrawal Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-base md:text-xl font-bold text-gray-800 mb-2 md:mb-4">Withdrawal Information</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b">
+                        <span class="text-gray-600 font-medium">Withdrawal Amount</span>
+                        <span class="text-lg md:text-2xl font-bold text-biolife-green">Rs {{ withdrawal.amount|floatformat:2 }}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 md:gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Request Date</p>
+                            <p class="text-gray-800 font-semibold">{{ withdrawal.created_at|date:"F d, Y" }}</p>
+                            <p class="text-xs text-gray-500">{{ withdrawal.created_at|date:"h:i A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Last Updated</p>
+                            <p class="text-gray-800 font-semibold">{{ withdrawal.updated_at|date:"F d, Y" }}</p>
+                            <p class="text-xs text-gray-500">{{ withdrawal.updated_at|date:"h:i A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-base md:text-xl font-bold text-gray-800 mb-2 md:mb-4">Payment Details</h2>
+                <div class="space-y-3">
+                    {% if user.esewa_number %}
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600 font-medium">Esewa Number</span>
+                        <span class="text-gray-800 font-semibold">{{ user.esewa_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.khalti_number %}
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600 font-medium">Khalti Number</span>
+                        <span class="text-gray-800 font-semibold">{{ user.khalti_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if user.qr_code %}
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600 font-medium block mb-2">QR Code</span>
+                        <img src="{{ user.qr_code.url }}" alt="QR Code" class="w-48 h-48 object-contain rounded border border-gray-300 bg-white">
+                    </div>
+                    {% endif %}
+                    {% if not user.esewa_number and not user.khalti_number and not user.qr_code %}
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-yellow-700 text-sm">
+                            <i data-feather="alert-circle" class="inline w-4 h-4 mr-1"></i>
+                            No payment details set. <a href="{% url 'website:account_payment' %}" class="underline font-semibold">Update payment settings</a>
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reject Reason (if rejected) -->
+            {% if withdrawal.status == 'rejected' and withdrawal.reject_reason %}
+            <div class="bg-red-50 border-l-4 border-red-400 rounded-lg p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i data-feather="x-circle" class="h-6 w-6 text-red-400"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-lg font-bold text-red-800 mb-2">Rejection Reason</h3>
+                        <p class="text-red-700 whitespace-pre-wrap">{{ withdrawal.reject_reason }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Admin Remarks (if exists) -->
+            {% if withdrawal.remarks %}
+            <div class="bg-blue-50 border-l-4 border-blue-400 rounded-lg p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i data-feather="info" class="h-6 w-6 text-blue-400"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-lg font-bold text-blue-800 mb-2">Admin Remarks</h3>
+                        <p class="text-blue-700 whitespace-pre-wrap">{{ withdrawal.remarks }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payment Proof (if approved and proof exists) -->
+            {% if withdrawal.status == 'approved' and withdrawal.screenshot_prove %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-base md:text-xl font-bold text-gray-800 mb-2 md:mb-4">Payment Proof</h2>
+                <p class="text-sm text-gray-600 mb-4">Admin has provided proof of payment:</p>
+                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <img src="{{ withdrawal.screenshot_prove.url }}" alt="Payment Proof" 
+                         class="max-w-full h-auto rounded-lg shadow-md cursor-pointer" 
+                         onclick="window.open('{{ withdrawal.screenshot_prove.url }}', '_blank')">
+                    <p class="text-xs text-gray-500 mt-2 text-center">Click image to view full size</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Withdrawal Summary -->
+        <div class="lg:col-span-1 w-full max-w-full overflow-hidden">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-20">
+                <h2 class="text-base md:text-xl font-bold text-gray-800 mb-2 md:mb-4">Withdrawal Summary</h2>
+                
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Withdrawal Amount</p>
+                        <p class="text-lg md:text-2xl font-bold text-biolife-green">Rs {{ withdrawal.amount|floatformat:2 }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3 pt-4 border-t">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Status</p>
+                        {% if withdrawal.status == 'approved' %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                            <i data-feather="check-circle" class="w-4 h-4 mr-1"></i>
+                            Approved
+                        </span>
+                        {% elif withdrawal.status == 'rejected' %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                            <i data-feather="x-circle" class="w-4 h-4 mr-1"></i>
+                            Rejected
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">
+                            <i data-feather="clock" class="w-4 h-4 mr-1"></i>
+                            Pending
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Payment Status</p>
+                        {% if withdrawal.payment_status == 'paid' %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                            <i data-feather="check" class="w-4 h-4 mr-1"></i>
+                            Paid
+                        </span>
+                        {% elif withdrawal.payment_status == 'failed' %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                            <i data-feather="x" class="w-4 h-4 mr-1"></i>
+                            Failed
+                        </span>
+                        {% elif withdrawal.payment_status == 'refunded' %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                            <i data-feather="refresh-cw" class="w-4 h-4 mr-1"></i>
+                            Refunded
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">
+                            <i data-feather="clock" class="w-4 h-4 mr-1"></i>
+                            Pending
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Request Date</p>
+                        <p class="text-gray-800 font-semibold">{{ withdrawal.created_at|date:"M d, Y" }}</p>
+                        <p class="text-xs text-gray-500">{{ withdrawal.created_at|date:"h:i A" }}</p>
+                    </div>
+                    
+                    {% if withdrawal.updated_at != withdrawal.created_at %}
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Last Updated</p>
+                        <p class="text-gray-800 font-semibold">{{ withdrawal.updated_at|date:"M d, Y" }}</p>
+                        <p class="text-xs text-gray-500">{{ withdrawal.updated_at|date:"h:i A" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-4 border-t mt-4">
+                    <a href="{% url 'website:account_withdrawals' %}"
+                        class="w-full block text-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold">
+                        Back to Withdrawals
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize feather icons
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Withdrawal Request</h1>
+        <a href="{% url 'myadmin:withdrawal_list' %}" class="btn btn-secondary ms-2">Back to List</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Request Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">User:</div>
+                        <div class="col-md-8">
+                            <a href="{% url 'myadmin:user_detail' withdrawal.user.pk %}">{{ withdrawal.user.email }}</a>
+                            <br>
+                            <small>{{ withdrawal.user.name }} (Current Balance: Rs {{ withdrawal.user.balance
+                                }})</small>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Amount Requested:</div>
+                        <div class="col-md-8">Rs {{ withdrawal.amount }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            {% if withdrawal.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif withdrawal.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            <div class="text-danger mt-1">Reason: {{ withdrawal.reject_reason }}</div>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Payment Status:</div>
+                        <div class="col-md-8">
+                            {% if withdrawal.payment_status == 'paid' %}
+                            <span class="badge bg-success">Paid</span>
+                            {% elif withdrawal.payment_status == 'failed' %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% elif withdrawal.payment_status == 'refunded' %}
+                            <span class="badge bg-info">Refunded</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h5 class="mb-3">User Payment Details</h5>
+                    {% if withdrawal.user.esewa_number %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Esewa Number:</div>
+                        <div class="col-md-8">{{ withdrawal.user.esewa_number }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if withdrawal.user.khalti_number %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Khalti Number:</div>
+                        <div class="col-md-8">{{ withdrawal.user.khalti_number }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if withdrawal.user.qr_code %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">QR Code:</div>
+                        <div class="col-md-8">
+                            <a href="{{ withdrawal.user.qr_code.url }}" target="_blank">
+                                <img src="{{ withdrawal.user.qr_code.url }}" class="img-fluid rounded border"
+                                    style="max-width: 200px" alt="QR Code">
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not withdrawal.user.esewa_number and not withdrawal.user.khalti_number and not withdrawal.user.qr_code %}
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <span class="text-muted">No payment details set by user</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if withdrawal.status == 'approved' %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Payment Proof</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Remarks:</div>
+                        <div class="col-md-8">{{ withdrawal.remarks|default:"-" }}</div>
+                    </div>
+                    {% if withdrawal.screenshot_prove %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Screenshot:</div>
+                        <div class="col-md-8">
+                            <a href="{{ withdrawal.screenshot_prove.url }}" target="_blank">
+                                <img src="{{ withdrawal.screenshot_prove.url }}" class="img-fluid rounded border"
+                                    style="max-width: 300px" alt="Proof">
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            {% if withdrawal.status == 'pending' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="d-grid gap-2">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Admin Remarks (Optional)</label>
+                            <textarea name="remarks" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Payment Proof Screenshot</label>
+                            <input type="file" name="screenshot_prove" class="form-control">
+                        </div>
+
+                        <button type="submit" name="action" value="approve" class="btn btn-success">
+                            <i class="align-middle" data-feather="check"></i> Approve & Mark Paid
+                        </button>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">Rejection Reason</label>
+                            <textarea name="reject_reason" class="form-control" rows="2"
+                                placeholder="Why is this rejected?"></textarea>
+                        </div>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger">
+                            <i class="align-middle" data-feather="x"></i> Reject & Refund
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

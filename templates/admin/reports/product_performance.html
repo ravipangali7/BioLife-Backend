@@ -1,0 +1,147 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Product Performance Report</h1>
+        <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select name="category" id="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary mt-4">Apply Filters</button>
+                        </div>
+                        <div class="col-md-12">
+                            <a href="{% url 'myadmin:product_performance_report' %}" class="btn btn-secondary">Clear</a>
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" class="btn btn-success">
+                                <i class="align-middle" data-feather="download"></i> Export CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Best Selling Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Total Revenue</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Orders</th>
+                                    <th>Average Price</th>
+                                    <th>Current Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in best_selling %}
+                                <tr>
+                                    <td><strong>{{ item.product__name }}</strong></td>
+                                    <td>{{ item.product__sku }}</td>
+                                    <td>{{ item.product__category__name|default:"-" }}</td>
+                                    <td>Rs {{ item.total_revenue|floatformat:2 }}</td>
+                                    <td>{{ item.total_quantity }}</td>
+                                    <td>{{ item.order_count }}</td>
+                                    <td>Rs {{ item.average_price|floatformat:2 }}</td>
+                                    <td>
+                                        {% if item.product__stock == 0 %}
+                                        <span class="badge bg-danger">{{ item.product__stock }}</span>
+                                        {% elif item.product__stock <= 10 %}
+                                        <span class="badge bg-warning">{{ item.product__stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success">{{ item.product__stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Products with No Sales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Current Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in no_sales_products %}
+                                <tr>
+                                    <td><strong>{{ product.name }}</strong></td>
+                                    <td>{{ product.sku }}</td>
+                                    <td>{{ product.category.name|default:"-" }}</td>
+                                    <td>Rs {{ product.regular_price|floatformat:2 }}</td>
+                                    <td>{{ product.stock }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">All products have sales</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

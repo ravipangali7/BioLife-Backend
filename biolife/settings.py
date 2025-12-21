@@ -70,6 +70,7 @@ TEMPLATES = [
                 'website.context_processors.wishlist_count',
                 'website.context_processors.categories',
                 'website.context_processors.cms_pages',
+                'website.context_processors.site_settings',
             ],
         },
     },
@@ -136,3 +137,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'
+
+# Login URL - redirect to website login page instead of Django admin login
+LOGIN_URL = '/login/'
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development - prints to console
+# For production, use SMTP:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'legendromeoravi@gmail.com'
+EMAIL_HOST_PASSWORD = 'zsdu twtj rngr pzlt'
+DEFAULT_FROM_EMAIL = 'noreply@biolife.com'

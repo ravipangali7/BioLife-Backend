@@ -3,7 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db import transaction
 from core.models import Order, OrderItem
+from core.stock_utils import add_stock
 from django.forms import modelform_factory
 from django import forms
 
@@ -85,7 +87,29 @@ def order_edit(request, pk):
     if request.method == 'POST':
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
+            old_order_status = order.order_status
+            old_payment_status = order.payment_status
+            
             order = form.save()
+            
+            # Restore stock if order is cancelled
+            if old_order_status != 'cancelled' and order.order_status == 'cancelled':
+                with transaction.atomic():
+                    order_items = OrderItem.objects.filter(order=order).select_related('product')
+                    for item in order_items:
+                        variant = item.product_varient if item.product_varient else None
+                        success, message = add_stock(
+                            product=item.product,
+                            quantity=item.quantity,
+                            variant_combination=variant,
+                            reason=f"Order #{order.id} cancelled - stock restored",
+                            user=request.user,
+                            reference=str(order.id),
+                            reference_type='order_cancellation'
+                        )
+                        if not success:
+                            messages.warning(request, f"Stock restoration warning for {item.product.name}: {message}")
+            
             messages.success(request, f'Order #{order.id} updated successfully.')
             return redirect('myadmin:order_detail', pk=order.pk)
     else:

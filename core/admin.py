@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from .models import (
     User, Address, Unit, Category, SubCategory, ChildCategory,
     Brand, Product, ProductImage, ProductReview, Wishlist, Banner, Coupon,
-    CMSPage, Order, OrderItem
+    CMSPage, Order, OrderItem, PasswordResetOTP
 )
 
 
@@ -22,6 +22,9 @@ class UserAdmin(admin.ModelAdmin):
         }),
         ('Social Media', {
             'fields': ('is_influencer', 'tiktok_link', 'facebook_link', 'instagram_link', 'youtube_link')
+        }),
+        ('Payment Information', {
+            'fields': ('qr_code', 'esewa_number', 'khalti_number')
         }),
         ('Status & Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
@@ -224,11 +227,23 @@ class CouponAdmin(admin.ModelAdmin):
 
 @admin.register(CMSPage)
 class CMSPageAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'is_active', 'in_footer', 'in_header', 'image_preview', 'created_at']
-    list_filter = ['is_active', 'in_footer', 'in_header', 'created_at']
+    list_display = ['title', 'slug', 'is_active', 'in_footer', 'footer_section', 'in_header', 'image_preview', 'created_at']
+    list_filter = ['is_active', 'in_footer', 'footer_section', 'in_header', 'created_at']
     search_fields = ['title', 'slug', 'content']
     readonly_fields = ['created_at', 'updated_at', 'image_preview']
     prepopulated_fields = {'slug': ('title',)}
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'slug', 'content', 'image', 'image_preview')
+        }),
+        ('Display Settings', {
+            'fields': ('is_active', 'in_header', 'in_footer', 'footer_section'),
+            'description': 'Select where this page should appear. Footer section is required if "In Footer" is checked.'
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
     
     def image_preview(self, obj):
         if obj.image:
@@ -272,3 +287,19 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
     search_fields = ['order__id', 'product__name', 'product__sku']
     readonly_fields = ['total', 'created_at']
+
+
+@admin.register(PasswordResetOTP)
+class PasswordResetOTPAdmin(admin.ModelAdmin):
+    list_display = ['email', 'otp_code', 'is_used', 'is_expired_display', 'expires_at', 'created_at']
+    list_filter = ['is_used', 'created_at', 'expires_at']
+    search_fields = ['email', 'otp_code', 'token']
+    readonly_fields = ['created_at', 'is_expired_display']
+    date_hierarchy = 'created_at'
+    
+    def is_expired_display(self, obj):
+        is_expired = obj.is_expired()
+        color = 'red' if is_expired else 'green'
+        text = 'Expired' if is_expired else 'Valid'
+        return format_html('<span style="color: {};">{}</span>', color, text)
+    is_expired_display.short_description = 'Status'

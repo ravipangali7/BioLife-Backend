@@ -1,0 +1,122 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Withdrawals</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Request List</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending
+                                    </option>
+                                    <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>
+                                        Approved</option>
+                                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>
+                                        Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{% url 'myadmin:withdrawal_list' %}" class="btn btn-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Payment Info</th>
+                                <th>Payment Status</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for widthdrawal in page_obj %}
+                            <tr>
+                                <td>{{ widthdrawal.user.email }}</td>
+                                <td>Rs {{ widthdrawal.amount }}</td>
+                                <td>
+                                    {% if widthdrawal.user.esewa_number %}Esewa: {{ widthdrawal.user.esewa_number }}<br>{% endif %}
+                                    {% if widthdrawal.user.khalti_number %}Khalti: {{ widthdrawal.user.khalti_number }}<br>{% endif %}
+                                    {% if widthdrawal.user.qr_code %}QR Code: ✓<br>{% endif %}
+                                    {% if not widthdrawal.user.esewa_number and not widthdrawal.user.khalti_number and not widthdrawal.user.qr_code %}
+                                    <span class="text-muted">No payment info</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if widthdrawal.payment_status == 'paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                    {% elif widthdrawal.payment_status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% elif widthdrawal.payment_status == 'refunded' %}
+                                    <span class="badge bg-info">Refunded</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ widthdrawal.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if widthdrawal.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% elif widthdrawal.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'myadmin:withdrawal_detail' widthdrawal.pk %}"
+                                        class="btn btn-sm btn-info">
+                                        <i class="align-middle" data-feather="eye"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No withdrawals found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

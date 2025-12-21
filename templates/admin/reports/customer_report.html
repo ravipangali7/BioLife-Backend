@@ -1,0 +1,106 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Customer Report</h1>
+        <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary mt-4">Apply Filters</button>
+                        </div>
+                        <div class="col-md-12">
+                            <a href="{% url 'myadmin:customer_report' %}" class="btn btn-secondary">Clear</a>
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" class="btn btn-success">
+                                <i class="align-middle" data-feather="download"></i> Export CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Customers</h5>
+                    <h2 class="mb-0">{{ total_customers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">New Customers</h5>
+                    <h2 class="mb-0 text-success">{{ new_customers }}</h2>
+                    <small class="text-muted">In selected period</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Customers by Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Email</th>
+                                    <th>Total Spent</th>
+                                    <th>Order Count</th>
+                                    <th>Average Order Value</th>
+                                    <th>Date Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                <tr>
+                                    <td><strong>{{ customer.user__name|default:"-" }}</strong></td>
+                                    <td>{{ customer.user__email }}</td>
+                                    <td>Rs {{ customer.total_spent|floatformat:2 }}</td>
+                                    <td>{{ customer.order_count }}</td>
+                                    <td>Rs {{ customer.average_order_value|floatformat:2 }}</td>
+                                    <td>{{ customer.user__date_joined|date:"M d, Y"|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

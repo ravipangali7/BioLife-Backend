@@ -8,6 +8,9 @@ from .views import (
     marketing_views,
     brand_views,
     unit_views,
+    system_views,
+    inventory_views,
+    report_views,
 )
 
 app_name = 'myadmin'
@@ -50,6 +53,15 @@ urlpatterns = [
     path('users/', user_views.user_list, name='user_list'),
     path('users/<int:pk>/', user_views.user_detail, name='user_detail'),
     path('users/<int:pk>/edit/', user_views.user_edit, name='user_edit'),
+    path('users/<int:pk>/balance/adjust/', user_views.user_balance_adjust, name='user_balance_adjust'),
+    path('users/<int:pk>/transactions/', user_views.user_transactions, name='user_transactions'),
+    path('users/<int:pk>/withdrawals/', user_views.user_withdrawals, name='user_withdrawals'),
+    path('users/<int:pk>/withdrawals/<int:withdrawal_pk>/action/', user_views.user_withdrawal_action, name='user_withdrawal_action'),
+    
+    # KYC Management
+    path('kyc/', user_views.kyc_list, name='kyc_list'),
+    path('users/<int:pk>/kyc/approve/', user_views.kyc_approve, name='kyc_approve'),
+    path('users/<int:pk>/kyc/reject/', user_views.kyc_reject, name='kyc_reject'),
     path('users/<int:user_pk>/addresses/', user_views.address_list, name='address_list'),
     path('addresses/<int:pk>/', user_views.address_detail, name='address_detail'),
     path('addresses/create/<int:user_pk>/', user_views.address_create, name='address_create'),
@@ -96,5 +108,39 @@ urlpatterns = [
     path('units/<int:pk>/', unit_views.unit_detail, name='unit_detail'),
     path('units/<int:pk>/edit/', unit_views.unit_edit, name='unit_edit'),
     path('units/<int:pk>/delete/', unit_views.unit_delete, name='unit_delete'),
+    
+    # System Settings
+    path('settings/', system_views.settings_view, name='settings_view'),
+    
+    # Tasks
+    path('tasks/', system_views.task_list, name='task_list'),
+    path('tasks/create/', system_views.task_create, name='task_create'),
+    path('tasks/<int:pk>/edit/', system_views.task_edit, name='task_edit'),
+    path('tasks/<int:pk>/delete/', system_views.task_delete, name='task_delete'),
+    
+    # User Tasks (Submissions)
+    path('submissions/', system_views.usertask_list, name='usertask_list'),
+    path('submissions/<int:pk>/', system_views.usertask_detail, name='usertask_detail'),
+    
+    # Withdrawals
+    path('withdrawals/', system_views.withdrawal_list, name='withdrawal_list'),
+    path('withdrawals/<int:pk>/', system_views.withdrawal_detail, name='withdrawal_detail'),
+    
+    # Transactions
+    path('transactions/', system_views.transaction_list, name='transaction_list'),
+    
+    # Inventory Management
+    path('inventory/', inventory_views.inventory_dashboard, name='inventory_dashboard'),
+    path('inventory/low-stock/', inventory_views.low_stock_list, name='low_stock_list'),
+    path('inventory/bulk-update/', inventory_views.bulk_stock_update, name='bulk_stock_update'),
+    
+    # Reports
+    path('reports/', report_views.reports_index, name='reports_index'),
+    path('reports/sales/', report_views.sales_report, name='sales_report'),
+    path('reports/inventory/', report_views.inventory_report, name='inventory_report'),
+    path('reports/product-performance/', report_views.product_performance_report, name='product_performance_report'),
+    path('reports/customer/', report_views.customer_report, name='customer_report'),
+    path('reports/finance/', report_views.finance_report, name='finance_report'),
+    path('reports/influencer/', report_views.influencer_report, name='influencer_report'),
 ]
 

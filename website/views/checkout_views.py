@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from core.models import Order, OrderItem, Address, Coupon
+from core.models import Order, OrderItem, Address, Coupon, Product
+from core.stock_utils import deduct_stock, validate_stock_availability
 from .cart_views import get_cart
 from decimal import Decimal
 
@@ -61,6 +62,24 @@ def checkout(request):
             else:
                 shipping_address = Address.objects.get(pk=shipping_address_id, user=request.user)
             
+            # Validate stock availability before creating order
+            stock_errors = []
+            for item in cart['items']:
+                try:
+                    product = Product.objects.get(pk=item['product_id'], is_active=True)
+                    variant = item.get('variant', '')
+                    is_available, available_qty, message = validate_stock_availability(
+                        product, item['quantity'], variant
+                    )
+                    if not is_available:
+                        stock_errors.append(f"{product.name}: {message}")
+                except Product.DoesNotExist:
+                    stock_errors.append(f"Product ID {item['product_id']}: Product not found")
+            
+            if stock_errors:
+                messages.error(request, 'Stock validation failed: ' + '; '.join(stock_errors))
+                return redirect('website:cart')
+            
             # Create order
             with transaction.atomic():
                 order = Order.objects.create(
@@ -75,20 +94,38 @@ def checkout(request):
                     order_status='pending',
                 )
                 
-                # Create order items
+                # Create order items and deduct stock
                 for item in cart['items']:
-                    from core.models import Product
                     try:
                         product = Product.objects.get(pk=item['product_id'], is_active=True)
                         price = Decimal(str(item['price']))
+                        variant = item.get('variant', '')
+                        
+                        # Create order item
                         OrderItem.objects.create(
                             order=order,
                             product=product,
-                            product_varient=item.get('variant', ''),
+                            product_varient=variant,
+                            earn_code=item.get('earn_code', ''),
                             quantity=item['quantity'],
                             price=price,
                             total=price * item['quantity'],
                         )
+                        
+                        # Deduct stock
+                        success, message = deduct_stock(
+                            product=product,
+                            quantity=item['quantity'],
+                            variant_combination=variant if variant else None,
+                            order_id=order.id,
+                            user=request.user,
+                            reason=f"Order #{order.id}"
+                        )
+                        
+                        if not success:
+                            # This shouldn't happen after validation, but handle it
+                            messages.warning(request, f"Stock deduction warning for {product.name}: {message}")
+                            
                     except Product.DoesNotExist:
                         continue
                 

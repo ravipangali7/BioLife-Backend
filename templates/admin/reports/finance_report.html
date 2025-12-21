@@ -1,0 +1,318 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Finance Report</h1>
+        <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="withdrawal_status" class="form-label">Withdrawal Status</label>
+                            <select name="withdrawal_status" id="withdrawal_status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="pending" {% if withdrawal_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="approved" {% if withdrawal_status == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="rejected" {% if withdrawal_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="transaction_type" class="form-label">Transaction Type</label>
+                            <select name="transaction_type" id="transaction_type" class="form-select">
+                                <option value="">All Types</option>
+                                <option value="in" {% if transaction_type == 'in' %}selected{% endif %}>In (Credit)</option>
+                                <option value="out" {% if transaction_type == 'out' %}selected{% endif %}>Out (Debit)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="transaction_status" class="form-label">Transaction Status</label>
+                            <select name="transaction_status" id="transaction_status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="success" {% if transaction_status == 'success' %}selected{% endif %}>Success</option>
+                                <option value="pending" {% if transaction_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="failed" {% if transaction_status == 'failed' %}selected{% endif %}>Failed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="group_by" class="form-label">Group By</label>
+                            <select name="group_by" id="group_by" class="form-select">
+                                <option value="day" {% if group_by == 'day' %}selected{% endif %}>Day</option>
+                                <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{% url 'myadmin:finance_report' %}" class="btn btn-secondary">Clear</a>
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" class="btn btn-success">
+                                <i class="align-middle" data-feather="download"></i> Export CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Withdrawals</h5>
+                    <h2 class="mb-0">Rs {{ total_withdrawals|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Transactions In</h5>
+                    <h2 class="mb-0 text-success">Rs {{ total_transactions_in|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Transactions Out</h5>
+                    <h2 class="mb-0 text-danger">Rs {{ total_transactions_out|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Net Balance Flow</h5>
+                    <h2 class="mb-0 {% if net_balance_flow >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        Rs {{ net_balance_flow|floatformat:2 }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">System Balance</h5>
+                    <h2 class="mb-0">Rs {{ system_balance|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Commissions</h5>
+                    <h2 class="mb-0">Rs {{ total_commissions|floatformat:2 }}</h2>
+                    <small class="text-muted">{{ commission_count }} transactions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Task Rewards</h5>
+                    <h2 class="mb-0">Rs {{ total_task_rewards|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Withdrawals by Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Count</th>
+                                    <th>Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in withdrawals_by_status %}
+                                <tr>
+                                    <td><strong>{{ item.status|title }}</strong></td>
+                                    <td>{{ item.count }}</td>
+                                    <td>Rs {{ item.total|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Transactions by Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Count</th>
+                                    <th>Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in transactions_by_type %}
+                                <tr>
+                                    <td><strong>{{ item.transaction_type|upper }}</strong></td>
+                                    <td>{{ item.count }}</td>
+                                    <td class="{% if item.transaction_type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                                        Rs {{ item.total|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Withdrawals</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Payment Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for withdrawal in withdrawals %}
+                                <tr>
+                                    <td>#{{ withdrawal.id }}</td>
+                                    <td>{{ withdrawal.user.email }}</td>
+                                    <td>Rs {{ withdrawal.amount|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if withdrawal.status == 'approved' %}success{% elif withdrawal.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ withdrawal.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if withdrawal.payment_status == 'paid' %}success{% elif withdrawal.payment_status == 'failed' %}danger{% else %}warning{% endif %}">
+                                            {{ withdrawal.get_payment_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ withdrawal.created_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No withdrawals found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Transactions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>#{{ transaction.id }}</td>
+                                    <td>{{ transaction.user.email }}</td>
+                                    <td class="{% if transaction.transaction_type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                                        Rs {{ transaction.amount|floatformat:2 }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transaction.transaction_type == 'in' %}success{% else %}danger{% endif %}">
+                                            {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transaction.status == 'success' %}success{% elif transaction.status == 'failed' %}danger{% else %}warning{% endif %}">
+                                            {{ transaction.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.remarks|default:"-"|truncatewords:5 }}</td>
+                                    <td>{{ transaction.created_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No transactions found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

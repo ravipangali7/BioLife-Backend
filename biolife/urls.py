@@ -18,6 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import render
+
+
+def custom_404_view(request, exception):
+    """Custom 404 handler that works in both DEBUG and production modes"""
+    return render(request, '404.html', status=404)
 
 
 urlpatterns = [
@@ -28,3 +34,6 @@ urlpatterns = [
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Custom 404 handler
+handler404 = custom_404_view

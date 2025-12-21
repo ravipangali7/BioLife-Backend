@@ -92,10 +92,10 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 antialiased">
+<body class="bg-gray-50 antialiased overflow-x-hidden">
     {% include 'site/layouts/header.html' %}
     
-    <main>
+    <main class="pb-20 md:pb-0 overflow-x-hidden max-w-full">
         {% if messages %}
             <div class="container mx-auto px-4 mt-4">
                 {% for message in messages %}
@@ -111,6 +111,60 @@
     </main>
     
     {% include 'site/layouts/footer.html' %}
+    
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <div class="flex items-center justify-around h-16">
+            <!-- Home -->
+            <a href="{% url 'website:home' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if request.resolver_match.url_name == 'home' %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">
+                <i data-feather="home" class="w-5 h-5"></i>
+                <span class="text-xs mt-1">Home</span>
+            </a>
+            
+            <!-- Categories -->
+            <a href="{% url 'website:category_list' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if 'category' in request.resolver_match.url_name %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">
+                <i data-feather="grid" class="w-5 h-5"></i>
+                <span class="text-xs mt-1">Categories</span>
+            </a>
+            
+            <!-- Cart -->
+            <a href="{% url 'website:cart' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if request.resolver_match.url_name == 'cart' %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">
+                <div class="relative">
+                    <i data-feather="shopping-cart" class="w-5 h-5"></i>
+                    {% if cart_count > 0 %}
+                        <span class="absolute -top-1 -right-1 bg-biolife-blue text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ cart_count }}</span>
+                    {% endif %}
+                </div>
+                <span class="text-xs mt-1">Cart</span>
+            </a>
+            
+            <!-- Wishlist (only if authenticated) -->
+            {% if user.is_authenticated %}
+            <a href="{% url 'website:wishlist' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if request.resolver_match.url_name == 'wishlist' %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">
+                <div class="relative">
+                    <i data-feather="heart" class="w-5 h-5"></i>
+                    {% if wishlist_count > 0 %}
+                        <span class="absolute -top-1 -right-1 bg-biolife-blue text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ wishlist_count }}</span>
+                    {% endif %}
+                </div>
+                <span class="text-xs mt-1">Wishlist</span>
+            </a>
+            {% endif %}
+            
+            <!-- Account/Login -->
+            {% if user.is_authenticated %}
+            <a href="{% url 'website:account_dashboard' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if 'account' in request.resolver_match.url_name %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">
+                <i data-feather="user" class="w-5 h-5"></i>
+                <span class="text-xs mt-1">Account</span>
+            </a>
+            {% else %}
+            <a href="{% url 'website:login' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if request.resolver_match.url_name == 'login' or request.resolver_match.url_name == 'register' %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">
+                <i data-feather="log-in" class="w-5 h-5"></i>
+                <span class="text-xs mt-1">Login</span>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
     
     <!-- Initialize Feather Icons -->
     <script>

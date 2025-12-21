@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from core.models import Banner, Category, Product, Brand
+from urllib.parse import unquote
+from core.models import Banner, Category, Product, Brand, CMSPage
 
 
 def home(request):
@@ -28,3 +29,21 @@ def home(request):
     }
     
     return render(request, 'site/home/index.html', context)
+
+
+def cms_page_view(request, slug):
+    """Display CMS page by slug"""
+    # Decode URL-encoded characters (e.g., %26 becomes &)
+    decoded_slug = unquote(slug)
+    
+    try:
+        page = CMSPage.objects.get(slug=decoded_slug, is_active=True)
+    except CMSPage.DoesNotExist:
+        # Render custom 404 page when CMS page is not found
+        return render(request, '404.html', status=404)
+    
+    context = {
+        'page': page,
+    }
+    
+    return render(request, 'site/cms/page.html', context)

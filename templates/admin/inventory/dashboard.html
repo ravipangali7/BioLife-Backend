@@ -1,0 +1,174 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <h1 class="h3 mb-3"><strong>Inventory</strong> Dashboard</h1>
+
+    <div class="row">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Total Products</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-primary">
+                                <i class="align-middle" data-feather="package"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h1 class="mt-1 mb-3">{{ total_products }}</h1>
+                    <div class="mb-0">
+                        <span class="text-muted">{{ active_products }} Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">In Stock</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-success">
+                                <i class="align-middle" data-feather="check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h1 class="mt-1 mb-3">{{ products_with_stock }}</h1>
+                    <div class="mb-0">
+                        <span class="text-muted">Products with stock</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Low Stock</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-warning">
+                                <i class="align-middle" data-feather="alert-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h1 class="mt-1 mb-3">{{ low_stock_count }}</h1>
+                    <div class="mb-0">
+                        <a href="{% url 'myadmin:low_stock_list' %}" class="text-warning">View all</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Out of Stock</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-danger">
+                                <i class="align-middle" data-feather="x-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <h1 class="mt-1 mb-3">{{ out_of_stock }}</h1>
+                    <div class="mb-0">
+                        <span class="text-muted">Products out of stock</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Low Stock Products</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_stock_products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Current Stock</th>
+                                    <th>Threshold</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in low_stock_products %}
+                                <tr>
+                                    <td><strong>{{ product.name }}</strong></td>
+                                    <td>{{ product.sku }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                        <span class="badge bg-danger">{{ product.stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ product.stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ low_stock_threshold }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Low Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'myadmin:product_edit' product.id %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i> Edit Product
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'myadmin:low_stock_list' %}" class="btn btn-sm btn-outline-primary mt-2">View All Low Stock Products</a>
+                    {% else %}
+                    <p class="text-muted">No low stock products</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'myadmin:product_list' %}" class="btn btn-primary me-2">
+                        <i class="align-middle" data-feather="package"></i> Manage Products
+                    </a>
+                    <a href="{% url 'myadmin:low_stock_list' %}" class="btn btn-warning me-2">
+                        <i class="align-middle" data-feather="alert-triangle"></i> Low Stock Products
+                    </a>
+                    <a href="{% url 'myadmin:bulk_stock_update' %}" class="btn btn-secondary">
+                        <i class="align-middle" data-feather="download"></i> Bulk Operations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

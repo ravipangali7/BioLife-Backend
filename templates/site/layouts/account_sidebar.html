@@ -1,0 +1,143 @@
+{% with route=request.resolver_match.url_name %}
+<nav class="space-y-1.5 md:space-y-2">
+    <!-- Dashboard -->
+    <a href="{% url 'website:account_dashboard' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if route == 'account_dashboard' %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="layout" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+        Dashboard
+    </a>
+
+    <!-- Profile -->
+    <a href="{% url 'website:account_profile' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if route == 'account_profile' %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="user" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+        Profile
+    </a>
+
+    <!-- Orders -->
+    <a href="{% url 'website:account_orders' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if 'orders' in route or 'order_detail' in route %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="package" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+        Orders
+    </a>
+
+    <!-- Wishlist -->
+    <a href="{% url 'website:wishlist' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if route == 'wishlist' %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="heart" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+        Wishlist
+    </a>
+
+    <!-- Earn Rewards -->
+    {% if user.is_influencer and user.kyc_status == 'approved' %}
+    <a href="{% url 'website:task_list' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if 'task_' in route %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="award" class="w-5 h-5 mr-3"></i>
+        Earn Rewards
+    </a>
+    {% elif user.is_influencer and user.kyc_status != 'approved' %}
+    <div class="relative group">
+        <a href="{% url 'website:account_kyc' %}"
+            class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-pointer">
+            <i data-feather="award" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+            Earn Rewards
+            <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
+        </a>
+        <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            {% if user.kyc_status == 'pending' %}KYC verification pending{% elif user.kyc_status == 'rejected' %}KYC rejected - resubmit required{% else %}Complete KYC verification to access Earn Rewards{% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="relative group">
+        <div class="flex items-center px-4 py-2.5 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+            <i data-feather="award" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+            Earn Rewards
+            <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
+        </div>
+        <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            This feature is only available for verified influencers
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- My Wallet -->
+    {% if user.is_influencer and user.kyc_status == 'approved' %}
+    <a href="{% url 'website:wallet' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if route == 'wallet' %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="dollar-sign" class="w-5 h-5 mr-3"></i>
+        My Wallet
+    </a>
+    {% elif user.is_influencer and user.kyc_status != 'approved' %}
+    <div class="relative group">
+        <a href="{% url 'website:account_kyc' %}"
+            class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-pointer">
+            <i data-feather="dollar-sign" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+            My Wallet
+            <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
+        </a>
+        <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            {% if user.kyc_status == 'pending' %}KYC verification pending{% elif user.kyc_status == 'rejected' %}KYC rejected - resubmit required{% else %}Complete KYC verification to access Wallet{% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="relative group">
+        <div class="flex items-center px-4 py-2.5 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+            <i data-feather="dollar-sign" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+            My Wallet
+            <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
+        </div>
+        <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            This feature is only available for verified influencers
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Payment Settings -->
+    {% if user.is_influencer %}
+    <a href="{% url 'website:account_payment' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if route == 'account_payment' %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="credit-card" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+        Payment Settings
+    </a>
+    {% endif %}
+
+    <!-- Withdrawals -->
+    {% if user.is_influencer and user.kyc_status == 'approved' %}
+    <a href="{% url 'website:account_withdrawals' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if route == 'account_withdrawals' %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="arrow-down-circle" class="w-5 h-5 mr-3"></i>
+        Withdrawals
+    </a>
+    {% elif user.is_influencer and user.kyc_status != 'approved' %}
+    <div class="relative group">
+        <a href="{% url 'website:account_kyc' %}"
+            class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-pointer">
+            <i data-feather="arrow-down-circle" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+            Withdrawals
+            <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
+        </a>
+        <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            {% if user.kyc_status == 'pending' %}KYC verification pending{% elif user.kyc_status == 'rejected' %}KYC rejected - resubmit required{% else %}Complete KYC verification to access Withdrawals{% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="relative group">
+        <div class="flex items-center px-4 py-2.5 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed">
+            <i data-feather="arrow-down-circle" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+            Withdrawals
+            <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
+        </div>
+        <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            This feature is only available for verified influencers
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Addresses -->
+    <a href="{% url 'website:account_addresses' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if 'address' in route %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+        <i data-feather="map-pin" class="w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3"></i>
+        Addresses
+    </a>
+</nav>
+{% endwith %}

@@ -1,0 +1,115 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Transactions - {{ user.email }}</h1>
+        <a href="{% url 'myadmin:user_detail' user.pk %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to User
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Transaction History</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <select name="type" class="form-select">
+                                    <option value="">All Types</option>
+                                    <option value="in" {% if type_filter == 'in' %}selected{% endif %}>Credit (In)</option>
+                                    <option value="out" {% if type_filter == 'out' %}selected{% endif %}>Debit (Out)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="success" {% if status_filter == 'success' %}selected{% endif %}>Success</option>
+                                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="{% url 'myadmin:user_transactions' user.pk %}" class="btn btn-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Remarks</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr class="{% if transaction.transaction_type == 'in' %}table-success{% else %}table-danger{% endif %}">
+                                    <td>#{{ transaction.id }}</td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'in' %}
+                                        <span class="badge bg-success">IN (Credit)</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">OUT (Debit)</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold {% if transaction.transaction_type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if transaction.transaction_type == 'in' %}+{% else %}-{% endif %}Rs {{ transaction.amount|floatformat:2 }}
+                                    </td>
+                                    <td>{{ transaction.remarks|default:"-" }}</td>
+                                    <td>{{ transaction.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if transaction.status == 'success' %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% elif transaction.status == 'failed' %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No transactions found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ page_obj.previous_page_number }}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a></li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

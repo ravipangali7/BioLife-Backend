@@ -1,0 +1,240 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}Task Details - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        {% include 'site/layouts/account_sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            <a href="{% url 'website:task_list' %}"
+                class="inline-flex items-center text-gray-600 hover:text-biolife-green mb-6 transition-colors">
+                <i data-feather="arrow-left" class="w-4 h-4 mr-2"></i> Back to Tasks
+            </a>
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-8">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-2">
+                                {{ task.get_social_media_display }}
+                            </span>
+                            <h1 class="text-3xl font-bold text-gray-900">{{ task.title }}</h1>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-3xl font-bold text-biolife-green">Rs {{ task.amount }}</span>
+                            <span class="text-sm text-gray-500">Reward</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                        <h3 class="font-semibold text-gray-900 mb-2">Goal / Instructions:</h3>
+                        <p class="text-gray-700">{{ task.target }}</p>
+                    </div>
+
+                    {% if submission %}
+                    <div
+                        class="mb-8 p-4 rounded-lg {% if submission.status == 'approved' %}bg-green-100{% elif submission.status == 'rejected' %}bg-red-100{% else %}bg-yellow-100{% endif %}">
+                        <h3 class="font-bold mb-1">Status: {{ submission.get_status_display }}</h3>
+                        {% if submission.status == 'rejected' %}
+                        <p class="text-red-700">{{ submission.reject_reason }}</p>
+                        <p class="text-sm mt-2 text-red-600">You can update your submission below.</p>
+                        {% elif submission.status == 'approved' %}
+                        <p class="text-green-700">Reward has been added to your wallet.</p>
+                        {% else %}
+                        <p class="text-yellow-700">Your submission is being reviewed by our team.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if not submission or submission.status == 'rejected' %}
+                    <form method="post" enctype="multipart/form-data" class="space-y-8">
+                        {% csrf_token %}
+
+                        <!-- Global Notes -->
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <label class="block text-gray-700 font-bold mb-2">Overall Submission Notes</label>
+                            <textarea name="description" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
+                                placeholder="General details about your submission..."></textarea>
+                        </div>
+
+                        <!-- Image Proofs Section -->
+                        <div>
+                            <div class="flex justify-between items-end mb-4">
+                                <div>
+                                    <label class="block text-gray-700 font-bold text-lg">Proof Images</label>
+                                    <p class="text-sm text-gray-500">Upload screenshots with optional details.</p>
+                                </div>
+                                <button type="button" id="add-image-btn"
+                                    class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center">
+                                    <i data-feather="image" class="w-4 h-4 mr-2"></i> Add Image
+                                </button>
+                            </div>
+
+                            <div id="image-proofs-container" class="space-y-4">
+                                <!-- Initial Image Row -->
+                                <div
+                                    class="proof-item bg-white border border-gray-200 p-4 rounded-lg shadow-sm relative group">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Screenshot
+                                                File</label>
+                                            <input type="file" name="proof_images" required
+                                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-biolife-green file:text-white hover:file:bg-biolife-green-dark">
+                                        </div>
+                                        <div>
+                                            <input type="text" name="proof_image_titles"
+                                                placeholder="Image Title (Optional)"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                                        </div>
+                                        <div>
+                                            <input type="text" name="proof_image_descriptions"
+                                                placeholder="Description (Optional)"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Link Proofs Section -->
+                        <div>
+                            <div class="flex justify-between items-end mb-4">
+                                <div>
+                                    <label class="block text-gray-700 font-bold text-lg">Proof Links</label>
+                                    <p class="text-sm text-gray-500">Add URLs with optional details.</p>
+                                </div>
+                                <button type="button" id="add-link-btn"
+                                    class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center">
+                                    <i data-feather="link" class="w-4 h-4 mr-2"></i> Add Link
+                                </button>
+                            </div>
+
+                            <div id="link-proofs-container" class="space-y-4">
+                                <!-- Initial Link Row -->
+                                <div
+                                    class="proof-item bg-white border border-gray-200 p-4 rounded-lg shadow-sm relative group">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                                            <input type="url" name="proof_links" placeholder="https://..."
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green">
+                                        </div>
+                                        <div>
+                                            <input type="text" name="proof_link_titles"
+                                                placeholder="Link Title (Optional)"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                                        </div>
+                                        <div>
+                                            <input type="text" name="proof_link_descriptions"
+                                                placeholder="Description (Optional)"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                                        </div>
+                                    </div>
+                                    <!-- Remove button for dynamically added items only -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-biolife-green text-white py-4 rounded-lg hover:bg-biolife-green-dark transition-colors font-bold text-lg shadow-lg transform hover:-translate-y-0.5">
+                            Submit Task Proof
+                        </button>
+                    </form>
+
+                    <script>
+                        // Templates for adding new rows
+                        const imageRowTemplate = `
+        <div class="proof-item bg-white border border-gray-200 p-4 rounded-lg shadow-sm relative group animate-fade-in-down">
+            <button type="button" onclick="this.closest('.proof-item').remove()" class="absolute top-2 right-2 text-gray-400 hover:text-red-500">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Screenshot File</label>
+                    <input type="file" name="proof_images" required
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-biolife-green file:text-white hover:file:bg-biolife-green-dark">
+                </div>
+                <div>
+                    <input type="text" name="proof_image_titles" placeholder="Image Title (Optional)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                </div>
+                <div>
+                    <input type="text" name="proof_image_descriptions" placeholder="Description (Optional)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                </div>
+            </div>
+        </div>
+    `;
+
+                        const linkRowTemplate = `
+        <div class="proof-item bg-white border border-gray-200 p-4 rounded-lg shadow-sm relative group animate-fade-in-down">
+            <button type="button" onclick="this.closest('.proof-item').remove()" class="absolute top-2 right-2 text-gray-400 hover:text-red-500">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                    <input type="url" name="proof_links" required placeholder="https://..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green">
+                </div>
+                <div>
+                    <input type="text" name="proof_link_titles" placeholder="Link Title (Optional)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                </div>
+                <div>
+                    <input type="text" name="proof_link_descriptions" placeholder="Description (Optional)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-biolife-green text-sm">
+                </div>
+            </div>
+        </div>
+    `;
+
+                        document.getElementById('add-image-btn').addEventListener('click', function () {
+                            const container = document.getElementById('image-proofs-container');
+                            const div = document.createElement('div');
+                            div.innerHTML = imageRowTemplate; // Wrapper
+                            container.appendChild(div.firstElementChild);
+                            feather.replace();
+                        });
+
+                        document.getElementById('add-link-btn').addEventListener('click', function () {
+                            const container = document.getElementById('link-proofs-container');
+                            const div = document.createElement('div');
+                            div.innerHTML = linkRowTemplate;
+                            container.appendChild(div.firstElementChild);
+                            feather.replace();
+                        });
+                    </script>
+
+                    <style>
+                        @keyframes fade-in-down {
+                            0% {
+                                opacity: 0;
+                                transform: translateY(-10px);
+                            }
+
+                            100% {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+
+                        .animate-fade-in-down {
+                            animation: fade-in-down 0.3s ease-out;
+                        }
+                    </style>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

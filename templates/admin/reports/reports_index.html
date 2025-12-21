@@ -1,0 +1,136 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <h1 class="h3 mb-3"><strong>Reports</strong> Dashboard</h1>
+
+    <div class="row">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Sales Reports</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-primary">
+                                <i class="align-middle" data-feather="dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">View sales by date, product, category, and customer</p>
+                    <a href="{% url 'myadmin:sales_report' %}" class="btn btn-primary">
+                        <i class="align-middle" data-feather="arrow-right"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Inventory Reports</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-info">
+                                <i class="align-middle" data-feather="package"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">View stock levels, movements, and inventory value</p>
+                    <a href="{% url 'myadmin:inventory_report' %}" class="btn btn-info">
+                        <i class="align-middle" data-feather="arrow-right"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Product Performance</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-success">
+                                <i class="align-middle" data-feather="trending-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">Analyze product sales performance and trends</p>
+                    <a href="{% url 'myadmin:product_performance_report' %}" class="btn btn-success">
+                        <i class="align-middle" data-feather="arrow-right"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Customer Reports</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-warning">
+                                <i class="align-middle" data-feather="users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">View customer analytics and lifetime value</p>
+                    <a href="{% url 'myadmin:customer_report' %}" class="btn btn-warning">
+                        <i class="align-middle" data-feather="arrow-right"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Finance Reports</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-danger">
+                                <i class="align-middle" data-feather="credit-card"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">Track withdrawals, transactions, system balance, and commissions</p>
+                    <a href="{% url 'myadmin:finance_report' %}" class="btn btn-danger">
+                        <i class="align-middle" data-feather="arrow-right"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col mt-0">
+                            <h5 class="card-title">Influencer Reports</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stat text-info">
+                                <i class="align-middle" data-feather="star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">View influencer performance, task submissions, and earnings</p>
+                    <a href="{% url 'myadmin:influencer_report' %}" class="btn btn-info">
+                        <i class="align-middle" data-feather="arrow-right"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

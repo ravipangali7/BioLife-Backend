@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5" />
     <meta name="author" content="AdminKit" />
-    <meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web" />
+    <meta name="keywords"
+        content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web" />
 
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link rel="shortcut icon" href="img/icons/icon-48x48.png" />
@@ -14,72 +16,143 @@
     <title>BIO LIFE</title>
 
     <link href="/static/core/css/app.css" rel="stylesheet" />
+    <link href="/static/core/css/modals.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
-  </head>
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .text-white * {
+            color: white !important;
+        }
 
-  <body>
+        .alert {
+            transition: all 0.3s ease-in-out;
+            animation: slideInDown 0.4s ease-out;
+        }
+        
+        .alert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert .btn-close:hover {
+            opacity: 1 !important;
+            transform: scale(1.1);
+            transition: all 0.2s ease;
+        }
+        
+        .alert i[data-feather] {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+
+<body>
     <div class="wrapper">
-      {% include 'admin/layouts/sidebar.html' %}
+        {% include 'admin/layouts/sidebar.html' %}
 
-      <div class="main">
-        {% include 'admin/layouts/header.html' %}
+        <div class="main">
+            {% include 'admin/layouts/header.html' %}
 
-        <main class="content">
-          {% block content %}{% endblock %}
-        </main>
+            <main class="content">
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm border-0 rounded-3 d-flex align-items-center gap-3 p-3 mb-3"
+                        role="alert" style="{% if message.tags == 'error' %}background: linear-gradient(135deg, #fee 0%, #fdd 100%); border-left: 4px solid #dc3545 !important;{% elif message.tags == 'success' %}background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left: 4px solid #28a745 !important;{% elif message.tags == 'warning' %}background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 4px solid #ffc107 !important;{% else %}background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); border-left: 4px solid #17a2b8 !important;{% endif %}">
+                        <div class="flex-shrink-0">
+                            <i data-feather="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" 
+                               class="align-middle" 
+                               style="width: 24px; height: 24px; stroke-width: 2.5; {% if message.tags == 'error' %}color: #dc3545;{% elif message.tags == 'success' %}color: #28a745;{% elif message.tags == 'warning' %}color: #856404;{% else %}color: #17a2b8;{% endif %}"></i>
+                        </div>
+                        <div class="flex-grow-1 fw-medium" style="{% if message.tags == 'error' %}color: #721c24;{% elif message.tags == 'success' %}color: #155724;{% elif message.tags == 'warning' %}color: #856404;{% else %}color: #0c5460;{% endif %}">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="alert" aria-label="Close" style="opacity: 0.6;"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </main>
 
-        {% include 'admin/layouts/footer.html' %}
-      </div>
+            {% include 'admin/layouts/footer.html' %}
+        </div>
     </div>
 
     <!-- Feather Icons Library -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
-    // Initialize Feather icons after library loads
-    function initializeFeatherIcons() {
-        if (typeof feather === 'undefined') {
-            return;
-        }
-        
-        try {
-            // Use feather.replace() with options
-            feather.replace({
-                class: 'align-middle',
-                'stroke-width': 2
-            });
-        } catch(e) {
-            // Fallback: individual replacement if batch fails
-            const featherElements = document.querySelectorAll('[data-feather]');
-            featherElements.forEach((el) => {
-                try {
-                    const iconName = el.getAttribute('data-feather');
-                    if (iconName && feather.icons[iconName]) {
-                        el.innerHTML = feather.icons[iconName].toSvg({
-                            class: 'align-middle',
-                            'stroke-width': 2
-                        });
+        // Initialize Feather icons after library loads
+        function initializeFeatherIcons() {
+            if (typeof feather === 'undefined') {
+                return;
+            }
+
+            try {
+                // Use feather.replace() with options
+                feather.replace({
+                    class: 'align-middle',
+                    'stroke-width': 2
+                });
+            } catch (e) {
+                // Fallback: individual replacement if batch fails
+                const featherElements = document.querySelectorAll('[data-feather]');
+                featherElements.forEach((el) => {
+                    try {
+                        const iconName = el.getAttribute('data-feather');
+                        if (iconName && feather.icons[iconName]) {
+                            el.innerHTML = feather.icons[iconName].toSvg({
+                                class: 'align-middle',
+                                'stroke-width': 2
+                            });
+                        }
+                    } catch (err) {
+                        console.warn('Failed to render icon:', err);
                     }
-                } catch(err) {
-                    console.warn('Failed to render icon:', err);
-                }
-            });
+                });
+            }
         }
-    }
-    
-    // Wait for Feather library to load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
+
+        // Wait for Feather library to load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function () {
+                setTimeout(initializeFeatherIcons, 100);
+            });
+        } else {
             setTimeout(initializeFeatherIcons, 100);
+        }
+
+        // Also try on window load as fallback
+        window.addEventListener('load', function () {
+            setTimeout(initializeFeatherIcons, 50);
         });
-    } else {
-        setTimeout(initializeFeatherIcons, 100);
-    }
-    
-    // Also try on window load as fallback
-    window.addEventListener('load', function() {
-        setTimeout(initializeFeatherIcons, 50);
-    });
     </script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/static/core/js/app.js"></script>
-  </body>
+    <script src="/static/core/js/modals.js"></script>
+    <script src="/static/core/js/admin-confirm.js"></script>
+</body>
+
 </html>

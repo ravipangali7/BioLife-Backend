@@ -141,10 +141,20 @@
                 </button>
             </form>
             
+            <!-- Earn from Product Button (for influencers) -->
+            {% if can_earn and user_earn_code %}
+            <div class="mb-6">
+                <button type="button" onclick="openEarnDialog()" class="w-full bg-biolife-blue text-white py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-semibold text-lg shadow-md hover:shadow-lg">
+                    <i data-feather="dollar-sign" class="w-5 h-5 inline mr-2"></i>
+                    Earn from Product
+                </button>
+            </div>
+            {% endif %}
+            
             <!-- Wishlist Button -->
             {% if user.is_authenticated %}
             <div class="mb-6">
-                {% if user.wishlist_items.filter(product=product).exists %}
+                {% if is_in_wishlist %}
                 <form method="post" action="{% url 'website:remove_from_wishlist' product.id %}">
                     {% csrf_token %}
                     <button type="submit" class="w-full bg-red-50 text-red-600 border-2 border-red-200 py-3 rounded-lg hover:bg-red-100 transition-all duration-200 font-semibold text-lg">
@@ -161,6 +171,16 @@
                     </button>
                 </form>
                 {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Affiliate Link Indicator -->
+            {% if is_affiliate_link and affiliate_user %}
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-blue-800">
+                    <i data-feather="info" class="w-4 h-4 inline mr-2"></i>
+                    You're viewing this product through an affiliate link from {{ affiliate_user.name }}.
+                </p>
             </div>
             {% endif %}
             
@@ -584,5 +604,152 @@
             feather.replace();
         }
     });
+    
+    // Earn from Product Dialog
+    {% if can_earn and user_earn_code %}
+    function openEarnDialog() {
+        document.getElementById('earn-dialog').classList.remove('hidden');
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+    
+    function closeEarnDialog() {
+        document.getElementById('earn-dialog').classList.add('hidden');
+    }
+    
+    function copyAffiliateLink() {
+        const linkInput = document.getElementById('affiliate-link-input');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999); // For mobile devices
+        document.execCommand('copy');
+        
+        const copyBtn = document.getElementById('copy-link-btn');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i data-feather="check" class="w-4 h-4 inline mr-2"></i>Copied!';
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }, 2000);
+    }
+    {% endif %}
 </script>
+
+<!-- Earn from Product Modal Dialog -->
+{% if can_earn and user_earn_code %}
+<div id="earn-dialog" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Earn from Product</h2>
+                <button onclick="closeEarnDialog()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <!-- Commission Info -->
+            <div class="mb-6 p-4 bg-biolife-green-light rounded-lg border border-biolife-green">
+                <p class="text-gray-800 font-semibold mb-2">
+                    <i data-feather="dollar-sign" class="w-5 h-5 inline mr-2"></i>
+                    Commission Rate
+                </p>
+                <p class="text-gray-700">
+                    You earn <strong>{{ commission_percent }}%</strong> commission on each sale made through your affiliate link.
+                </p>
+            </div>
+            
+            <!-- Steps -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">How to Earn:</h3>
+                <ol class="space-y-4">
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-8 h-8 bg-biolife-green text-white rounded-full flex items-center justify-center font-bold mr-3">1</span>
+                        <div>
+                            <p class="font-semibold text-gray-800">Copy Your Affiliate Link</p>
+                            <p class="text-gray-600 text-sm">Copy the link below to share this product.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-8 h-8 bg-biolife-green text-white rounded-full flex items-center justify-center font-bold mr-3">2</span>
+                        <div>
+                            <p class="font-semibold text-gray-800">Share on Social Media</p>
+                            <p class="text-gray-600 text-sm">Share the link on Facebook, Instagram, TikTok, YouTube, or any platform where your audience can see it.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="flex-shrink-0 w-8 h-8 bg-biolife-green text-white rounded-full flex items-center justify-center font-bold mr-3">3</span>
+                        <div>
+                            <p class="font-semibold text-gray-800">Earn Commission</p>
+                            <p class="text-gray-600 text-sm">When someone purchases through your link and the order is delivered and paid, you'll earn {{ commission_percent }}% commission automatically added to your balance.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+            
+            <!-- Affiliate Link -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">Your Affiliate Link:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="affiliate-link-input" 
+                           value="http://127.0.0.1:8000{% url 'website:product_detail_affiliate' product.id user_earn_code %}" 
+                           readonly
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                    <button onclick="copyAffiliateLink()" id="copy-link-btn" 
+                            class="px-6 py-2 bg-biolife-green text-white rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold">
+                        <i data-feather="copy" class="w-4 h-4 inline mr-2"></i>
+                        Copy
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Social Media Sharing Instructions -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 class="font-semibold text-gray-800 mb-3">Share on Social Media:</h4>
+                <div class="space-y-2 text-sm text-gray-700">
+                    <p><strong>Facebook:</strong> Post the link in your feed, groups, or stories with a description of the product.</p>
+                    <p><strong>Instagram:</strong> Add the link in your bio or share it in your stories with a swipe-up link.</p>
+                    <p><strong>TikTok:</strong> Include the link in your video description or bio.</p>
+                    <p><strong>YouTube:</strong> Add the link in your video description or as a pinned comment.</p>
+                </div>
+            </div>
+            
+            <!-- Earnings Calculation Example -->
+            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p class="text-sm text-gray-700">
+                    <strong>Example:</strong> If someone purchases this product for Rs {{ product.get_final_price|floatformat:2 }}, 
+                    you'll earn approximately Rs <span id="commission-amount">0.00</span> 
+                    ({{ commission_percent }}% commission).
+                </p>
+            </div>
+            <script>
+                // Calculate commission amount for display
+                (function() {
+                    const productPrice = {{ product.get_final_price }};
+                    const commissionPercent = {{ commission_percent|default:0 }};
+                    const commissionAmount = (productPrice * commissionPercent / 100).toFixed(2);
+                    const commissionElement = document.getElementById('commission-amount');
+                    if (commissionElement) {
+                        commissionElement.textContent = commissionAmount;
+                    }
+                })();
+            </script>
+            
+            <!-- Close Button -->
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeEarnDialog()" 
+                        class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

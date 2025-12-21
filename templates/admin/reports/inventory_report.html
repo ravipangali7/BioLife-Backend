@@ -1,0 +1,170 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Inventory Report</h1>
+        <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="search" class="form-control" placeholder="Search products..." value="{{ search_query }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="stock_status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="in_stock" {% if stock_status == 'in_stock' %}selected{% endif %}>In Stock</option>
+                                <option value="low_stock" {% if stock_status == 'low_stock' %}selected{% endif %}>Low Stock</option>
+                                <option value="out_of_stock" {% if stock_status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </div>
+                        <div class="col-md-12">
+                            <a href="{% url 'myadmin:inventory_report' %}" class="btn btn-secondary">Clear</a>
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" class="btn btn-success">
+                                <i class="align-middle" data-feather="download"></i> Export CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Stock Value</h5>
+                    <h2 class="mb-0">Rs {{ total_stock_value|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Stock Quantity</h5>
+                    <h2 class="mb-0">{{ total_stock_quantity }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Low Stock Products</h5>
+                    <h2 class="mb-0 text-warning">{{ low_stock_products }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Out of Stock</h5>
+                    <h2 class="mb-0 text-danger">{{ out_of_stock_products }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Inventory Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Low Stock Threshold</th>
+                                    <th>Price</th>
+                                    <th>Stock Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>{{ product.sku }}</td>
+                                    <td><strong>{{ product.name }}</strong></td>
+                                    <td>{{ product.category.name|default:"-" }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                        <span class="badge bg-danger">{{ product.stock }}</span>
+                                        {% elif product.is_low_stock %}
+                                        <span class="badge bg-warning">{{ product.stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-success">{{ product.stock }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ low_stock_threshold }}</td>
+                                    <td>Rs {{ product.regular_price|floatformat:2 }}</td>
+                                    <td>Rs {{ product.stock_value|floatformat:2 }}</td>
+                                    <td>
+                                        {% if product.stock == 0 %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                        {% elif product.is_low_stock %}
+                                        <span class="badge bg-warning">Low Stock</span>
+                                        {% else %}
+                                        <span class="badge bg-success">In Stock</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No products found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-3">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

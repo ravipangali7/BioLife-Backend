@@ -42,6 +42,7 @@
                     <p><strong>Phone:</strong> {{ user.phone|default:"-" }}</p>
                     <p><strong>Date of Birth:</strong> {{ user.date_of_birth|default:"-" }}</p>
                     <p><strong>Points:</strong> {{ user.points }}</p>
+                    <p><strong>Balance:</strong> <span class="fw-bold text-success">Rs {{ user.balance|floatformat:2 }}</span></p>
                     <p><strong>Status:</strong>
                         {% if user.is_active %}
                         <span class="badge bg-success">Active</span>
@@ -65,6 +66,124 @@
                     {% endif %}
                 </div>
             </div>
+
+            <!-- KYC Verification Section -->
+            {% if user.is_influencer %}
+            <div class="card mt-3 {% if user.kyc_status == 'approved' %}border-success{% elif user.kyc_status == 'rejected' %}border-danger{% elif user.kyc_status == 'pending' %}border-warning{% else %}border-info{% endif %}">
+                <div class="card-header {% if user.kyc_status == 'approved' %}bg-success text-white{% elif user.kyc_status == 'rejected' %}bg-danger text-white{% elif user.kyc_status == 'pending' %}bg-warning text-white{% else %}bg-info text-white{% endif %}">
+                    <h5 class="card-title mb-0">
+                        <i class="align-middle" data-feather="shield"></i> KYC Verification
+                        {% if user.kyc_status == 'approved' %}
+                        <span class="badge bg-light text-success ms-2">Approved</span>
+                        {% elif user.kyc_status == 'rejected' %}
+                        <span class="badge bg-light text-danger ms-2">Rejected</span>
+                        {% elif user.kyc_status == 'pending' %}
+                        <span class="badge bg-light text-warning ms-2">Pending</span>
+                        {% else %}
+                        <span class="badge bg-light text-info ms-2">Not Submitted</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user.kyc_status %}
+                    <div class="mb-3">
+                        <p><strong>Status:</strong> 
+                            <span class="badge {% if user.kyc_status == 'approved' %}bg-success{% elif user.kyc_status == 'rejected' %}bg-danger{% elif user.kyc_status == 'pending' %}bg-warning{% endif %}">
+                                {{ user.get_kyc_status_display }}
+                            </span>
+                        </p>
+                        {% if user.citizenship_no %}
+                        <p><strong>Citizenship Number:</strong> {{ user.citizenship_no }}</p>
+                        {% endif %}
+                        {% if user.earn_code %}
+                        <p><strong>Earn Code:</strong> <code class="bg-light p-1 rounded">{{ user.earn_code }}</code></p>
+                        {% endif %}
+                        {% if user.kyc_reject_reason %}
+                        <div class="alert alert-danger">
+                            <strong>Rejection Reason:</strong><br>
+                            {{ user.kyc_reject_reason }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        {% if user.citizenship_front %}
+                        <div class="col-md-6">
+                            <p><strong>Citizenship Front:</strong></p>
+                            <img src="{{ user.citizenship_front.url }}" alt="Front" class="img-fluid border rounded" style="max-height: 200px;">
+                        </div>
+                        {% endif %}
+                        {% if user.citizenship_back %}
+                        <div class="col-md-6">
+                            <p><strong>Citizenship Back:</strong></p>
+                            <img src="{{ user.citizenship_back.url }}" alt="Back" class="img-fluid border rounded" style="max-height: 200px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if user.kyc_status == 'pending' %}
+                    <div class="d-flex gap-2">
+                        <form method="post" action="{% url 'myadmin:kyc_approve' user.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success" data-confirm data-confirm-title="Confirm KYC Approval" data-confirm-text="Approve KYC verification for {{ user.email }}?">
+                                <i class="align-middle" data-feather="check"></i> Approve
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectKycModal">
+                            <i class="align-middle" data-feather="x"></i> Reject
+                        </button>
+                    </div>
+                    {% elif user.kyc_status == 'rejected' %}
+                    <form method="post" action="{% url 'myadmin:kyc_approve' user.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" data-confirm data-confirm-title="Confirm KYC Approval" data-confirm-text="Approve KYC verification for {{ user.email }}?">
+                            <i class="align-middle" data-feather="check"></i> Approve
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No KYC documents submitted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payment Information Section -->
+            {% if user.is_influencer %}
+            <div class="card mt-3 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="align-middle" data-feather="credit-card"></i> Payment Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user.esewa_number or user.khalti_number or user.qr_code %}
+                    <div class="row mb-3">
+                        {% if user.esewa_number %}
+                        <div class="col-md-6 mb-3">
+                            <p><strong>Esewa Number:</strong> {{ user.esewa_number }}</p>
+                        </div>
+                        {% endif %}
+                        {% if user.khalti_number %}
+                        <div class="col-md-6 mb-3">
+                            <p><strong>Khalti Number:</strong> {{ user.khalti_number }}</p>
+                        </div>
+                        {% endif %}
+                        {% if user.qr_code %}
+                        <div class="col-md-12">
+                            <p><strong>QR Code:</strong></p>
+                            <a href="{{ user.qr_code.url }}" target="_blank">
+                                <img src="{{ user.qr_code.url }}" alt="QR Code" class="img-fluid border rounded" style="max-height: 200px;">
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No payment information set by user.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
 
             <div class="card mt-3">
                 <div class="card-header">
@@ -96,6 +215,200 @@
                     </table>
                     {% else %}
                     <p class="text-muted">No addresses</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Wallet Summary Card -->
+            <div class="card mt-3 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="align-middle" data-feather="wallet"></i> Wallet & Balance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3 class="text-success mb-3">Rs {{ user_balance|floatformat:2 }}</h3>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#balanceAdjustModal">
+                                <i class="align-middle" data-feather="edit-2"></i> Adjust Balance
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border rounded p-2 mb-2">
+                                        <small class="text-muted d-block">Total Credits</small>
+                                        <strong class="text-success">Rs {{ transaction_stats.total_credit|floatformat:2 }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="border rounded p-2 mb-2">
+                                        <small class="text-muted d-block">Total Debits</small>
+                                        <strong class="text-danger">Rs {{ transaction_stats.total_debit|floatformat:2 }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted">Total Transactions: {{ transaction_stats.count }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="align-middle" data-feather="activity"></i> Recent Transactions
+                    </h5>
+                    <a href="{% url 'myadmin:user_transactions' user.pk %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Remarks</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trans in recent_transactions %}
+                                <tr class="{% if trans.transaction_type == 'in' %}table-success{% else %}table-danger{% endif %}">
+                                    <td>{{ trans.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if trans.transaction_type == 'in' %}
+                                        <span class="badge bg-success">Credit</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Debit</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold {% if trans.transaction_type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if trans.transaction_type == 'in' %}+{% else %}-{% endif %}Rs {{ trans.amount|floatformat:2 }}
+                                    </td>
+                                    <td>{{ trans.remarks|default:"-" }}</td>
+                                    <td>
+                                        {% if trans.status == 'success' %}
+                                        <span class="badge bg-success">Success</span>
+                                        {% elif trans.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No transactions found</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Withdrawals Section -->
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="align-middle" data-feather="credit-card"></i> Recent Withdrawals
+                        <small class="text-muted ms-2">
+                            (Pending: {{ withdrawal_stats.pending }}, 
+                            Approved: {{ withdrawal_stats.approved }}, 
+                            Rejected: {{ withdrawal_stats.rejected }})
+                        </small>
+                    </h5>
+                    <a href="{% url 'myadmin:user_withdrawals' user.pk %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_withdrawals %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for withdrawal in recent_withdrawals %}
+                                <tr>
+                                    <td>{{ withdrawal.created_at|date:"M d, Y H:i" }}</td>
+                                    <td class="fw-bold">Rs {{ withdrawal.amount|floatformat:2 }}</td>
+                                    <td>
+                                        {% if withdrawal.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                        {% elif withdrawal.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if withdrawal.status == 'pending' %}
+                                        <div class="btn-group btn-group-sm">
+                                            <form method="post" action="{% url 'myadmin:user_withdrawal_action' user.pk withdrawal.pk %}" class="d-inline" data-confirm data-confirm-title="Confirm Withdrawal Approval" data-confirm-text="Approve this withdrawal?">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="approve">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="align-middle" data-feather="check"></i> Approve
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ withdrawal.id }}">
+                                                <i class="align-middle" data-feather="x"></i> Reject
+                                            </button>
+                                        </div>
+                                        <!-- Reject Modal -->
+                                        <div class="modal fade" id="rejectModal{{ withdrawal.id }}" tabindex="-1" aria-labelledby="rejectWithdrawalLabel{{ withdrawal.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <form method="post" action="{% url 'myadmin:user_withdrawal_action' user.pk withdrawal.pk %}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="reject">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="rejectWithdrawalLabel{{ withdrawal.id }}">Reject Withdrawal</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="withdrawal_reject_reason{{ withdrawal.id }}" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                                                                <textarea name="reject_reason" id="withdrawal_reject_reason{{ withdrawal.id }}" class="form-control" rows="4" required placeholder="Please provide a reason for rejection..."></textarea>
+                                                                <small class="text-muted">This reason will be shown to the user.</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <i class="align-middle" data-feather="x"></i> Reject Withdrawal
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <a href="{% url 'myadmin:withdrawal_detail' withdrawal.pk %}" class="btn btn-sm btn-info">View Details</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No withdrawals found</p>
                     {% endif %}
                 </div>
             </div>
@@ -144,5 +457,82 @@
         </div>
     </div>
 </div>
+
+<!-- Balance Adjustment Modal -->
+<div class="modal fade" id="balanceAdjustModal" tabindex="-1" aria-labelledby="balanceAdjustModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'myadmin:user_balance_adjust' user.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="balanceAdjustModalLabel">Adjust Balance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Transaction Type</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="transaction_type" id="type_credit" value="in" checked>
+                            <label class="btn btn-outline-success" for="type_credit">
+                                <i class="align-middle" data-feather="plus"></i> Credit (Add)
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="transaction_type" id="type_debit" value="out">
+                            <label class="btn btn-outline-danger" for="type_debit">
+                                <i class="align-middle" data-feather="minus"></i> Debit (Subtract)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount (Rs)</label>
+                        <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required>
+                        <small class="text-muted">Current balance: Rs {{ user_balance|floatformat:2 }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Remarks/Notes</label>
+                        <textarea name="remarks" class="form-control" rows="3" placeholder="Reason for balance adjustment..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="align-middle" data-feather="check"></i> Adjust Balance
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject KYC Modal -->
+{% if user.is_influencer and user.kyc_status == 'pending' %}
+<div class="modal fade" id="rejectKycModal" tabindex="-1" aria-labelledby="rejectKycModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'myadmin:kyc_reject' user.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectKycModalLabel">Reject KYC Verification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reject the KYC verification for <strong>{{ user.email }}</strong>?</p>
+                    <div class="mb-3">
+                        <label for="reject_reason_detail" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea name="reject_reason" id="reject_reason_detail" class="form-control" rows="4" required placeholder="Please provide a reason for rejection..."></textarea>
+                        <small class="text-muted">This reason will be shown to the user.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="align-middle" data-feather="x"></i> Reject KYC
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 

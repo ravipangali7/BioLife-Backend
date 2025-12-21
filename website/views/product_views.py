@@ -5,7 +5,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
-from core.models import Product, ProductReview, Category, SubCategory, ChildCategory, Brand, OrderItem
+from core.models import Product, ProductReview, Category, SubCategory, ChildCategory, Brand, OrderItem, Wishlist, User, Setting
+from website.views.earn_views import check_influencer_kyc_access
 
 
 def can_user_review_product(user, product):
@@ -137,9 +138,21 @@ def product_list(request):
     return render(request, 'site/products/list.html', context)
 
 
-def product_detail(request, pk):
-    """Product detail page with variants and reviews"""
+def product_detail(request, pk, earn_code=None):
+    """Product detail page with variants and reviews. Supports affiliate links."""
     product = get_object_or_404(Product, pk=pk, is_active=True)
+    
+    # If earn_code is provided, validate and store in session
+    affiliate_user = None
+    if earn_code:
+        try:
+            affiliate_user = User.objects.get(earn_code=earn_code, is_influencer=True, kyc_status='approved')
+            # Store earn_code in session for cart/checkout tracking
+            request.session['affiliate_earn_code'] = earn_code
+            request.session.modified = True
+        except User.DoesNotExist:
+            messages.warning(request, 'Invalid affiliate link')
+            return redirect('website:product_detail', pk=pk)
     
     # Get product images
     product_images = product.images.all()
@@ -164,10 +177,26 @@ def product_detail(request, pk):
     # Check if user can review this product
     can_review = False
     user_review = None
+    is_in_wishlist = False
+    can_earn = False
+    user_earn_code = None
+    commission_percent = None
+    
     if request.user.is_authenticated:
         can_review = can_user_review_product(request.user, product)
         if can_review:
             user_review = ProductReview.objects.filter(user=request.user, product=product).first()
+        # Check if product is in user's wishlist
+        is_in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
+        
+        # Check if user can earn from this product (influencer with approved KYC)
+        has_access, _ = check_influencer_kyc_access(request.user)
+        if has_access:
+            can_earn = True
+            user_earn_code = request.user.earn_code
+            setting = Setting.objects.first()
+            if setting:
+                commission_percent = setting.sale_commision
     
     context = {
         'product': product,
@@ -178,6 +207,12 @@ def product_detail(request, pk):
         'variant_data_json': variant_data_json,
         'can_review': can_review,
         'user_review': user_review,
+        'is_in_wishlist': is_in_wishlist,
+        'can_earn': can_earn,
+        'user_earn_code': user_earn_code,
+        'commission_percent': commission_percent,
+        'affiliate_user': affiliate_user,
+        'is_affiliate_link': bool(earn_code),
     }
     
     return render(request, 'site/products/detail.html', context)

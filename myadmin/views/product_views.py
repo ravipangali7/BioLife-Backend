@@ -44,6 +44,19 @@ def product_list(request):
     elif featured_filter == 'no':
         products = products.filter(is_featured=False)
     
+    # Stock status filter
+    from core.models import Setting
+    setting = Setting.objects.first()
+    low_stock_threshold = setting.low_stock_threshold if setting else 10
+    
+    stock_status_filter = request.GET.get('stock_status')
+    if stock_status_filter == 'out_of_stock':
+        products = products.filter(stock=0)
+    elif stock_status_filter == 'low_stock':
+        products = products.filter(stock__gt=0, stock__lte=low_stock_threshold)
+    elif stock_status_filter == 'in_stock':
+        products = products.filter(stock__gt=low_stock_threshold)
+    
     # Pagination
     paginator = Paginator(products, 20)
     page_number = request.GET.get('page')
@@ -62,6 +75,7 @@ def product_list(request):
         'brand_filter': brand_filter,
         'status_filter': status_filter,
         'featured_filter': featured_filter,
+        'stock_status_filter': stock_status_filter,
     }
     
     return render(request, 'admin/products/list.html', context)

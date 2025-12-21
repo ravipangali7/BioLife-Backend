@@ -1,0 +1,77 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}404 - Page Not Found - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 min-h-screen flex items-center justify-center">
+    <div class="max-w-2xl mx-auto text-center">
+        <div class="bg-white rounded-lg shadow-md p-8 md:p-12">
+            <!-- 404 Icon/Illustration -->
+            <div class="mb-8">
+                <i data-feather="alert-circle" class="w-24 h-24 mx-auto text-gray-400"></i>
+            </div>
+            
+            <!-- Error Code -->
+            <h1 class="text-6xl md:text-8xl font-bold text-biolife-green mb-4">404</h1>
+            
+            <!-- Error Message -->
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Page Not Found</h2>
+            <p class="text-gray-600 text-lg mb-8">
+                Oops! The page you're looking for doesn't exist or has been moved.
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'website:home' %}" 
+                   class="btn-primary inline-flex items-center justify-center">
+                    <i data-feather="home" class="w-5 h-5 mr-2"></i>
+                    Go to Homepage
+                </a>
+                <button onclick="window.history.back()" 
+                        class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors inline-flex items-center justify-center">
+                    <i data-feather="arrow-left" class="w-5 h-5 mr-2"></i>
+                    Go Back
+                </button>
+            </div>
+            
+            <!-- Helpful Links -->
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <p class="text-gray-600 mb-4">You might be looking for:</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="{% url 'website:product_list' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+                        Products
+                    </a>
+                    <span class="text-gray-400">•</span>
+                    <a href="{% url 'website:category_list' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+                        Categories
+                    </a>
+                    <span class="text-gray-400">•</span>
+                    <a href="{% url 'website:cart' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+                        Shopping Cart
+                    </a>
+                    {% if user.is_authenticated %}
+                    <span class="text-gray-400">•</span>
+                    <a href="{% url 'website:account_dashboard' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+                        My Account
+                    </a>
+                    {% else %}
+                    <span class="text-gray-400">•</span>
+                    <a href="{% url 'website:login' %}" class="text-biolife-green hover:text-biolife-green-dark font-semibold">
+                        Login
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Feather Icons for this page
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+</script>
+{% endblock %}
+

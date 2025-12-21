@@ -2,11 +2,12 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from core.models import (
     User, Product, Order, OrderItem, Category, 
-    SubCategory, ChildCategory, Brand, Banner, Coupon
+    SubCategory, ChildCategory, Brand, Banner, Coupon, Setting
 )
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal
 
 
 @login_required
@@ -53,6 +54,31 @@ def dashboard(request):
     # Active coupons
     active_coupons = Coupon.objects.filter(is_active=True).count()
     
+    # Get global low stock threshold from settings
+    setting = Setting.objects.first()
+    low_stock_threshold = setting.low_stock_threshold if setting else 10
+    
+    # Inventory statistics
+    low_stock_count = Product.objects.filter(
+        stock__gt=0,
+        stock__lte=low_stock_threshold,
+        is_active=True
+    ).count()
+    
+    out_of_stock_count = Product.objects.filter(stock=0, is_active=True).count()
+    
+    # Calculate total inventory value
+    total_inventory_value = Decimal('0.00')
+    for product in Product.objects.filter(is_active=True):
+        total_inventory_value += Decimal(str(product.regular_price)) * product.stock
+    
+    # Low stock alerts
+    low_stock_products = Product.objects.filter(
+        stock__gt=0,
+        stock__lte=low_stock_threshold,
+        is_active=True
+    ).order_by('stock')[:5]
+    
     context = {
         'total_users': total_users,
         'total_products': total_products,
@@ -71,6 +97,11 @@ def dashboard(request):
         'childcategories_count': childcategories_count,
         'active_banners': active_banners,
         'active_coupons': active_coupons,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'total_inventory_value': total_inventory_value,
+        'low_stock_products': low_stock_products,
+        'low_stock_threshold': low_stock_threshold,
     }
     
     return render(request, 'admin/dashboard.html', context)

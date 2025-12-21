@@ -45,7 +45,15 @@
                                     <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <select name="stock_status" class="form-select">
+                                    <option value="">All Stock Status</option>
+                                    <option value="in_stock">In Stock</option>
+                                    <option value="low_stock">Low Stock</option>
+                                    <option value="out_of_stock">Out of Stock</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
                                 <button type="submit" class="btn btn-primary">Filter</button>
                                 <a href="{% url 'myadmin:product_list' %}" class="btn btn-secondary">Clear</a>
                             </div>
@@ -62,6 +70,7 @@
                                 <th>Brand</th>
                                 <th>Price</th>
                                 <th>Stock</th>
+                                <th>Stock Status</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -108,7 +117,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="9" class="text-center">No products found</td>
+                                <td colspan="10" class="text-center">No products found</td>
                             </tr>
                             {% endfor %}
                         </tbody>

@@ -1,0 +1,190 @@
+{% extends 'admin/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Sales Report</h1>
+        <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="order_status" class="form-label">Order Status</label>
+                            <select name="order_status" id="order_status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="pending" {% if order_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="processing" {% if order_status == 'processing' %}selected{% endif %}>Processing</option>
+                                <option value="shipped" {% if order_status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                <option value="delivered" {% if order_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="cancelled" {% if order_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="payment_status" class="form-label">Payment Status</label>
+                            <select name="payment_status" id="payment_status" class="form-select">
+                                <option value="">All Payments</option>
+                                <option value="pending" {% if payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="failed" {% if payment_status == 'failed' %}selected{% endif %}>Failed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="group_by" class="form-label">Group By</label>
+                            <select name="group_by" id="group_by" class="form-select">
+                                <option value="day" {% if group_by == 'day' %}selected{% endif %}>Day</option>
+                                <option value="month" {% if group_by == 'month' %}selected{% endif %}>Month</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select name="category" id="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="product" class="form-label">Product</label>
+                            <select name="product" id="product" class="form-select">
+                                <option value="">All Products</option>
+                                {% for p in products %}
+                                <option value="{{ p.id }}" {% if product_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="{% url 'myadmin:sales_report' %}" class="btn btn-secondary">Clear</a>
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'export' %}{{ key }}={{ value }}&{% endif %}{% endfor %}export=csv" class="btn btn-success">
+                                <i class="align-middle" data-feather="download"></i> Export CSV
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Sales</h5>
+                    <h2 class="mb-0">Rs {{ total_sales|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Orders</h5>
+                    <h2 class="mb-0">{{ total_orders }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Average Order Value</h5>
+                    <h2 class="mb-0">Rs {{ average_order_value|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Products by Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Total Revenue</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td><strong>{{ product.product__name }}</strong></td>
+                                    <td>{{ product.product__sku }}</td>
+                                    <td>Rs {{ product.total_revenue|floatformat:2 }}</td>
+                                    <td>{{ product.total_quantity }}</td>
+                                    <td>{{ product.order_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sales by Category</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Revenue</th>
+                                    <th>Quantity Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sales_by_category %}
+                                <tr>
+                                    <td><strong>{{ item.product__category__name|default:"Uncategorized" }}</strong></td>
+                                    <td>Rs {{ item.total|floatformat:2 }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
