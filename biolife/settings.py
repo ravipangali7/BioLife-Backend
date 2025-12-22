@@ -17,6 +17,14 @@ import pymysql
 # Configure PyMySQL to work with Django
 pymysql.install_as_MySQLdb()
 
+# Fix version compatibility for Django 6.0
+try:
+    import MySQLdb
+    if hasattr(MySQLdb, 'version_info'):
+        MySQLdb.version_info = (2, 2, 1, "final", 0)
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
