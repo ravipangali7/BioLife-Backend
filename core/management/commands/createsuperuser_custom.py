@@ -4,6 +4,7 @@ Usage: python manage.py createsuperuser_custom
 """
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import getpass
 
@@ -76,7 +77,7 @@ class Command(BaseCommand):
                 
                 # Validate password
                 try:
-                    User._default_manager.validate_password(password, User(email=email, name=name))
+                    validate_password(password, user=User(email=email, name=name))
                 except ValidationError as e:
                     self.stdout.write(self.style.ERROR('Password validation errors:'))
                     for error in e.messages:
