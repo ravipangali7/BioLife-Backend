@@ -61,14 +61,20 @@ def home(request):
         recent_orders__gt=0
     ).order_by('-recent_orders', '-created_at')[:8]
     
+    # Evaluate trending_products to get IDs first
+    trending_products_list = list(trending_products)
+    trending_product_ids = [p.id for p in trending_products_list]
+
     # If not enough trending products, fill with new arrivals
-    if trending_products.count() < 8:
+    if len(trending_products_list) < 8:
         additional = Product.objects.filter(
             is_active=True
         ).exclude(
-            id__in=trending_products.values_list('id', flat=True)
-        ).order_by('-created_at')[:8 - trending_products.count()]
-        trending_products = list(trending_products) + list(additional)
+            id__in=trending_product_ids  # Use list of IDs, not subquery
+        ).order_by('-created_at')[:8 - len(trending_products_list)]
+        trending_products = trending_products_list + list(additional)
+    else:
+        trending_products = trending_products_list
     
     # Get customer testimonials (recent product reviews with messages)
     testimonials = ProductReview.objects.filter(
