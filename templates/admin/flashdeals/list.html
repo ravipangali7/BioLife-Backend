@@ -1,0 +1,129 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Flash Deals</h1>
+        <a href="{% url 'myadmin:flashdeal_create' %}" class="btn btn-primary ms-2">
+            <i class="align-middle" data-feather="plus"></i> Add Flash Deal
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Flash Deal List</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter -->
+                    <form method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="search" class="form-control" placeholder="Search by title..." value="{{ search_query }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Discount</th>
+                                <th>Products</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for flash_deal in flash_deals %}
+                            <tr>
+                                <td><strong>{{ flash_deal.title }}</strong></td>
+                                <td>
+                                    {{ flash_deal.discount }}
+                                    {% if flash_deal.discount_type == 'percentage' %}%{% else %}Rs{% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ flash_deal.product_count }} products</span>
+                                </td>
+                                <td>{{ flash_deal.start_time|date:"M d, Y H:i" }}</td>
+                                <td>{{ flash_deal.end_time|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if flash_deal.is_active_now %}
+                                    <span class="badge bg-success">Active Now</span>
+                                    {% elif flash_deal.is_active %}
+                                    <span class="badge bg-warning">Scheduled</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:flashdeal_detail' flash_deal.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:flashdeal_edit' flash_deal.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:flashdeal_delete' flash_deal.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="align-middle" data-feather="trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No flash deals found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

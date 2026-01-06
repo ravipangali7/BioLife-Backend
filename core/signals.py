@@ -3,12 +3,13 @@ from django.dispatch import receiver
 from django.db import transaction as db_transaction
 from decimal import Decimal
 from .models import Order, OrderItem, User, Setting, Transaction
+from .stock_utils import deduct_stock
 
 
 @receiver(pre_save, sender=Order)
-def process_commission_on_order_status_change(sender, instance, **kwargs):
+def process_commission_and_stock_on_order_status_change(sender, instance, **kwargs):
     """
-    Process commissions when order status changes to 'delivered' and payment_status is 'paid'.
+    Process commissions and deduct stock when order status changes to 'delivered' and payment_status is 'paid'.
     This runs before save to check the previous state.
     """
     if instance.pk:  # Only for existing orders
@@ -19,6 +20,8 @@ def process_commission_on_order_status_change(sender, instance, **kwargs):
                 instance.payment_status == 'paid'):
                 # Process commissions for all order items with earn_code
                 process_order_commissions(instance)
+                # Deduct stock for all order items
+                deduct_stock_for_delivered_order(instance)
         except Order.DoesNotExist:
             pass
 
@@ -77,3 +80,42 @@ def process_order_commissions(order):
                     remarks=f'Commission for Order #{order.id}, Item #{order_item.id} - {order_item.product.name}',
                     status='success'
                 )
+
+
+def deduct_stock_for_delivered_order(order):
+    """
+    Deduct stock for all order items when order is delivered and paid.
+    Prevents duplicate deduction by checking stock_deducted flag.
+    """
+    if order.order_status != 'delivered' or order.payment_status != 'paid':
+        return
+    
+    # Get all order items that haven't had stock deducted yet
+    order_items = OrderItem.objects.filter(
+        order=order,
+        stock_deducted=False
+    ).select_related('product')
+    
+    for order_item in order_items:
+        product = order_item.product
+        variant_combination = order_item.product_varient if order_item.product_varient else None
+        
+        # Deduct stock using the utility function
+        success, message = deduct_stock(
+            product=product,
+            quantity=order_item.quantity,
+            variant_combination=variant_combination,
+            order_id=order.id,
+            user=order.user,
+            reason=f'Order #{order.id} delivered and paid - Item #{order_item.id}'
+        )
+        
+        if success:
+            # Mark stock as deducted to prevent duplicate deduction
+            order_item.stock_deducted = True
+            order_item.save(update_fields=['stock_deducted'])
+        else:
+            # Log the error but don't fail the order update
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f'Failed to deduct stock for Order #{order.id}, Item #{order_item.id}: {message}')

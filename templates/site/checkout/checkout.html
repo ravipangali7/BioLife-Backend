@@ -4,8 +4,11 @@
 {% block title %}Checkout - BioLife{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Checkout</h1>
+<div class="container mx-auto px-4 py-8 md:py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-3">Checkout</h1>
+        <p class="text-gray-600 text-lg">Complete your order details</p>
+    </div>
     
     <form method="post" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {% csrf_token %}
@@ -25,7 +28,7 @@
                                    required
                                    class="sr-only billing-address-radio"
                                    {% if forloop.first %}checked{% endif %}>
-                            <div class="address-card border-2 border-gray-200 rounded-xl p-5 hover:border-biolife-green transition-all duration-200 hover:shadow-md">
+                            <div class="address-card border-2 border-gray-200 rounded-2xl p-6 hover:border-biolife-green transition-all duration-300 hover:shadow-xl bg-white">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <div class="flex items-center mb-2">
@@ -123,8 +126,11 @@
             </div>
             
             <!-- Payment Method (Placeholder) -->
-            <div class="card p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Payment Method</h2>
+            <div class="card-gradient p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i data-feather="credit-card" class="w-6 h-6 mr-3 text-biolife-green"></i>
+                    Payment Method
+                </h2>
                 <div class="border-2 border-gray-200 rounded-xl p-6 bg-gray-50">
                     <div class="flex items-center mb-3">
                         <i data-feather="credit-card" class="w-6 h-6 text-gray-400 mr-3"></i>
@@ -166,7 +172,7 @@
                 </div>
                 
                 <button type="submit" 
-                        class="w-full bg-biolife-green text-white py-3 rounded-lg hover:bg-biolife-green-dark transition-all duration-200 font-semibold text-lg shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-100">
+                        class="w-full bg-gradient-to-r from-biolife-green to-biolife-green-dark text-white py-4 rounded-xl hover:shadow-2xl transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-biolife-green/50 transform hover:scale-[1.02] active:scale-100">
                     <i data-feather="check-circle" class="w-5 h-5 inline mr-2"></i>
                     Place Order
                 </button>

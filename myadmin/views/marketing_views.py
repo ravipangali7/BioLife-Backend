@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from core.models import Banner, Coupon, CMSPage
+from django.utils import timezone
+from core.models import Banner, Coupon, CMSPage, FlashDeal, Product
 from django.forms import modelform_factory
 from django import forms
 
@@ -352,4 +353,148 @@ def cmspage_delete(request, pk):
         return redirect('myadmin:cmspage_list')
     
     return render(request, 'admin/cmspages/delete.html', {'page': page})
+
+
+# Flash Deal Views
+@login_required
+def flashdeal_list(request):
+    """List all flash deals"""
+    flash_deals = FlashDeal.objects.all()
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        flash_deals = flash_deals.filter(title__icontains=search_query)
+    
+    status_filter = request.GET.get('status')
+    if status_filter == 'active':
+        flash_deals = flash_deals.filter(is_active=True)
+    elif status_filter == 'inactive':
+        flash_deals = flash_deals.filter(is_active=False)
+    
+    # Annotate with product count and active status
+    for deal in flash_deals:
+        deal.product_count = deal.products.count()
+        deal.is_active_now = deal.is_active_now()
+    
+    paginator = Paginator(flash_deals, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'flash_deals': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'admin/flashdeals/list.html', context)
+
+
+@login_required
+def flashdeal_detail(request, pk):
+    """Flash deal detail view"""
+    flash_deal = get_object_or_404(FlashDeal, pk=pk)
+    
+    # Get all products in this flash deal
+    products = flash_deal.products.all()
+    
+    # Calculate time remaining
+    now = timezone.now()
+    time_remaining = None
+    if flash_deal.is_active_now():
+        time_remaining = flash_deal.get_remaining_time()
+    
+    context = {
+        'flash_deal': flash_deal,
+        'products': products,
+        'is_active_now': flash_deal.is_active_now(),
+        'time_remaining': time_remaining,
+        'now': now,
+    }
+    
+    return render(request, 'admin/flashdeals/detail.html', context)
+
+
+@login_required
+def flashdeal_create(request):
+    """Create new flash deal"""
+    FlashDealForm = modelform_factory(
+        FlashDeal,
+        fields=['title', 'products', 'discount_type', 'discount', 'start_time', 'end_time', 'is_active', 'image'],
+        widgets={
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'products': forms.SelectMultiple(attrs={'class': 'form-select', 'size': '10'}),
+            'discount_type': forms.Select(attrs={'class': 'form-select'}),
+            'discount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+    )
+    
+    if request.method == 'POST':
+        form = FlashDealForm(request.POST, request.FILES)
+        if form.is_valid():
+            flash_deal = form.save()
+            messages.success(request, f'Flash Deal "{flash_deal.title}" created successfully.')
+            return redirect('myadmin:flashdeal_detail', pk=flash_deal.pk)
+    else:
+        form = FlashDealForm()
+    
+    # Get all active products for the select
+    products = Product.objects.filter(is_active=True).order_by('name')
+    form.fields['products'].queryset = products
+    
+    return render(request, 'admin/flashdeals/form.html', {'form': form})
+
+
+@login_required
+def flashdeal_edit(request, pk):
+    """Edit flash deal"""
+    flash_deal = get_object_or_404(FlashDeal, pk=pk)
+    
+    FlashDealForm = modelform_factory(
+        FlashDeal,
+        fields=['title', 'products', 'discount_type', 'discount', 'start_time', 'end_time', 'is_active', 'image'],
+        widgets={
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'products': forms.SelectMultiple(attrs={'class': 'form-select', 'size': '10'}),
+            'discount_type': forms.Select(attrs={'class': 'form-select'}),
+            'discount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+    )
+    
+    if request.method == 'POST':
+        form = FlashDealForm(request.POST, request.FILES, instance=flash_deal)
+        if form.is_valid():
+            flash_deal = form.save()
+            messages.success(request, f'Flash Deal "{flash_deal.title}" updated successfully.')
+            return redirect('myadmin:flashdeal_detail', pk=flash_deal.pk)
+    else:
+        form = FlashDealForm(instance=flash_deal)
+    
+    # Get all active products for the select
+    products = Product.objects.filter(is_active=True).order_by('name')
+    form.fields['products'].queryset = products
+    
+    return render(request, 'admin/flashdeals/form.html', {'form': form, 'flash_deal': flash_deal})
+
+
+@login_required
+def flashdeal_delete(request, pk):
+    """Delete flash deal"""
+    flash_deal = get_object_or_404(FlashDeal, pk=pk)
+    
+    if request.method == 'POST':
+        flash_deal_title = flash_deal.title
+        flash_deal.delete()
+        messages.success(request, f'Flash Deal "{flash_deal_title}" deleted successfully.')
+        return redirect('myadmin:flashdeal_list')
+    
+    return render(request, 'admin/flashdeals/delete.html', {'flash_deal': flash_deal})
 

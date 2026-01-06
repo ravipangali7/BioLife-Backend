@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from .models import (
     User, Address, Unit, Category, SubCategory, ChildCategory,
     Brand, Product, ProductImage, ProductReview, Wishlist, Banner, Coupon,
-    CMSPage, Order, OrderItem, PasswordResetOTP
+    CMSPage, Order, OrderItem, PasswordResetOTP, FlashDeal
 )
 
 
@@ -223,6 +223,44 @@ class CouponAdmin(admin.ModelAdmin):
         text = 'Valid' if is_valid else 'Invalid'
         return format_html('<span style="color: {};">{}</span>', color, text)
     is_valid_display.short_description = 'Status'
+
+
+@admin.register(FlashDeal)
+class FlashDealAdmin(admin.ModelAdmin):
+    list_display = ['title', 'discount_type', 'discount', 'product_count', 'is_active', 'is_active_now_display', 'start_time', 'end_time', 'created_at']
+    list_filter = ['discount_type', 'is_active', 'start_time', 'end_time', 'created_at']
+    search_fields = ['title']
+    readonly_fields = ['created_at', 'updated_at', 'is_active_now_display', 'product_count']
+    filter_horizontal = ['products']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'image', 'is_active')
+        }),
+        ('Products', {
+            'fields': ('products', 'product_count'),
+            'description': 'Select products included in this flash deal'
+        }),
+        ('Discount', {
+            'fields': ('discount_type', 'discount')
+        }),
+        ('Timing', {
+            'fields': ('start_time', 'end_time', 'is_active_now_display')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    def is_active_now_display(self, obj):
+        is_active = obj.is_active_now()
+        color = 'green' if is_active else 'red'
+        text = 'Active Now' if is_active else 'Not Active'
+        return format_html('<span style="color: {}; font-weight: bold;">{}</span>', color, text)
+    is_active_now_display.short_description = 'Current Status'
+    
+    def product_count(self, obj):
+        return obj.products.count()
+    product_count.short_description = 'Products'
 
 
 @admin.register(CMSPage)

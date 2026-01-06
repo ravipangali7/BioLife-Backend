@@ -1,0 +1,35 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Delete Flash Deal</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Confirm Delete</h5>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete flash deal <strong>{{ flash_deal.title }}</strong>?</p>
+                    
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> This flash deal is associated with <strong>{{ flash_deal.products.count }}</strong> product(s). 
+                        Deleting this flash deal will remove the discount from these products, but the products themselves will not be deleted.
+                    </div>
+                    
+                    <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <a href="{% url 'myadmin:flashdeal_detail' flash_deal.pk %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

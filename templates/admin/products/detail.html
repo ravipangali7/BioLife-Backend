@@ -83,7 +83,7 @@
                     <p>{{ product.short_description|default:"-" }}</p>
                     <hr>
                     <p><strong>Long Description:</strong></p>
-                    <p>{{ product.long_description|default:"-"|linebreaks }}</p>
+                    <div>{{ product.long_description|default:"-"|safe }}</div>
                 </div>
             </div>
 

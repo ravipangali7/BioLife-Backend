@@ -1,5 +1,5 @@
 {% load static %}
-<footer class="bg-gray-900 text-gray-300 mt-16">
+<footer class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-300 mt-16 border-t border-gray-700/50">
     <div class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <!-- About Section -->
@@ -14,30 +14,51 @@
             
             <!-- Quick Links -->
             <div>
-                <h3 class="text-white font-semibold mb-4">Quick Links</h3>
-                <ul class="space-y-2 text-sm">
+                <h3 class="text-white font-bold mb-4 text-lg">Quick Links</h3>
+                <ul class="space-y-2.5 text-sm">
                     <li>
-                        <a href="{% url 'website:home' %}" class="hover:text-biolife-green transition-colors">Home</a>
+                        <a href="{% url 'website:home' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                            Home
+                        </a>
                     </li>
                     <li>
-                        <a href="{% url 'website:product_list' %}" class="hover:text-biolife-green transition-colors">Products</a>
+                        <a href="{% url 'website:product_list' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                            Products
+                        </a>
                     </li>
                     <li>
-                        <a href="{% url 'website:category_list' %}" class="hover:text-biolife-green transition-colors">Categories</a>
+                        <a href="{% url 'website:category_list' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                            <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                            Categories
+                        </a>
                     </li>
                     {% if user.is_authenticated %}
                         <li>
-                            <a href="{% url 'website:account_dashboard' %}" class="hover:text-biolife-green transition-colors">My Account</a>
+                            <a href="{% url 'website:account_dashboard' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                                <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                                My Account
+                            </a>
                         </li>
                         <li>
-                            <a href="{% url 'website:account_orders' %}" class="hover:text-biolife-green transition-colors">Order History</a>
+                            <a href="{% url 'website:account_orders' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                                <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                                Order History
+                            </a>
                         </li>
                     {% else %}
                         <li>
-                            <a href="{% url 'website:login' %}" class="hover:text-biolife-green transition-colors">Login</a>
+                            <a href="{% url 'website:login' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                                <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                                Login
+                            </a>
                         </li>
                         <li>
-                            <a href="{% url 'website:register' %}" class="hover:text-biolife-green transition-colors">Register</a>
+                            <a href="{% url 'website:register' %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                                <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                                Register
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
@@ -46,11 +67,14 @@
             <!-- Customer Service -->
             {% if customer_service_pages %}
             <div>
-                <h3 class="text-white font-semibold mb-4">Customer Service</h3>
-                <ul class="space-y-2 text-sm">
+                <h3 class="text-white font-bold mb-4 text-lg">Customer Service</h3>
+                <ul class="space-y-2.5 text-sm">
                     {% for page in customer_service_pages %}
                         <li>
-                            <a href="{% url 'website:cms_page' slug=page.slug %}" class="hover:text-biolife-green transition-colors">{{ page.title }}</a>
+                            <a href="{% url 'website:cms_page' slug=page.slug %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                                <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                                {{ page.title }}
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -60,11 +84,14 @@
             <!-- Information -->
             {% if information_pages %}
             <div>
-                <h3 class="text-white font-semibold mb-4">Information</h3>
-                <ul class="space-y-2 text-sm">
+                <h3 class="text-white font-bold mb-4 text-lg">Information</h3>
+                <ul class="space-y-2.5 text-sm">
                     {% for page in information_pages %}
                         <li>
-                            <a href="{% url 'website:cms_page' slug=page.slug %}" class="hover:text-biolife-green transition-colors">{{ page.title }}</a>
+                            <a href="{% url 'website:cms_page' slug=page.slug %}" class="hover:text-biolife-green transition-all duration-200 flex items-center group">
+                                <span class="w-0 group-hover:w-2 h-0.5 bg-biolife-green mr-0 group-hover:mr-2 transition-all duration-200"></span>
+                                {{ page.title }}
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -124,14 +151,16 @@
         </div>
         
         <!-- Bottom Bar -->
-        <div class="border-t border-gray-800 mt-8 pt-8">
+        <div class="border-t border-gray-700/50 mt-8 pt-8">
             <div class="flex flex-col md:flex-row justify-between items-center text-sm">
-                <p>&copy; {% now "Y" %} BioLife. All rights reserved.</p>
-                <div class="flex space-x-4 mt-4 md:mt-0">
-                    <span>Payment Methods:</span>
-                    <span class="text-gray-500">Visa</span>
-                    <span class="text-gray-500">Mastercard</span>
-                    <span class="text-gray-500">PayPal</span>
+                <p class="text-gray-400 mb-4 md:mb-0">&copy; {% now "Y" %} BioLife. All rights reserved.</p>
+                <div class="flex flex-wrap items-center gap-3 justify-center md:justify-end">
+                    <span class="text-gray-500 font-medium">Payment Methods:</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3 py-1.5 bg-gray-800 rounded-lg text-gray-300 text-xs font-semibold">Visa</span>
+                        <span class="px-3 py-1.5 bg-gray-800 rounded-lg text-gray-300 text-xs font-semibold">Mastercard</span>
+                        <span class="px-3 py-1.5 bg-gray-800 rounded-lg text-gray-300 text-xs font-semibold">PayPal</span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -8,23 +8,37 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Custom Tailwind Config for Logo Colors -->
+    <!-- Custom Tailwind Config for Modern Color Palette -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'biolife-green': '#00C853',
-                        'biolife-blue': '#1976D2',
-                        'biolife-green-light': '#C8E6C9',
-                        'biolife-blue-light': '#BBDEFB',
-                        'biolife-green-dark': '#007E33',
-                        'biolife-blue-dark': '#0D47A1',
+                        'biolife-green': '#10B981',
+                        'biolife-blue': '#3B82F6',
+                        'biolife-green-light': '#D1FAE5',
+                        'biolife-blue-light': '#DBEAFE',
+                        'biolife-green-dark': '#059669',
+                        'biolife-blue-dark': '#2563EB',
+                        'biolife-purple': '#8B5CF6',
+                        'biolife-amber': '#F59E0B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    letterSpacing: {
+                        tighter: '-0.02em',
+                        tight: '-0.01em',
                     }
                 }
             }
         }
     </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom CSS (minimal, only when necessary) -->
     {% load static %}
@@ -37,34 +51,60 @@
     <style>
         /* Smooth transitions for all interactive elements */
         * {
-            transition-property: color, background-color, border-color, transform, box-shadow;
+            transition-property: color, background-color, border-color, transform, box-shadow, opacity;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transition-duration: 150ms;
+            transition-duration: 200ms;
         }
         
-        /* Enhanced button styles */
+        /* Modern Typography */
+        h1, h2, h3, h4, h5, h6 {
+            letter-spacing: -0.02em;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        /* Enhanced button styles with gradients */
         .btn-primary {
-            @apply bg-biolife-green text-white px-6 py-3 rounded-lg font-semibold hover:bg-biolife-green-dark transform hover:scale-105 active:scale-100 shadow-md hover:shadow-lg transition-all duration-200;
+            @apply bg-gradient-to-r from-biolife-green to-biolife-green-dark text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-100 transition-all duration-300;
         }
         
-        /* Enhanced card styles */
+        .btn-secondary {
+            @apply bg-white text-biolife-green border-2 border-biolife-green px-6 py-3 rounded-xl font-semibold hover:bg-biolife-green hover:text-white shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-100 transition-all duration-300;
+        }
+        
+        /* Enhanced card styles with modern shadows */
         .card {
-            @apply bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100;
+            @apply bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100/50 backdrop-blur-sm;
         }
         
-        /* Enhanced input styles */
+        .card-gradient {
+            @apply bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100/50;
+        }
+        
+        /* Enhanced input styles with floating label support */
         input[type="text"],
         input[type="email"],
         input[type="number"],
         input[type="password"],
+        input[type="tel"],
         select,
         textarea {
-            @apply border-gray-300 rounded-lg focus:ring-2 focus:ring-biolife-green focus:border-transparent transition-all duration-200;
+            @apply border-gray-300 rounded-xl focus:ring-2 focus:ring-biolife-green focus:border-biolife-green transition-all duration-200 bg-white px-4 py-3;
         }
         
-        /* Image hover effects */
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            @apply shadow-md border-biolife-green;
+        }
+        
+        /* Image hover effects with better transitions */
         .product-image {
-            @apply transition-transform duration-300 hover:scale-105;
+            @apply transition-transform duration-500 ease-out hover:scale-110;
         }
         
         /* Smooth scroll */
@@ -78,7 +118,7 @@
         }
         
         *:focus-visible {
-            @apply ring-2 ring-biolife-green ring-offset-2;
+            @apply ring-2 ring-biolife-green ring-offset-2 ring-offset-white;
         }
         
         /* Hide scrollbar for thumbnail gallery */
@@ -90,16 +130,106 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+        
+        /* Gradient backgrounds */
+        .gradient-bg-primary {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        
+        .gradient-bg-secondary {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        }
+        
+        .gradient-bg-hero {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+        }
+        
+        /* Glassmorphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Skeleton loading animation */
+        @keyframes skeleton-loading {
+            0% {
+                background-position: -200px 0;
+            }
+            100% {
+                background-position: calc(200px + 100%) 0;
+            }
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200px 100%;
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+        }
+        
+        /* Pulse animation for badges */
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Enhanced message alerts */
+        .alert {
+            @apply rounded-xl shadow-lg border-l-4 backdrop-blur-sm;
+        }
+        
+        /* Modern badge styles */
+        .badge {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+        }
+        
+        .badge-primary {
+            @apply bg-gradient-to-r from-biolife-green to-biolife-green-dark text-white;
+        }
+        
+        .badge-secondary {
+            @apply bg-gradient-to-r from-biolife-blue to-biolife-blue-dark text-white;
+        }
+        
+        /* Body background with subtle pattern */
+        body {
+            background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);
+        }
     </style>
 </head>
-<body class="bg-gray-50 antialiased overflow-x-hidden">
+<body class="bg-gradient-to-b from-gray-50 to-white antialiased overflow-x-hidden font-sans">
     {% include 'site/layouts/header.html' %}
     
     <main class="pb-20 md:pb-0 overflow-x-hidden max-w-full">
         {% if messages %}
             <div class="container mx-auto px-4 mt-4">
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} p-4 mb-4 rounded-xl shadow-md {% if message.tags == 'error' %}bg-red-50 text-red-800 border-l-4 border-red-500{% elif message.tags == 'success' %}bg-green-50 text-green-800 border-l-4 border-green-500{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border-l-4 border-yellow-500{% else %}bg-blue-50 text-blue-800 border-l-4 border-blue-500{% endif %} flex items-center space-x-2">
+                    <div class="alert alert-{{ message.tags }} p-4 mb-4 rounded-2xl shadow-lg {% if message.tags == 'error' %}bg-gradient-to-r from-red-50 to-red-100 text-red-800 border-l-4 border-red-500{% elif message.tags == 'success' %}bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 border-l-4 border-biolife-green{% elif message.tags == 'warning' %}bg-gradient-to-r from-yellow-50 to-amber-50 text-yellow-800 border-l-4 border-biolife-amber{% else %}bg-gradient-to-r from-blue-50 to-biolife-blue-light text-blue-800 border-l-4 border-biolife-blue{% endif %} flex items-center space-x-2 fade-in">
                         <i data-feather="{% if message.tags == 'error' %}alert-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-5 h-5"></i>
                         <span>{{ message }}</span>
                     </div>
@@ -113,7 +243,7 @@
     {% include 'site/layouts/footer.html' %}
     
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200/50 shadow-2xl z-50">
         <div class="flex items-center justify-around h-16">
             <!-- Home -->
             <a href="{% url 'website:home' %}" class="flex flex-col items-center justify-center flex-1 h-full {% if request.resolver_match.url_name == 'home' %}text-biolife-green{% else %}text-gray-600{% endif %} hover:text-biolife-green transition-colors">

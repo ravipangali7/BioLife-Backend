@@ -4,8 +4,11 @@
 {% block title %}My Wallet - BioLife{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">My Wallet</h1>
+<div class="container mx-auto px-4 py-8 md:py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-3">My Wallet</h1>
+        <p class="text-gray-600 text-lg">Manage your earnings and withdrawals</p>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <!-- Sidebar -->
@@ -77,7 +80,7 @@
                 <!-- Balance & Withdraw (1 Column) -->
                 <div class="xl:col-span-1 space-y-8">
                     <div
-                        class="bg-gradient-to-br from-biolife-green to-biolife-green-dark rounded-2xl shadow-lg p-8 text-white">
+                        class="bg-gradient-to-br from-biolife-green to-biolife-green-dark rounded-2xl shadow-2xl p-8 text-white border-2 border-white/20">
                         <p class="text-green-100 mb-1 font-medium">Available Balance</p>
                         <h1 class="text-4xl font-bold mb-6">Rs {{ user.balance|floatformat:2 }}</h1>
 

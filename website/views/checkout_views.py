@@ -101,6 +101,15 @@ def checkout(request):
                         price = Decimal(str(item['price']))
                         variant = item.get('variant', '')
                         
+                        # If product has variants but no variant provided, use is_primary variant
+                        has_variants = product.product_varient and product.product_varient.get('enabled', False)
+                        if has_variants and not variant:
+                            combinations = product.product_varient.get('combinations', {})
+                            for combo_key, combo_data in combinations.items():
+                                if isinstance(combo_data, dict) and combo_data.get('is_primary', False):
+                                    variant = combo_key
+                                    break
+                        
                         # Create order item
                         OrderItem.objects.create(
                             order=order,
@@ -112,15 +121,8 @@ def checkout(request):
                             total=price * item['quantity'],
                         )
                         
-                        # Deduct stock
-                        success, message = deduct_stock(
-                            product=product,
-                            quantity=item['quantity'],
-                            variant_combination=variant if variant else None,
-                            order_id=order.id,
-                            user=request.user,
-                            reason=f"Order #{order.id}"
-                        )
+                        # Note: Stock deduction will happen when order is delivered and paid (via signal)
+                        # Don't deduct stock here during order creation
                         
                         if not success:
                             # This shouldn't happen after validation, but handle it

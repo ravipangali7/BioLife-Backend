@@ -142,12 +142,28 @@ def product_create(request):
                     # Parse JSON string to dict for JSONField
                     variant_dict = json.loads(variant_data) if variant_data else {}
                     form.instance.product_varient = variant_dict
+                    
+                    # Validate that exactly one is_primary is selected when variants enabled
+                    if variant_dict.get('enabled', False):
+                        combinations = variant_dict.get('combinations', {})
+                        primary_count = sum(
+                            1 for combo in combinations.values() 
+                            if isinstance(combo, dict) and combo.get('is_primary', False)
+                        )
+                        if primary_count != 1:
+                            messages.error(request, 'Exactly one variant combination must be marked as primary.')
+                            form.add_error(None, 'Primary variant validation failed.')
+                            # Re-render form with error
+                        else:
+                            # Calculate stock and price from variants (will be done in model save)
+                            pass
                 except (json.JSONDecodeError, ValueError):
                     form.instance.product_varient = {}
             
-            product = form.save()
-            messages.success(request, f'Product "{product.name}" created successfully.')
-            return redirect('myadmin:product_detail', pk=product.pk)
+            if form.is_valid():  # Check again after variant validation
+                product = form.save()
+                messages.success(request, f'Product "{product.name}" created successfully.')
+                return redirect('myadmin:product_detail', pk=product.pk)
     else:
         form = ProductForm()
     
@@ -228,12 +244,28 @@ def product_edit(request, pk):
                     # Parse JSON string to dict for JSONField
                     variant_dict = json.loads(variant_data) if variant_data else {}
                     form.instance.product_varient = variant_dict
+                    
+                    # Validate that exactly one is_primary is selected when variants enabled
+                    if variant_dict.get('enabled', False):
+                        combinations = variant_dict.get('combinations', {})
+                        primary_count = sum(
+                            1 for combo in combinations.values() 
+                            if isinstance(combo, dict) and combo.get('is_primary', False)
+                        )
+                        if primary_count != 1:
+                            messages.error(request, 'Exactly one variant combination must be marked as primary.')
+                            form.add_error(None, 'Primary variant validation failed.')
+                            # Re-render form with error
+                        else:
+                            # Calculate stock and price from variants (will be done in model save)
+                            pass
                 except (json.JSONDecodeError, ValueError):
                     form.instance.product_varient = {}
             
-            product = form.save()
-            messages.success(request, f'Product "{product.name}" updated successfully.')
-            return redirect('myadmin:product_detail', pk=product.pk)
+            if form.is_valid():  # Check again after variant validation
+                product = form.save()
+                messages.success(request, f'Product "{product.name}" updated successfully.')
+                return redirect('myadmin:product_detail', pk=product.pk)
     else:
         form = ProductForm(instance=product)
     

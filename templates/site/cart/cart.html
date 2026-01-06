@@ -4,15 +4,21 @@
 {% block title %}Shopping Cart - BioLife{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
+<div class="container mx-auto px-4 py-8 md:py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-3">Shopping Cart</h1>
+        <p class="text-gray-600 text-lg">Review your items before checkout</p>
+    </div>
     
     {% if cart_items %}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Cart Items -->
         <div class="lg:col-span-2">
-            <div class="card p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">Cart Items</h2>
+            <div class="card-gradient p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i data-feather="shopping-cart" class="w-6 h-6 mr-3 text-biolife-green"></i>
+                    Cart Items
+                </h2>
                 <div class="space-y-6">
                     {% for item in cart_items %}
                     <div class="flex items-start space-x-4 pb-6 border-b last:border-0 last:pb-0">
@@ -68,8 +74,11 @@
         
         <!-- Order Summary -->
         <div class="lg:col-span-1">
-            <div class="card p-6 sticky top-20">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">Order Summary</h2>
+            <div class="card-gradient p-6 md:p-8 sticky top-20 border-2 border-biolife-green/20">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i data-feather="receipt" class="w-6 h-6 mr-3 text-biolife-green"></i>
+                    Order Summary
+                </h2>
                 
                 <div class="space-y-3 mb-4">
                     <div class="flex justify-between text-gray-700">
@@ -131,11 +140,13 @@
         </div>
     </div>
     {% else %}
-    <div class="text-center py-12">
-        <i data-feather="shopping-cart" class="w-24 h-24 text-gray-400 mx-auto mb-4"></i>
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Your cart is empty</h2>
-        <p class="text-gray-600 mb-6">Start shopping to add items to your cart</p>
-        <a href="{% url 'website:product_list' %}" class="inline-block bg-biolife-green text-white px-6 py-3 rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold">
+    <div class="text-center py-20">
+        <div class="inline-block p-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mb-6">
+            <i data-feather="shopping-cart" class="w-32 h-32 text-gray-400"></i>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Your cart is empty</h2>
+        <p class="text-gray-600 mb-8 text-lg">Start shopping to add items to your cart</p>
+        <a href="{% url 'website:product_list' %}" class="inline-block bg-gradient-to-r from-biolife-green to-biolife-green-dark text-white px-8 py-4 rounded-xl hover:shadow-2xl transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-biolife-green/50 transform hover:scale-105">
             Browse Products
         </a>
     </div>

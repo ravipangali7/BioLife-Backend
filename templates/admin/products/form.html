@@ -74,22 +74,22 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4 mb-3" id="regularPriceField">
                                 <label class="form-label">Regular Price *</label>
                                 {{ form.regular_price }}
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4 mb-3" id="stockField">
                                 <label class="form-label">Stock *</label>
                                 {{ form.stock }}
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4 mb-3" id="discountTypeField">
                                 <label class="form-label">Discount Type</label>
                                 {{ form.discount_type }}
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6 mb-3" id="discountField">
                                 <label class="form-label">Discount</label>
                                 {{ form.discount }}
                             </div>
@@ -157,6 +157,9 @@
                                                             <th>Variant</th>
                                                             <th>Price</th>
                                                             <th>Stock</th>
+                                                            <th>Primary</th>
+                                                            <th>Discount Type</th>
+                                                            <th>Discount</th>
                                                             <th>Image (Optional)</th>
                                                         </tr>
                                                     </thead>
@@ -377,7 +380,7 @@
     
     function generateCombinations() {
         if (variantTypes.length === 0) {
-            document.getElementById('variantsTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-muted">Add variant types to generate combinations</td></tr>';
+            document.getElementById('variantsTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Add variant types to generate combinations</td></tr>';
             combinations = {};
             updateHiddenInput();
             return;
@@ -399,7 +402,22 @@
         const regularPrice = parseFloat(regularPriceInput ? regularPriceInput.value : 0) || 0;
         const stock = parseInt(stockInput ? stockInput.value : 0) || 0;
         
-        allCombinations.forEach(combo => {
+        // Find existing is_primary combination
+        let existingPrimary = null;
+        for (const comboKey in combinations) {
+            if (combinations[comboKey].is_primary === true) {
+                existingPrimary = comboKey;
+                break;
+            }
+        }
+        
+        // If no existing primary, set first combination as primary
+        let isFirst = true;
+        if (!existingPrimary && allCombinations.length > 0) {
+            existingPrimary = allCombinations[0].join('/');
+        }
+        
+        allCombinations.forEach((combo, index) => {
             const comboKey = combo.join('/');
             const row = document.createElement('tr');
             row.dataset.combination = comboKey;
@@ -409,6 +427,9 @@
             const price = existing.price !== undefined ? existing.price : regularPrice;
             const comboStock = existing.stock !== undefined ? existing.stock : stock;
             const imageUrl = existing.image || '';
+            const isPrimary = existing.is_primary === true || (existingPrimary === comboKey && !existing.hasOwnProperty('is_primary'));
+            const discountType = existing.discount_type || '';
+            const discount = existing.discount !== undefined ? existing.discount : 0;
             const safeId = comboKey.replace(/[\/\s]/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
             
             row.innerHTML = `
@@ -418,6 +439,19 @@
                 </td>
                 <td>
                     <input type="number" class="form-control variant-stock" step="1" value="${comboStock}" data-combination="${comboKey}">
+                </td>
+                <td class="text-center">
+                    <input type="radio" name="is_primary_variant" class="form-check-input variant-primary" value="${comboKey}" ${isPrimary ? 'checked' : ''} data-combination="${comboKey}">
+                </td>
+                <td>
+                    <select class="form-select form-select-sm variant-discount-type" data-combination="${comboKey}">
+                        <option value="">---------</option>
+                        <option value="flat" ${discountType === 'flat' ? 'selected' : ''}>Flat</option>
+                        <option value="percentage" ${discountType === 'percentage' ? 'selected' : ''}>Percentage</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" class="form-control form-control-sm variant-discount" step="0.01" value="${discount}" data-combination="${comboKey}">
                 </td>
                 <td>
                     <div class="d-flex align-items-center">
@@ -465,9 +499,25 @@
                 }
             });
             
-            // Handle price/stock changes
+            // Handle price/stock/discount changes
             row.querySelector('.variant-price').addEventListener('input', updateCombinationsData);
             row.querySelector('.variant-stock').addEventListener('input', updateCombinationsData);
+            row.querySelector('.variant-discount-type').addEventListener('change', updateCombinationsData);
+            row.querySelector('.variant-discount').addEventListener('input', updateCombinationsData);
+            
+            // Handle is_primary radio button change
+            const primaryRadio = row.querySelector('.variant-primary');
+            primaryRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    // Uncheck all other radio buttons
+                    document.querySelectorAll('input[name="is_primary_variant"]').forEach(radio => {
+                        if (radio !== this) {
+                            radio.checked = false;
+                        }
+                    });
+                }
+                updateCombinationsData();
+            });
         });
         
         // Initialize feather icons
@@ -485,15 +535,24 @@
             if (comboKey) {
                 const priceInput = row.querySelector('.variant-price');
                 const stockInput = row.querySelector('.variant-stock');
+                const primaryRadio = row.querySelector('.variant-primary');
+                const discountTypeSelect = row.querySelector('.variant-discount-type');
+                const discountInput = row.querySelector('.variant-discount');
                 const imagePreview = row.querySelector('.variant-image-preview');
                 
                 const price = priceInput ? parseFloat(priceInput.value) || 0 : 0;
                 const stock = stockInput ? parseInt(stockInput.value) || 0 : 0;
+                const isPrimary = primaryRadio ? primaryRadio.checked : false;
+                const discountType = discountTypeSelect ? discountTypeSelect.value : '';
+                const discount = discountInput ? parseFloat(discountInput.value) || 0 : 0;
                 const image = imagePreview ? imagePreview.src : '';
                 
                 combinations[comboKey] = {
                     price: price,
                     stock: stock,
+                    is_primary: isPrimary,
+                    discount_type: discountType,
+                    discount: discount,
                     image: image
                 };
             }
@@ -517,6 +576,42 @@
         form.addEventListener('submit', function(e) {
             updateVariantTypes();
             updateCombinationsData();
+            
+            // Validate that exactly one is_primary is selected when variants are enabled
+            const enabled = document.getElementById('enableVariants').checked;
+            if (enabled) {
+                const primaryRadios = document.querySelectorAll('input[name="is_primary_variant"]:checked');
+                if (primaryRadios.length === 0) {
+                    e.preventDefault();
+                    alert('Please select a primary variant combination.');
+                    return false;
+                }
+                if (primaryRadios.length > 1) {
+                    e.preventDefault();
+                    alert('Only one variant combination can be marked as primary.');
+                    return false;
+                }
+                
+                // Calculate total stock and set regular_price from is_primary variant
+                let totalStock = 0;
+                let primaryPrice = 0;
+                
+                for (const comboKey in combinations) {
+                    totalStock += combinations[comboKey].stock || 0;
+                    if (combinations[comboKey].is_primary === true) {
+                        primaryPrice = combinations[comboKey].price || 0;
+                    }
+                }
+                
+                // Update stock and regular_price fields (even if hidden)
+                if (stockInput) {
+                    stockInput.value = totalStock;
+                }
+                if (regularPriceInput) {
+                    regularPriceInput.value = primaryPrice;
+                }
+            }
+            
             updateHiddenInput();
             
             // Also update any textarea field if it exists (for compatibility)
@@ -674,6 +769,74 @@
     } else {
         // Small delay to ensure form is fully rendered
         setTimeout(initializeDependentDropdowns, 100);
+    }
+})();
+</script>
+
+<!-- TinyMCE Editor -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js"></script>
+<script>
+    // Initialize TinyMCE for long_description field
+    document.addEventListener('DOMContentLoaded', function() {
+        const longDescField = document.getElementById('id_long_description');
+        if (longDescField) {
+            // Default 2x2 table HTML with modern design
+            const defaultTableHTML = '<table style="border-collapse: separate; border-spacing: 0; width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);"><tbody><tr><td style="border: 1px solid #e5e7eb; padding: 12px; background-color: #f9fafb; min-height: 40px;">&nbsp;</td><td style="border: 1px solid #e5e7eb; padding: 12px; background-color: #f9fafb; min-height: 40px;">&nbsp;</td></tr><tr><td style="border: 1px solid #e5e7eb; padding: 12px; background-color: #ffffff; min-height: 40px;">&nbsp;</td><td style="border: 1px solid #e5e7eb; padding: 12px; background-color: #ffffff; min-height: 40px;">&nbsp;</td></tr></tbody></table>';
+            
+            // Set default value if field is empty (for new products or empty existing)
+            if (!longDescField.value || longDescField.value.trim() === '') {
+                longDescField.value = defaultTableHTML;
+            }
+            
+            tinymce.init({
+                selector: '#id_long_description',
+                height: 400,
+                menubar: false,
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                ],
+                toolbar: 'undo redo | blocks | ' +
+                    'bold italic forecolor | alignleft aligncenter ' +
+                    'alignright alignjustify | bullist numlist outdent indent | ' +
+                    'removeformat | help | table',
+                content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+            });
+        }
+    });
+</script>
+
+<!-- Variant Toggle: Hide/Show Price, Stock, and Discount Fields -->
+<script>
+(function() {
+    const enableVariantsToggle = document.getElementById('enableVariants');
+    const regularPriceField = document.getElementById('regularPriceField');
+    const stockField = document.getElementById('stockField');
+    const discountTypeField = document.getElementById('discountTypeField');
+    const discountField = document.getElementById('discountField');
+    
+    function togglePriceStockDiscountFields() {
+        if (enableVariantsToggle && enableVariantsToggle.checked) {
+            // Hide fields when variants enabled
+            if (regularPriceField) regularPriceField.style.display = 'none';
+            if (stockField) stockField.style.display = 'none';
+            if (discountTypeField) discountTypeField.style.display = 'none';
+            if (discountField) discountField.style.display = 'none';
+        } else {
+            // Show fields when variants disabled
+            if (regularPriceField) regularPriceField.style.display = 'block';
+            if (stockField) stockField.style.display = 'block';
+            if (discountTypeField) discountTypeField.style.display = 'block';
+            if (discountField) discountField.style.display = 'block';
+        }
+    }
+    
+    // Set initial state
+    if (enableVariantsToggle) {
+        enableVariantsToggle.addEventListener('change', togglePriceStockDiscountFields);
+        // Check initial state
+        setTimeout(togglePriceStockDiscountFields, 200);
     }
 })();
 </script>

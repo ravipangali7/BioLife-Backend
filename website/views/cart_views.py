@@ -89,6 +89,27 @@ def add_to_cart(request, product_id):
                 messages.error(request, 'Quantity must be at least 1')
                 return redirect('website:product_detail', pk=product_id)
             
+            # Check if product has variants enabled
+            has_variants = product.product_varient and product.product_varient.get('enabled', False)
+            
+            # If product has variants but no variant provided, use is_primary variant
+            if has_variants and not variant:
+                combinations = product.product_varient.get('combinations', {})
+                for combo_key, combo_data in combinations.items():
+                    if isinstance(combo_data, dict) and combo_data.get('is_primary', False):
+                        variant = combo_key
+                        break
+                
+                # If still no variant found, return error
+                if not variant:
+                    messages.error(request, 'Please select a variant for this product')
+                    return redirect('website:product_detail', pk=product_id)
+            
+            # Validate variant selection for products with variants
+            if has_variants and not variant:
+                messages.error(request, 'Variant selection is required for this product')
+                return redirect('website:product_detail', pk=product_id)
+            
             # Check stock
             if variant:
                 stock = product.get_variant_stock(variant)

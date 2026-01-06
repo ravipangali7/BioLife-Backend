@@ -247,17 +247,77 @@ class Product(models.Model):
     def __str__(self):
         return self.name
     
+    def save(self, *args, **kwargs):
+        """Override save to calculate stock and price from variants if enabled"""
+        # Check if variants are enabled
+        if self.product_varient and self.product_varient.get('enabled', False):
+            combinations = self.product_varient.get('combinations', {})
+            if combinations:
+                # Calculate total stock from all combinations
+                total_stock = sum(
+                    combo.get('stock', 0) 
+                    for combo in combinations.values() 
+                    if isinstance(combo, dict)
+                )
+                self.stock = total_stock
+                
+                # Set regular_price from is_primary variant
+                for combo_key, combo_data in combinations.items():
+                    if isinstance(combo_data, dict) and combo_data.get('is_primary', False):
+                        primary_price = combo_data.get('price', 0)
+                        if primary_price:
+                            self.regular_price = primary_price
+                        break
+        
+        super().save(*args, **kwargs)
+    
     def get_final_price(self, variant_combination=None):
-        """Calculate final price considering discount and variant"""
+        """Calculate final price considering discount, variant, and flash deals"""
+        base_price = float(self.regular_price)
+        
+        # Get base price from variant if specified
         if variant_combination and self.product_varient:
             combinations = self.product_varient.get('combinations', {})
             if variant_combination in combinations:
-                base_price = float(combinations[variant_combination].get('price', self.regular_price))
-            else:
-                base_price = float(self.regular_price)
-        else:
-            base_price = float(self.regular_price)
+                variant_data = combinations[variant_combination]
+                if isinstance(variant_data, dict):
+                    base_price = float(variant_data.get('price', self.regular_price))
+                    
+                    # Apply variant-level discount if available
+                    variant_discount_type = variant_data.get('discount_type', '')
+                    variant_discount = float(variant_data.get('discount', 0))
+                    
+                    if variant_discount_type == 'flat' and variant_discount > 0:
+                        base_price = base_price - variant_discount
+                    elif variant_discount_type == 'percentage' and variant_discount > 0:
+                        base_price = base_price * (1 - variant_discount / 100)
+                    
+                    # Check for active flash deal (flash deals override variant discounts)
+                    active_flash_deal = self.get_active_flash_deal()
+                    if active_flash_deal:
+                        if active_flash_deal.discount_type == 'flat':
+                            final_price = base_price - float(active_flash_deal.discount)
+                        elif active_flash_deal.discount_type == 'percentage':
+                            final_price = base_price * (1 - float(active_flash_deal.discount) / 100)
+                        else:
+                            final_price = base_price
+                        return max(0, final_price)
+                    
+                    # Return variant price with variant discount applied
+                    return max(0, base_price)
         
+        # Check for active flash deal first (flash deals override product discounts)
+        active_flash_deal = self.get_active_flash_deal()
+        if active_flash_deal:
+            if active_flash_deal.discount_type == 'flat':
+                final_price = base_price - float(active_flash_deal.discount)
+            elif active_flash_deal.discount_type == 'percentage':
+                final_price = base_price * (1 - float(active_flash_deal.discount) / 100)
+            else:
+                final_price = base_price
+            return max(0, final_price)
+        
+        # Apply product-level discount if no flash deal
         if self.discount_type == 'flat':
             final_price = base_price - float(self.discount)
         elif self.discount_type == 'percentage':
@@ -266,6 +326,17 @@ class Product(models.Model):
             final_price = base_price
         
         return max(0, final_price)  # Ensure price is not negative
+    
+    def get_active_flash_deal(self):
+        """Get active flash deal for this product if any"""
+        from django.utils import timezone
+        now = timezone.now()
+        active_deals = self.flash_deals.filter(
+            is_active=True,
+            start_time__lte=now,
+            end_time__gte=now
+        ).first()
+        return active_deals
     
     def get_variant_stock(self, variant_combination=None):
         """Get stock for specific variant combination"""
@@ -402,6 +473,53 @@ class Coupon(models.Model):
         )
 
 
+class FlashDeal(models.Model):
+    """Flash deals with time-limited offers on products"""
+    DISCOUNT_TYPE_CHOICES = [
+        ('flat', 'Flat'),
+        ('percentage', 'Percentage'),
+    ]
+    
+    title = models.CharField(max_length=255)
+    products = models.ManyToManyField(Product, related_name='flash_deals')
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    image = models.ImageField(upload_to='flash_deals/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Flash Deal'
+        verbose_name_plural = 'Flash Deals'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.title
+    
+    def is_active_now(self):
+        """Check if flash deal is currently active"""
+        from django.utils import timezone
+        now = timezone.now()
+        return (
+            self.is_active and
+            self.start_time <= now <= self.end_time
+        )
+    
+    def get_remaining_time(self):
+        """Calculate time remaining until deal ends (in seconds)"""
+        from django.utils import timezone
+        now = timezone.now()
+        if now < self.start_time:
+            return None  # Deal hasn't started yet
+        if now > self.end_time:
+            return 0  # Deal has ended
+        delta = self.end_time - now
+        return int(delta.total_seconds())
+
+
 class CMSPage(models.Model):
     """Content management system pages"""
     FOOTER_SECTION_CHOICES = [
@@ -492,6 +610,7 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
     price = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    stock_deducted = models.BooleanField(default=False, help_text="Track if stock was deducted when order was delivered and paid")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

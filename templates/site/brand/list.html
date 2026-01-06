@@ -30,18 +30,18 @@
     {% if products %}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {% for product in products %}
-            <div class="card overflow-hidden group">
+            <div class="card overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                 <a href="{% url 'website:product_detail' product.id %}">
                     <div class="relative overflow-hidden">
                         {% if product.image %}
                             <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-64 object-cover product-image">
                         {% else %}
-                            <div class="w-full h-64 bg-gray-100 flex items-center justify-center">
+                            <div class="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                                 <i data-feather="image" class="w-16 h-16 text-gray-400"></i>
                             </div>
                         {% endif %}
                         {% if product.discount %}
-                            <span class="absolute top-3 right-3 bg-biolife-blue text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-md">
+                            <span class="absolute top-3 right-3 bg-gradient-to-r from-biolife-blue to-biolife-blue-dark text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
                                 {% if product.discount_type == 'percentage' %}
                                     -{{ product.discount }}%
                                 {% else %}

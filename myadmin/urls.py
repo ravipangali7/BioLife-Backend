@@ -95,6 +95,13 @@ urlpatterns = [
     path('cmspages/<int:pk>/edit/', marketing_views.cmspage_edit, name='cmspage_edit'),
     path('cmspages/<int:pk>/delete/', marketing_views.cmspage_delete, name='cmspage_delete'),
     
+    # Flash Deals
+    path('flashdeals/', marketing_views.flashdeal_list, name='flashdeal_list'),
+    path('flashdeals/create/', marketing_views.flashdeal_create, name='flashdeal_create'),
+    path('flashdeals/<int:pk>/', marketing_views.flashdeal_detail, name='flashdeal_detail'),
+    path('flashdeals/<int:pk>/edit/', marketing_views.flashdeal_edit, name='flashdeal_edit'),
+    path('flashdeals/<int:pk>/delete/', marketing_views.flashdeal_delete, name='flashdeal_delete'),
+    
     # Brands
     path('brands/', brand_views.brand_list, name='brand_list'),
     path('brands/create/', brand_views.brand_create, name='brand_create'),

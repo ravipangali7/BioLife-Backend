@@ -1,0 +1,123 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Flash Deal Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:flashdeal_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:flashdeal_edit' flash_deal.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:flashdeal_delete' flash_deal.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Flash Deal Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ flash_deal.title }}</h3>
+                    <hr>
+                    
+                    {% if flash_deal.image %}
+                    <div class="mb-3">
+                        <img src="{{ flash_deal.image.url }}" alt="{{ flash_deal.title }}" class="img-fluid" style="max-height: 200px;">
+                    </div>
+                    {% endif %}
+                    
+                    <p><strong>Discount Type:</strong> {{ flash_deal.get_discount_type_display }}</p>
+                    <p><strong>Discount:</strong> {{ flash_deal.discount }}{% if flash_deal.discount_type == 'percentage' %}%{% else %}Rs{% endif %}</p>
+                    <p><strong>Start Time:</strong> {{ flash_deal.start_time|date:"M d, Y H:i" }}</p>
+                    <p><strong>End Time:</strong> {{ flash_deal.end_time|date:"M d, Y H:i" }}</p>
+                    
+                    <p><strong>Status:</strong>
+                        {% if flash_deal.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </p>
+                    
+                    <p><strong>Currently Active:</strong>
+                        {% if is_active_now %}
+                        <span class="badge bg-success">Yes</span>
+                        {% if time_remaining %}
+                        <span class="text-muted">({{ time_remaining|floatformat:0 }} seconds remaining)</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="badge bg-danger">No</span>
+                        {% endif %}
+                    </p>
+                    
+                    <p><strong>Products Count:</strong> {{ products.count }} products</p>
+                    <p><strong>Created:</strong> {{ flash_deal.created_at|date:"M d, Y" }}</p>
+                    <p><strong>Updated:</strong> {{ flash_deal.updated_at|date:"M d, Y" }}</p>
+                </div>
+            </div>
+
+            <!-- Products List -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Associated Products</h5>
+                </div>
+                <div class="card-body">
+                    {% if products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>SKU</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>
+                                        {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="50" height="50" class="rounded">
+                                        {% else %}
+                                        <span class="text-muted">No Image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ product.name }}</strong></td>
+                                    <td>{{ product.sku }}</td>
+                                    <td>Rs {{ product.get_final_price|floatformat:2 }}</td>
+                                    <td>
+                                        {% if product.stock > 0 %}
+                                        <span class="badge bg-success">{{ product.stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'myadmin:product_detail' product.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No products associated with this flash deal.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

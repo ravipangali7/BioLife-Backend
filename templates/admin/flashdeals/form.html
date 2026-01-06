@@ -1,0 +1,107 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">{% if flash_deal %}Edit{% else %}Create{% endif %} Flash Deal</h1>
+        <a href="{% url 'myadmin:flashdeal_list' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Flash Deal Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Title *</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Products *</label>
+                            <small class="text-muted d-block mb-2">Hold Ctrl (Windows) or Cmd (Mac) to select multiple products</small>
+                            {{ form.products }}
+                            {% if form.products.errors %}
+                            <div class="text-danger">{{ form.products.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Discount Type *</label>
+                                {{ form.discount_type }}
+                                {% if form.discount_type.errors %}
+                                <div class="text-danger">{{ form.discount_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Discount *</label>
+                                {{ form.discount }}
+                                {% if form.discount.errors %}
+                                <div class="text-danger">{{ form.discount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Time *</label>
+                                {{ form.start_time }}
+                                {% if form.start_time.errors %}
+                                <div class="text-danger">{{ form.start_time.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Time *</label>
+                                {{ form.end_time }}
+                                {% if form.end_time.errors %}
+                                <div class="text-danger">{{ form.end_time.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Banner Image (Optional)</label>
+                            {{ form.image }}
+                            {% if flash_deal and flash_deal.image %}
+                            <div class="mt-2">
+                                <small class="text-muted">Current image:</small><br>
+                                <img src="{{ flash_deal.image.url }}" alt="{{ flash_deal.title }}" class="img-thumbnail" style="max-height: 100px;">
+                            </div>
+                            {% endif %}
+                            {% if form.image.errors %}
+                            <div class="text-danger">{{ form.image.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-check">
+                                {{ form.is_active }}
+                                <span class="form-check-label">Active</span>
+                            </label>
+                            {% if form.is_active.errors %}
+                            <div class="text-danger">{{ form.is_active.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <a href="{% url 'myadmin:flashdeal_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

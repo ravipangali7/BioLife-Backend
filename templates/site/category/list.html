@@ -34,16 +34,16 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {% for subcat in subcategories %}
                     <a href="{% url 'website:subcategory_detail' category.id subcat.id %}" class="text-center group">
-                        <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow mb-2">
+                        <div class="card-gradient p-4 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 mb-2">
                             {% if subcat.image %}
-                                <img src="{{ subcat.image.url }}" alt="{{ subcat.name }}" class="w-full h-20 object-cover rounded-lg mb-2 group-hover:scale-105 transition-transform">
+                                <img src="{{ subcat.image.url }}" alt="{{ subcat.name }}" class="w-full h-20 object-cover rounded-xl mb-2 group-hover:scale-110 transition-transform duration-500">
                             {% else %}
-                                <div class="w-full h-20 bg-biolife-green-light rounded-lg mb-2 flex items-center justify-center">
-                                    <i data-feather="package" class="w-8 h-8 text-biolife-green"></i>
+                                <div class="w-full h-20 bg-gradient-to-br from-biolife-green-light to-biolife-green/20 rounded-xl mb-2 flex items-center justify-center group-hover:from-biolife-green group-hover:to-biolife-green-dark transition-all duration-300">
+                                    <i data-feather="package" class="w-8 h-8 text-biolife-green group-hover:text-white transition-colors"></i>
                                 </div>
                             {% endif %}
                         </div>
-                        <h3 class="text-sm font-medium text-gray-700 group-hover:text-biolife-green transition-colors">{{ subcat.name }}</h3>
+                        <h3 class="text-sm font-semibold text-gray-700 group-hover:text-biolife-green transition-colors">{{ subcat.name }}</h3>
                     </a>
                     {% endfor %}
                 </div>
