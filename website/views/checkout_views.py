@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from core.models import Order, OrderItem, Address, Coupon, Product
+from core.models import Order, OrderItem, Address, Coupon, Product, ShippingCharge
 from core.stock_utils import deduct_stock, validate_stock_availability
 from .cart_views import get_cart
 from decimal import Decimal
@@ -17,8 +17,8 @@ def checkout(request):
         messages.warning(request, 'Your cart is empty')
         return redirect('website:cart')
     
-    # Get user addresses
-    addresses = Address.objects.filter(user=request.user)
+    # Get user addresses with shipping_charge prefetched
+    addresses = Address.objects.filter(user=request.user).select_related('shipping_charge')
     
     # Calculate cart totals (same logic as cart view)
     subtotal = Decimal('0.00')
@@ -31,8 +31,18 @@ def checkout(request):
         except Product.DoesNotExist:
             continue
     
-    shipping = Decimal('0.00') if subtotal >= 50 else Decimal('5.00')
-    tax = subtotal * Decimal('0.10')
+    # Calculate initial shipping charge based on first address (if addresses exist)
+    shipping = Decimal('0.00')
+    if addresses.exists():
+        # Use first address as default (will be the selected billing address)
+        first_address = addresses.first()
+        if first_address.shipping_charge:
+            shipping = first_address.shipping_charge.charge
+        else:
+            # Fallback to old logic if no shipping charge set
+            shipping = Decimal('0.00') if subtotal >= 50 else Decimal('5.00')
+    
+    tax = Decimal('0.00')  # Tax removed from system
     
     discount = Decimal('0.00')
     coupon = None
@@ -47,7 +57,7 @@ def checkout(request):
         except Coupon.DoesNotExist:
             pass
     
-    total = subtotal + shipping + tax - discount
+    total = subtotal + shipping - discount
     
     if request.method == 'POST':
         billing_address_id = request.POST.get('billing_address')
@@ -61,6 +71,17 @@ def checkout(request):
                 shipping_address = billing_address
             else:
                 shipping_address = Address.objects.get(pk=shipping_address_id, user=request.user)
+            
+            # Get shipping charge from shipping address
+            shipping_charge_obj = shipping_address.shipping_charge
+            if shipping_charge_obj:
+                shipping = shipping_charge_obj.charge
+            else:
+                # Fallback to old logic if no shipping charge set
+                shipping = Decimal('0.00') if subtotal >= 50 else Decimal('5.00')
+            
+            # Recalculate total with correct shipping
+            total = subtotal + shipping - discount
             
             # Validate stock availability before creating order
             stock_errors = []
@@ -92,6 +113,8 @@ def checkout(request):
                     total=total,
                     payment_status='pending',
                     order_status='pending',
+                    payment_method='cod',
+                    shipping_charge=shipping_charge_obj,
                 )
                 
                 # Create order items and deduct stock
@@ -123,10 +146,6 @@ def checkout(request):
                         
                         # Note: Stock deduction will happen when order is delivered and paid (via signal)
                         # Don't deduct stock here during order creation
-                        
-                        if not success:
-                            # This shouldn't happen after validation, but handle it
-                            messages.warning(request, f"Stock deduction warning for {product.name}: {message}")
                             
                     except Product.DoesNotExist:
                         continue

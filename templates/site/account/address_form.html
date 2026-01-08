@@ -52,13 +52,19 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <div>
-                        <label for="city" class="block text-gray-700 font-semibold mb-2">City</label>
-                        <input type="text" 
-                               id="city" 
+                        <label for="city" class="block text-gray-700 font-semibold mb-2">City <span class="text-red-500">*</span></label>
+                        <select id="city" 
                                name="city" 
-                               value="{{ address.city|default:'' }}"
                                required
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green">
+                            <option value="">Select City</option>
+                            {% for shipping_charge in shipping_charges %}
+                            <option value="{{ shipping_charge.name }}" {% if address.shipping_charge and address.shipping_charge.id == shipping_charge.id %}selected{% elif address.city == shipping_charge.name %}selected{% endif %}>
+                                {{ shipping_charge.name }} (Rs {{ shipping_charge.charge|floatformat:2 }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Shipping charge will be applied based on selected city</p>
                     </div>
                     
                     <div>

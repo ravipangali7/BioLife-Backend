@@ -18,11 +18,12 @@ def settings_view(request):
         
     SettingForm = modelform_factory(
         Setting,
-        fields=['system_balance', 'sale_commision', 'is_withdrawal', 'min_withdrawal', 'max_withdrawal', 'low_stock_threshold',
+        fields=['system_balance', 'sale_commision', 'user_refer_amount', 'is_withdrawal', 'min_withdrawal', 'max_withdrawal', 'low_stock_threshold',
                 'email', 'phone', 'address', 'facebook_url', 'instagram_url', 'youtube_url', 'tiktok_url'],
         widgets={
             'system_balance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'sale_commision': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'user_refer_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'is_withdrawal': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'min_withdrawal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'max_withdrawal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),

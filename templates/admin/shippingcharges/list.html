@@ -1,0 +1,90 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Shipping Charges</h1>
+        <a href="{% url 'myadmin:shippingcharge_create' %}" class="btn btn-primary ms-2">
+            <i class="align-middle" data-feather="plus"></i> Add Shipping Charge
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Shipping Charge List</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-9">
+                                <input type="text" name="search" class="form-control" placeholder="Search by city name..." value="{{ search_query }}">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                                <a href="{% url 'myadmin:shippingcharge_list' %}" class="btn btn-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>City Name</th>
+                                <th>Charge (Rs)</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for shipping_charge in shipping_charges %}
+                            <tr>
+                                <td><strong>{{ shipping_charge.name }}</strong></td>
+                                <td>Rs {{ shipping_charge.charge|floatformat:2 }}</td>
+                                <td>{{ shipping_charge.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:shippingcharge_detail' shipping_charge.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:shippingcharge_edit' shipping_charge.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:shippingcharge_delete' shipping_charge.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="align-middle" data-feather="trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No shipping charges found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a></li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

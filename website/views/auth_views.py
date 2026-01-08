@@ -9,7 +9,8 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.crypto import get_random_string
 import secrets
 from datetime import timedelta
-from core.models import User, PasswordResetOTP
+from core.models import User, PasswordResetOTP, Setting, Transaction
+from decimal import Decimal
 
 
 def login_view(request):
@@ -40,8 +41,12 @@ def login_view(request):
 
 def register_view(request):
     """User registration"""
-    if request.user.is_authenticated:
+    # Allow authenticated users to access if they're coming from IBO link
+    if request.user.is_authenticated and request.GET.get('account_type') != 'influencer':
         return redirect('website:home')
+    
+    # Get earn_code from GET parameter (for referral links) or POST
+    earn_code = request.GET.get('earn_code', '') or request.POST.get('earn_code', '').strip()
     
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -49,6 +54,9 @@ def register_view(request):
         password = request.POST.get('password', '')
         password_confirm = request.POST.get('password_confirm', '')
         account_type = request.POST.get('account_type', 'customer')
+        # Get earn_code from POST if not already set from GET
+        if not earn_code:
+            earn_code = request.POST.get('earn_code', '').strip()
         
         # Validation
         if not all([name, email, password, password_confirm]):
@@ -93,6 +101,39 @@ def register_view(request):
                 login(request, user)
                 messages.success(request, f'Welcome to BioLife, {user.name}!')
                 
+                # Process referral if earn_code provided
+                if earn_code:
+                    try:
+                        # Find influencer with matching earn_code
+                        influencer = User.objects.get(earn_code=earn_code, is_influencer=True)
+                        setting = Setting.objects.first()
+                        
+                        if setting and setting.user_refer_amount and setting.user_refer_amount > 0:
+                            refer_amount = Decimal(str(setting.user_refer_amount))
+                            
+                            # Add balance to influencer's wallet
+                            influencer.balance = Decimal(str(influencer.balance)) + refer_amount
+                            influencer.save()
+                            
+                            # Create transaction record
+                            Transaction.objects.create(
+                                user=influencer,
+                                amount=refer_amount,
+                                transaction_type='in',
+                                remarks=f'Referral reward for user registration: {user.email}',
+                                status='success'
+                            )
+                            
+                            messages.info(request, f'Thank you for using referral code! The referrer has been rewarded.')
+                    except User.DoesNotExist:
+                        # Invalid earn_code, silently ignore
+                        pass
+                    except Exception as e:
+                        # Log error but don't fail registration
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Error processing referral: {str(e)}')
+                
                 # Redirect influencers to profile to complete KYC
                 if is_influencer:
                     messages.info(request, 'Please complete your KYC verification in your profile to access Earn Rewards and Wallet features.')
@@ -102,7 +143,10 @@ def register_view(request):
             except Exception as e:
                 messages.error(request, f'Registration failed: {str(e)}')
     
-    return render(request, 'site/auth/register.html')
+    context = {
+        'earn_code': earn_code,  # Pass to template for display
+    }
+    return render(request, 'site/auth/register.html', context)
 
 
 def logout_view(request):

@@ -121,6 +121,22 @@
                         {% endif %}
                     </div>
                     
+                    <!-- PAN Card Fields (Optional) -->
+                    {% if user.pan_no or user.pan_card_image %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">PAN Card Information (Optional)</h6>
+                        {% if user.pan_no %}
+                        <p><strong>PAN Number:</strong> {{ user.pan_no }}</p>
+                        {% endif %}
+                        {% if user.pan_card_image %}
+                        <div class="mt-2">
+                            <p><strong>PAN Card Image:</strong></p>
+                            <img src="{{ user.pan_card_image.url }}" alt="PAN Card" class="img-fluid border rounded" style="max-height: 200px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
                     {% if user.kyc_status == 'pending' %}
                     <div class="d-flex gap-2">
                         <form method="post" action="{% url 'myadmin:kyc_approve' user.pk %}" class="d-inline">
@@ -150,13 +166,38 @@
 
             <!-- Payment Information Section -->
             {% if user.is_influencer %}
-            <div class="card mt-3 border-info">
-                <div class="card-header bg-info text-white">
+            <div class="card mt-3 {% if user.payment_setting_status == 'approved' %}border-success{% elif user.payment_setting_status == 'rejected' %}border-danger{% elif user.payment_setting_status == 'pending' %}border-warning{% else %}border-info{% endif %}">
+                <div class="card-header {% if user.payment_setting_status == 'approved' %}bg-success text-white{% elif user.payment_setting_status == 'rejected' %}bg-danger text-white{% elif user.payment_setting_status == 'pending' %}bg-warning text-white{% else %}bg-info text-white{% endif %}">
                     <h5 class="card-title mb-0">
                         <i class="align-middle" data-feather="credit-card"></i> Payment Information
+                        {% if user.payment_setting_status == 'approved' %}
+                        <span class="badge bg-light text-success ms-2">Approved</span>
+                        {% elif user.payment_setting_status == 'rejected' %}
+                        <span class="badge bg-light text-danger ms-2">Rejected</span>
+                        {% elif user.payment_setting_status == 'pending' %}
+                        <span class="badge bg-light text-warning ms-2">Pending</span>
+                        {% else %}
+                        <span class="badge bg-light text-info ms-2">Not Set</span>
+                        {% endif %}
                     </h5>
                 </div>
                 <div class="card-body">
+                    {% if user.payment_setting_status %}
+                    <div class="mb-3">
+                        <p><strong>Status:</strong> 
+                            <span class="badge {% if user.payment_setting_status == 'approved' %}bg-success{% elif user.payment_setting_status == 'rejected' %}bg-danger{% elif user.payment_setting_status == 'pending' %}bg-warning{% endif %}">
+                                {{ user.get_payment_setting_status_display }}
+                            </span>
+                        </p>
+                        {% if user.payment_setting_reject_reason %}
+                        <div class="alert alert-danger">
+                            <strong>Rejection Reason:</strong><br>
+                            {{ user.payment_setting_reject_reason }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
                     {% if user.esewa_number or user.khalti_number or user.qr_code %}
                     <div class="row mb-3">
                         {% if user.esewa_number %}
@@ -180,6 +221,27 @@
                     </div>
                     {% else %}
                     <p class="text-muted">No payment information set by user.</p>
+                    {% endif %}
+                    
+                    {% if user.payment_setting_status == 'pending' %}
+                    <div class="d-flex gap-2">
+                        <form method="post" action="{% url 'myadmin:payment_setting_approve' user.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success" data-confirm data-confirm-title="Confirm Payment Setting Approval" data-confirm-text="Approve payment settings for {{ user.email }}?">
+                                <i class="align-middle" data-feather="check"></i> Approve
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectPaymentModal">
+                            <i class="align-middle" data-feather="x"></i> Reject
+                        </button>
+                    </div>
+                    {% elif user.payment_setting_status == 'rejected' %}
+                    <form method="post" action="{% url 'myadmin:payment_setting_approve' user.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" data-confirm data-confirm-title="Confirm Payment Setting Approval" data-confirm-text="Approve payment settings for {{ user.email }}?">
+                            <i class="align-middle" data-feather="check"></i> Approve
+                        </button>
+                    </form>
                     {% endif %}
                 </div>
             </div>
@@ -527,6 +589,37 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">
                         <i class="align-middle" data-feather="x"></i> Reject KYC
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Reject Payment Setting Modal -->
+{% if user.is_influencer and user.payment_setting_status == 'pending' %}
+<div class="modal fade" id="rejectPaymentModal" tabindex="-1" aria-labelledby="rejectPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'myadmin:payment_setting_reject' user.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectPaymentModalLabel">Reject Payment Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reject the payment settings for <strong>{{ user.email }}</strong>?</p>
+                    <div class="mb-3">
+                        <label for="payment_reject_reason" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea name="reject_reason" id="payment_reject_reason" class="form-control" rows="4" required placeholder="Please provide a reason for rejection..."></textarea>
+                        <small class="text-muted">This reason will be shown to the user.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="align-middle" data-feather="x"></i> Reject Payment Settings
                     </button>
                 </div>
             </form>

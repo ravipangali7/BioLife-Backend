@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from core.models import Order, Address, Wishlist, Product, Setting, Withdrawal, Transaction
+from core.models import Order, Address, Wishlist, Product, Setting, Withdrawal, Transaction, ShippingCharge
 
 
 @login_required
@@ -12,10 +12,16 @@ def account_dashboard(request):
     recent_orders = Order.objects.filter(user=user).order_by('-created_at')[:5]
     pending_orders = Order.objects.filter(user=user, order_status='pending').count()
     
+    # Build referral URL if user has earn_code
+    referral_url = None
+    if user.earn_code:
+        referral_url = request.build_absolute_uri(f'/register/?earn_code={user.earn_code}')
+    
     context = {
         'user': user,
         'recent_orders': recent_orders,
         'pending_orders': pending_orders,
+        'referral_url': referral_url,
     }
     
     return render(request, 'site/account/dashboard.html', context)
@@ -94,14 +100,25 @@ def account_addresses(request):
 @login_required
 def account_address_create(request):
     """Create new address"""
+    shipping_charges = ShippingCharge.objects.all().order_by('name')
+    
     if request.method == 'POST':
         try:
+            city_name = request.POST.get('city', '')
+            shipping_charge = None
+            if city_name:
+                try:
+                    shipping_charge = ShippingCharge.objects.get(name=city_name)
+                except ShippingCharge.DoesNotExist:
+                    pass
+            
             Address.objects.create(
                 user=request.user,
                 title=request.POST.get('title', ''),
                 phone=request.POST.get('phone', ''),
                 address=request.POST.get('address', ''),
-                city=request.POST.get('city', ''),
+                city=city_name,
+                shipping_charge=shipping_charge,
                 state=request.POST.get('state', ''),
                 country=request.POST.get('country', ''),
             )
@@ -110,7 +127,11 @@ def account_address_create(request):
         except Exception as e:
             messages.error(request, f'Error adding address: {str(e)}')
     
-    return render(request, 'site/account/address_form.html', {'action': 'Add'})
+    context = {
+        'action': 'Add',
+        'shipping_charges': shipping_charges,
+    }
+    return render(request, 'site/account/address_form.html', context)
 
 
 @login_required
@@ -118,12 +139,23 @@ def account_address_edit(request, address_id):
     """Edit address"""
     address = get_object_or_404(Address, pk=address_id, user=request.user)
     
+    shipping_charges = ShippingCharge.objects.all().order_by('name')
+    
     if request.method == 'POST':
         try:
+            city_name = request.POST.get('city', '')
+            shipping_charge = None
+            if city_name:
+                try:
+                    shipping_charge = ShippingCharge.objects.get(name=city_name)
+                except ShippingCharge.DoesNotExist:
+                    pass
+            
             address.title = request.POST.get('title', address.title)
             address.phone = request.POST.get('phone', address.phone)
             address.address = request.POST.get('address', address.address)
-            address.city = request.POST.get('city', address.city)
+            address.city = city_name
+            address.shipping_charge = shipping_charge
             address.state = request.POST.get('state', address.state)
             address.country = request.POST.get('country', address.country)
             address.save()
@@ -135,6 +167,7 @@ def account_address_edit(request, address_id):
     context = {
         'address': address,
         'action': 'Edit',
+        'shipping_charges': shipping_charges,
     }
     
     return render(request, 'site/account/address_form.html', context)
@@ -146,8 +179,20 @@ def account_address_delete(request, address_id):
     address = get_object_or_404(Address, pk=address_id, user=request.user)
     
     if request.method == 'POST':
-        address.delete()
-        messages.success(request, 'Address deleted successfully')
+        # Check if address is referenced by any orders
+        billing_orders_count = address.billing_orders.count()
+        shipping_orders_count = address.shipping_orders.count()
+        
+        if billing_orders_count > 0 or shipping_orders_count > 0:
+            messages.error(request, 'Cannot delete this address because it is associated with existing orders. Please contact support if you need to remove it.')
+            return redirect('website:account_addresses')
+        
+        try:
+            address.delete()
+            messages.success(request, 'Address deleted successfully')
+        except Exception as e:
+            messages.error(request, f'Error deleting address: {str(e)}')
+        
         return redirect('website:account_addresses')
     
     context = {
@@ -234,7 +279,12 @@ def account_kyc(request):
         if request.FILES.get('citizenship_back'):
             user.citizenship_back = request.FILES['citizenship_back']
         
-        # Validate and set status
+        # Update PAN fields (optional)
+        user.pan_no = request.POST.get('pan_no', '').strip() or None
+        if request.FILES.get('pan_card_image'):
+            user.pan_card_image = request.FILES['pan_card_image']
+        
+        # Validate and set status (PAN fields are optional, not required)
         if user.citizenship_no and user.citizenship_front and user.citizenship_back:
             # If all fields provided, set to pending and clear reject reason
             user.kyc_status = 'pending'
@@ -270,7 +320,10 @@ def account_payment(request):
         messages.error(request, 'This page is only available for influencers.')
         return redirect('website:account_dashboard')
     
-    if request.method == 'POST':
+    # Check if payment setting is approved - if so, disable editing
+    can_edit = user.payment_setting_status != 'approved'
+    
+    if request.method == 'POST' and can_edit:
         # Update payment fields
         user.esewa_number = request.POST.get('esewa_number', '').strip() or None
         user.khalti_number = request.POST.get('khalti_number', '').strip() or None
@@ -278,12 +331,19 @@ def account_payment(request):
         if request.FILES.get('qr_code'):
             user.qr_code = request.FILES['qr_code']
         
+        # Reset status to pending when payment info is updated
+        user.payment_setting_status = 'pending'
+        user.payment_setting_reject_reason = None
         user.save()
-        messages.success(request, 'Payment information updated successfully.')
+        messages.success(request, 'Payment information updated successfully. Your payment settings will be reviewed by admin.')
+        return redirect('website:account_payment')
+    elif request.method == 'POST' and not can_edit:
+        messages.warning(request, 'Your payment settings have been approved. You cannot edit them.')
         return redirect('website:account_payment')
     
     context = {
         'user': user,
+        'can_edit': can_edit,
     }
     
     return render(request, 'site/account/payment.html', context)

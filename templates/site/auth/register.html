@@ -23,14 +23,14 @@
                     <label class="block text-gray-700 font-bold mb-4 text-sm uppercase tracking-wide">I want to register as:</label>
                     <div class="grid grid-cols-2 gap-4">
                         <label class="relative cursor-pointer group">
-                            <input type="radio" name="account_type" value="customer" class="peer sr-only" checked>
+                            <input type="radio" name="account_type" value="customer" class="peer sr-only" {% if request.GET.account_type != 'influencer' %}checked{% endif %}>
                             <div class="flex items-center justify-center p-5 border-2 border-gray-300 rounded-xl peer-checked:border-biolife-green peer-checked:bg-gradient-to-br peer-checked:from-biolife-green-light peer-checked:to-biolife-green/20 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 peer-checked:shadow-xl">
                                 <i data-feather="shopping-bag" class="w-6 h-6 mr-2 text-gray-600 peer-checked:text-biolife-green transition-colors"></i>
                                 <span class="font-bold text-gray-700 peer-checked:text-biolife-green transition-colors">Customer</span>
                             </div>
                         </label>
                         <label class="relative cursor-pointer group">
-                            <input type="radio" name="account_type" value="influencer" class="peer sr-only">
+                            <input type="radio" name="account_type" value="influencer" class="peer sr-only" {% if request.GET.account_type == 'influencer' %}checked{% endif %}>
                             <div class="flex items-center justify-center p-5 border-2 border-gray-300 rounded-xl peer-checked:border-biolife-green peer-checked:bg-gradient-to-br peer-checked:from-biolife-green-light peer-checked:to-biolife-green/20 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 peer-checked:shadow-xl">
                                 <i data-feather="star" class="w-6 h-6 mr-2 text-gray-600 peer-checked:text-biolife-green transition-colors"></i>
                                 <span class="font-bold text-gray-700 peer-checked:text-biolife-green transition-colors">Influencer</span>
@@ -81,6 +81,21 @@
                            minlength="8"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
                            placeholder="Confirm your password">
+                </div>
+                
+                <!-- Referral Code (Optional) -->
+                <div>
+                    <label for="earn_code" class="block text-gray-700 font-semibold mb-2">
+                        Referral Code <span class="text-gray-500 font-normal text-sm">(Optional)</span>
+                    </label>
+                    <input type="text" 
+                           id="earn_code" 
+                           name="earn_code" 
+                           value="{{ earn_code|default:'' }}"
+                           maxlength="10"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biolife-green"
+                           placeholder="Enter referral code if you have one">
+                    <p class="text-xs text-gray-500 mt-1">Have a referral code? Enter it here to support your referrer</p>
                 </div>
                 
                 <!-- Social Media Links Section (for Influencers only) -->

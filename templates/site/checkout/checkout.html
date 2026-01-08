@@ -27,6 +27,8 @@
                                    value="{{ address.id }}" 
                                    required
                                    class="sr-only billing-address-radio"
+                                   data-shipping-charge="{% if address.shipping_charge %}{{ address.shipping_charge.charge|floatformat:2 }}{% else %}0.00{% endif %}"
+                                   data-has-shipping-charge="{% if address.shipping_charge %}true{% else %}false{% endif %}"
                                    {% if forloop.first %}checked{% endif %}>
                             <div class="address-card border-2 border-gray-200 rounded-2xl p-6 hover:border-biolife-green transition-all duration-300 hover:shadow-xl bg-white">
                                 <div class="flex items-start justify-between">
@@ -92,6 +94,8 @@
                                    name="shipping_address" 
                                    value="{{ address.id }}" 
                                    class="sr-only shipping-address-radio"
+                                   data-shipping-charge="{% if address.shipping_charge %}{{ address.shipping_charge.charge|floatformat:2 }}{% else %}0.00{% endif %}"
+                                   data-has-shipping-charge="{% if address.shipping_charge %}true{% else %}false{% endif %}"
                                    disabled>
                             <div class="address-card border-2 border-gray-200 rounded-xl p-5 hover:border-biolife-green transition-all duration-200 hover:shadow-md opacity-50">
                                 <div class="flex items-start justify-between">
@@ -125,18 +129,18 @@
                 {% endif %}
             </div>
             
-            <!-- Payment Method (Placeholder) -->
+            <!-- Payment Method -->
             <div class="card-gradient p-6 md:p-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                     <i data-feather="credit-card" class="w-6 h-6 mr-3 text-biolife-green"></i>
                     Payment Method
                 </h2>
-                <div class="border-2 border-gray-200 rounded-xl p-6 bg-gray-50">
+                <div class="border-2 border-biolife-green rounded-xl p-6 bg-green-50">
                     <div class="flex items-center mb-3">
-                        <i data-feather="credit-card" class="w-6 h-6 text-gray-400 mr-3"></i>
-                        <p class="text-gray-700 font-medium">Payment integration coming soon</p>
+                        <i data-feather="check-circle" class="w-6 h-6 text-biolife-green mr-3"></i>
+                        <p class="text-gray-700 font-medium">Cash on Delivery (COD)</p>
                     </div>
-                    <p class="text-sm text-gray-600">For now, orders will be marked as "Pending" payment and processed manually.</p>
+                    <p class="text-sm text-gray-600">Pay when you receive your order. No payment required upfront.</p>
                 </div>
             </div>
         </div>
@@ -153,11 +157,7 @@
                     </div>
                     <div class="flex justify-between text-gray-700">
                         <span>Shipping:</span>
-                        <span>Rs {{ shipping|floatformat:2 }}</span>
-                    </div>
-                    <div class="flex justify-between text-gray-700">
-                        <span>Tax:</span>
-                        <span>Rs {{ tax|floatformat:2 }}</span>
+                        <span id="shipping-amount">Rs {{ shipping|floatformat:2 }}</span>
                     </div>
                     {% if discount > 0 %}
                     <div class="flex justify-between text-green-600">
@@ -167,7 +167,7 @@
                     {% endif %}
                     <div class="border-t pt-3 flex justify-between text-lg font-bold text-gray-800">
                         <span>Total:</span>
-                        <span class="text-biolife-green">Rs {{ total|floatformat:2 }}</span>
+                        <span class="text-biolife-green" id="total-amount">Rs {{ total|floatformat:2 }}</span>
                     </div>
                 </div>
                 
@@ -206,11 +206,62 @@
 </style>
 
 <script>
+    // Store order summary values
+    const subtotal = parseFloat('{{ subtotal|floatformat:2 }}');
+    const discount = parseFloat('{{ discount|floatformat:2 }}');
+    
     // Handle same address checkbox
     const useSameAddressCheckbox = document.getElementById('use-same-address');
     const shippingAddressLabels = document.querySelectorAll('.shipping-address-label');
     const shippingAddressRadios = document.querySelectorAll('.shipping-address-radio');
     const billingAddressRadios = document.querySelectorAll('.billing-address-radio');
+    
+    // Get DOM elements for order summary
+    const shippingAmountEl = document.getElementById('shipping-amount');
+    const totalAmountEl = document.getElementById('total-amount');
+    
+    // Function to update order summary
+    function updateOrderSummary() {
+        let shippingCharge = 0.00;
+        let hasShippingChargeObj = false;
+        
+        // Determine which address to use for shipping
+        if (useSameAddressCheckbox?.checked) {
+            // Use billing address for shipping
+            const selectedBillingRadio = document.querySelector('.billing-address-radio:checked');
+            if (selectedBillingRadio) {
+                const charge = selectedBillingRadio.getAttribute('data-shipping-charge');
+                shippingCharge = parseFloat(charge) || 0.00;
+                hasShippingChargeObj = selectedBillingRadio.getAttribute('data-has-shipping-charge') === 'true';
+            }
+        } else {
+            // Use selected shipping address
+            const selectedShippingRadio = document.querySelector('.shipping-address-radio:checked');
+            if (selectedShippingRadio) {
+                const charge = selectedShippingRadio.getAttribute('data-shipping-charge');
+                shippingCharge = parseFloat(charge) || 0.00;
+                hasShippingChargeObj = selectedShippingRadio.getAttribute('data-has-shipping-charge') === 'true';
+            }
+        }
+        
+        // Apply fallback logic only if address doesn't have a shipping_charge object
+        // If shipping_charge object exists but charge is 0.00, use 0.00 (don't apply fallback)
+        if (!hasShippingChargeObj) {
+            // Fallback: 0.00 if subtotal >= 50, else 5.00
+            shippingCharge = subtotal >= 50 ? 0.00 : 5.00;
+        }
+        
+        // Calculate total
+        const total = subtotal + shippingCharge - discount;
+        
+        // Update DOM
+        if (shippingAmountEl) {
+            shippingAmountEl.textContent = 'Rs ' + shippingCharge.toFixed(2);
+        }
+        if (totalAmountEl) {
+            totalAmountEl.textContent = 'Rs ' + total.toFixed(2);
+        }
+    }
     
     function updateShippingAddresses() {
         if (useSameAddressCheckbox.checked) {
@@ -232,6 +283,8 @@
                 label.style.pointerEvents = 'auto';
             });
         }
+        // Update order summary when checkbox changes
+        updateOrderSummary();
     }
     
     useSameAddressCheckbox?.addEventListener('change', updateShippingAddresses);
@@ -278,21 +331,16 @@
     
     // Add event listeners to all address radios
     [...billingAddressRadios, ...shippingAddressRadios].forEach(radio => {
-        radio.addEventListener('change', updateAddressCardStates);
-    });
-    
-    // When billing address changes and "use same" is checked, update shipping
-    billingAddressRadios.forEach(radio => {
         radio.addEventListener('change', function() {
-            if (useSameAddressCheckbox?.checked) {
-                // Shipping will use billing address, so no need to select shipping
-            }
+            updateAddressCardStates();
+            updateOrderSummary();
         });
     });
     
     // Initialize states
     updateShippingAddresses();
     updateAddressCardStates();
+    updateOrderSummary(); // Initialize order summary on page load
     
     // Initialize feather icons
     if (typeof feather !== 'undefined') {

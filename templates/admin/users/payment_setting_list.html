@@ -1,0 +1,252 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Payment Setting Verification Management</h1>
+        <a href="{% url 'myadmin:user_list' %}" class="btn btn-secondary ms-2">
+            <i class="align-middle" data-feather="arrow-left"></i> Back to Users
+        </a>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <h2 class="text-warning">{{ stats.pending }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Approved</h5>
+                    <h2 class="text-success">{{ stats.approved }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Rejected</h5>
+                    <h2 class="text-danger">{{ stats.rejected }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Payment Setting Requests</h5>
+                    <span class="badge bg-primary">Total: {{ page_obj.paginator.count }}</span>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter Form -->
+                    <div class="card border-light mb-3">
+                        <div class="card-body bg-light">
+                            <form method="get" class="mb-0">
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-5">
+                                        <label class="form-label small text-muted mb-1">Search</label>
+                                        <input type="text" name="search" class="form-control" placeholder="Search by name or email..." value="{{ search_query }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted mb-1">Status Filter</label>
+                                        <select name="status" class="form-select">
+                                            <option value="">All Status</option>
+                                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                            <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-muted mb-1 d-block">&nbsp;</label>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary flex-fill">
+                                                <i class="align-middle" data-feather="search"></i> Filter
+                                            </button>
+                                            <a href="{% url 'myadmin:payment_setting_list' %}" class="btn btn-outline-secondary">
+                                                <i class="align-middle" data-feather="x"></i> Clear
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Results Table -->
+                    <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Payment Method</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if user.image %}
+                                        <img src="{{ user.image.url }}" alt="{{ user.name }}" width="40" height="40" class="rounded-circle me-2">
+                                        {% endif %}
+                                        <strong>{{ user.name }}</strong>
+                                    </div>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        {% if user.esewa_number %}
+                                        <small class="text-muted">
+                                            <i class="align-middle" data-feather="smartphone" style="width: 14px; height: 14px;"></i> Esewa: {{ user.esewa_number }}
+                                        </small>
+                                        {% endif %}
+                                        {% if user.khalti_number %}
+                                        <small class="text-muted">
+                                            <i class="align-middle" data-feather="smartphone" style="width: 14px; height: 14px;"></i> Khalti: {{ user.khalti_number }}
+                                        </small>
+                                        {% endif %}
+                                        {% if user.qr_code %}
+                                        <small class="text-muted">
+                                            <i class="align-middle" data-feather="image" style="width: 14px; height: 14px;"></i> QR Code: Uploaded
+                                        </small>
+                                        {% endif %}
+                                        {% if not user.esewa_number and not user.khalti_number and not user.qr_code %}
+                                        <small class="text-muted">-</small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if user.payment_setting_status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                    {% elif user.payment_setting_status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% elif user.payment_setting_status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Not Submitted</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.payment_setting_status %}
+                                    <small class="text-muted">
+                                        {% if user.updated_at %}
+                                        {{ user.updated_at|date:"M d, Y" }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </small>
+                                    {% else %}
+                                    <small class="text-muted">-</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:user_detail' user.pk %}" class="btn btn-sm btn-info" title="View Details">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        {% if user.payment_setting_status == 'pending' %}
+                                        <form method="post" action="{% url 'myadmin:payment_setting_approve' user.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-success" data-confirm data-confirm-title="Confirm Payment Setting Approval" data-confirm-text="Approve payment settings for {{ user.email }}?" title="Approve">
+                                                <i class="align-middle" data-feather="check"></i>
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ user.pk }}" title="Reject">
+                                            <i class="align-middle" data-feather="x"></i>
+                                        </button>
+                                        {% elif user.payment_setting_status == 'rejected' %}
+                                        <form method="post" action="{% url 'myadmin:payment_setting_approve' user.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-success" data-confirm data-confirm-title="Confirm Payment Setting Approval" data-confirm-text="Approve payment settings for {{ user.email }}?" title="Approve">
+                                                <i class="align-middle" data-feather="check"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No payment setting requests found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <!-- Reject Modals - Placed outside table for proper Bootstrap rendering -->
+                    {% for user in users %}
+                        {% if user.payment_setting_status == 'pending' %}
+                        <div class="modal fade" id="rejectModal{{ user.pk }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ user.pk }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <form method="post" action="{% url 'myadmin:payment_setting_reject' user.pk %}" id="rejectForm{{ user.pk }}" data-no-modal-handler="true">
+                                        {% csrf_token %}
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="rejectModalLabel{{ user.pk }}">Reject Payment Setting Verification</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Reject payment setting verification for <strong>{{ user.email }}</strong>?</p>
+                                            <div class="mb-3">
+                                                <label for="reject_reason{{ user.pk }}" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                                                <textarea name="reject_reason" id="reject_reason{{ user.pk }}" class="form-control" rows="4" required placeholder="Please provide a reason for rejection..."></textarea>
+                                                <small class="text-muted">This reason will be shown to the user.</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger" data-form-id="rejectForm{{ user.pk }}">
+                                                <i class="align-middle" data-feather="x"></i> Reject Payment Settings
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

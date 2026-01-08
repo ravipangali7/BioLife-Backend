@@ -58,6 +58,9 @@ class User(AbstractUser):
     citizenship_front = models.ImageField(upload_to='kyc/', blank=True, null=True)
     citizenship_back = models.ImageField(upload_to='kyc/', blank=True, null=True)
     citizenship_no = models.CharField(max_length=50, blank=True, null=True)
+    # PAN Card fields (optional)
+    pan_card_image = models.ImageField(upload_to='kyc/', blank=True, null=True)
+    pan_no = models.CharField(max_length=50, blank=True, null=True)
     earn_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
     
     # KYC Status fields
@@ -73,6 +76,15 @@ class User(AbstractUser):
     qr_code = models.ImageField(upload_to='users/payment/qr/', blank=True, null=True)
     esewa_number = models.CharField(max_length=50, blank=True, null=True)
     khalti_number = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Payment Setting Status
+    PAYMENT_SETTING_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    payment_setting_status = models.CharField(max_length=20, choices=PAYMENT_SETTING_STATUS_CHOICES, blank=True, null=True, default=None)
+    payment_setting_reject_reason = models.TextField(blank=True, null=True)
 
     objects = UserManager()
     
@@ -109,6 +121,22 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
 
+class ShippingCharge(models.Model):
+    """Shipping charges for different cities"""
+    name = models.CharField(max_length=100, unique=True, help_text="City name")
+    charge = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Shipping Charge'
+        verbose_name_plural = 'Shipping Charges'
+        ordering = ['name']
+    
+    def __str__(self):
+        return f"{self.name} - Rs {self.charge}"
+
+
 class Address(models.Model):
     """User addresses for billing and shipping"""
     title = models.CharField(max_length=255)
@@ -116,6 +144,7 @@ class Address(models.Model):
     phone = models.CharField(max_length=20)
     address = models.TextField()
     city = models.CharField(max_length=100)
+    shipping_charge = models.ForeignKey(ShippingCharge, on_delete=models.SET_NULL, null=True, blank=True, related_name='addresses')
     state = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -148,6 +177,7 @@ class Category(models.Model):
     """Main product category"""
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    is_featured = models.BooleanField(default=False, help_text='Show in header category bar')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -575,13 +605,19 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
+    PAYMENT_METHOD_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='pending')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cod')
     sub_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shipping = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Kept for backward compatibility, always 0
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping_charge = models.ForeignKey(ShippingCharge, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     billing_address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name='billing_orders')
     shipping_address = models.ForeignKey(Address, on_delete=models.PROTECT, related_name='shipping_orders')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -596,8 +632,8 @@ class Order(models.Model):
         return f"Order #{self.id} - {self.user.email}"
     
     def calculate_total(self):
-        """Calculate order total"""
-        self.total = self.sub_total + self.shipping + self.tax
+        """Calculate order total (tax removed from calculation)"""
+        self.total = self.sub_total + self.shipping
         return self.total
 
 
@@ -632,6 +668,7 @@ class Setting(models.Model):
     """Global system settings"""
     system_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     sale_commision = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    user_refer_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Amount credited to influencer when they refer a new user")
     is_withdrawal = models.BooleanField(default=True)
     min_withdrawal = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
     max_withdrawal = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)

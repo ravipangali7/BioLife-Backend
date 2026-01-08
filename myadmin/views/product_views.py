@@ -316,9 +316,21 @@ def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     
     if request.method == 'POST':
-        product_name = product.name
-        product.delete()
-        messages.success(request, f'Product "{product_name}" deleted successfully.')
+        # Check if product is referenced by any order items
+        order_items_count = product.order_items.count()
+        
+        if order_items_count > 0:
+            messages.error(request, f'Cannot delete product "{product.name}" because it is referenced by {order_items_count} order item(s).')
+            return redirect('myadmin:product_list')
+        
+        try:
+            product_name = product.name
+            product.delete()
+            messages.success(request, f'Product "{product_name}" deleted successfully.')
+        except Exception as e:
+            messages.error(request, f'Error deleting product: {str(e)}')
+            return redirect('myadmin:product_list')
+        
         return redirect('myadmin:product_list')
     
     return render(request, 'admin/products/delete.html', {'product': product})

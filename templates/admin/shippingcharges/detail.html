@@ -1,0 +1,124 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Shipping Charge Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:shippingcharge_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:shippingcharge_edit' shipping_charge.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:shippingcharge_delete' shipping_charge.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Shipping Charge Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ shipping_charge.name }} - Rs {{ shipping_charge.charge|floatformat:2 }}</h3>
+                    <hr>
+                    <p><strong>City Name:</strong> {{ shipping_charge.name }}</p>
+                    <p><strong>Charge:</strong> Rs {{ shipping_charge.charge|floatformat:2 }}</p>
+                    <p><strong>Created At:</strong> {{ shipping_charge.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Updated At:</strong> {{ shipping_charge.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Addresses Using This Shipping Charge ({{ addresses_count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if addresses %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>User</th>
+                                <th>City</th>
+                                <th>State</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for address in addresses %}
+                            <tr>
+                                <td>{{ address.title }}</td>
+                                <td><a href="{% url 'myadmin:user_detail' address.user.pk %}">{{ address.user.email }}</a></td>
+                                <td>{{ address.city }}</td>
+                                <td>{{ address.state }}</td>
+                                <td>
+                                    <a href="{% url 'myadmin:address_detail' address.pk %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if addresses_count > 10 %}
+                    <p class="text-muted">Showing first 10 of {{ addresses_count }} addresses</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No addresses using this shipping charge</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Orders Using This Shipping Charge ({{ orders_count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>User</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td><a href="{% url 'myadmin:user_detail' order.user.pk %}">{{ order.user.email }}</a></td>
+                                <td>Rs {{ order.total|floatformat:2 }}</td>
+                                <td>
+                                    {% if order.order_status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif order.order_status == 'delivered' %}
+                                    <span class="badge bg-success">Delivered</span>
+                                    {% else %}
+                                    <span class="badge bg-info">{{ order.order_status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'myadmin:order_detail' order.pk %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if orders_count > 10 %}
+                    <p class="text-muted">Showing first 10 of {{ orders_count }} orders</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No orders using this shipping charge</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

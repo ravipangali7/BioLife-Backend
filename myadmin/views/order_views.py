@@ -70,15 +70,16 @@ def order_edit(request, pk):
     
     OrderForm = modelform_factory(
         Order,
-        fields=['payment_status', 'order_status', 'sub_total', 'shipping', 'tax', 'total',
-                'billing_address', 'shipping_address'],
+        fields=['payment_status', 'order_status', 'payment_method', 'sub_total', 'shipping', 'total',
+                'shipping_charge', 'billing_address', 'shipping_address'],
         widgets={
             'payment_status': forms.Select(attrs={'class': 'form-select'}),
             'order_status': forms.Select(attrs={'class': 'form-select'}),
+            'payment_method': forms.Select(attrs={'class': 'form-select'}),
             'sub_total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'shipping': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'tax': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'total': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'readonly': True}),
+            'shipping_charge': forms.Select(attrs={'class': 'form-select'}),
             'billing_address': forms.Select(attrs={'class': 'form-select'}),
             'shipping_address': forms.Select(attrs={'class': 'form-select'}),
         }

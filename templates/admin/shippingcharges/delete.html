@@ -1,0 +1,42 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Delete Shipping Charge</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Confirm Delete</h5>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete shipping charge for <strong>{{ shipping_charge.name }} (Rs {{ shipping_charge.charge|floatformat:2 }})</strong>?</p>
+                    {% if addresses_count > 0 or orders_count > 0 %}
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> This shipping charge is being used by:
+                        <ul class="mb-0 mt-2">
+                            {% if addresses_count > 0 %}
+                            <li>{{ addresses_count }} address{{ addresses_count|pluralize }}</li>
+                            {% endif %}
+                            {% if orders_count > 0 %}
+                            <li>{{ orders_count }} order{{ orders_count|pluralize }}</li>
+                            {% endif %}
+                        </ul>
+                        <p class="mb-0 mt-2">Deleting this shipping charge will set the shipping_charge field to NULL for related addresses and orders.</p>
+                    </div>
+                    {% endif %}
+                    <p class="text-danger">This action cannot be undone.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <a href="{% url 'myadmin:shippingcharge_detail' shipping_charge.pk %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

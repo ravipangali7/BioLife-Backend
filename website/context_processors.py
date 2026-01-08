@@ -20,8 +20,12 @@ def wishlist_count(request):
 
 
 def categories(request):
-    """Add categories to context for navigation"""
-    categories_list = Category.objects.all()[:10]  # Limit for navigation
+    """Add categories with subcategories and child categories to context for navigation"""
+    categories_list = Category.objects.filter(
+        is_featured=True
+    ).prefetch_related(
+        'sub_categories__child_categories'
+    ).all()  # Only featured categories for header
     return {'nav_categories': categories_list}
 
 
@@ -44,3 +48,9 @@ def site_settings(request):
     """Add site settings to context for all templates"""
     setting = Setting.objects.first()
     return {'site_settings': setting}
+
+
+def header_cms_pages(request):
+    """Add CMS pages to context for header navigation"""
+    pages = CMSPage.objects.filter(is_active=True, in_header=True).order_by('title')
+    return {'header_cms_pages': pages}

@@ -189,6 +189,11 @@ class ModalManager {
      * Setup form submission handling
      */
     setupFormSubmission(form, modal, bsModal) {
+        // Skip handling if form has data-no-modal-handler attribute
+        if (form.dataset.noModalHandler === 'true') {
+            return; // Allow normal form submission
+        }
+        
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             

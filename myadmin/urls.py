@@ -8,6 +8,7 @@ from .views import (
     marketing_views,
     brand_views,
     unit_views,
+    shippingcharge_views,
     system_views,
     inventory_views,
     report_views,
@@ -62,6 +63,11 @@ urlpatterns = [
     path('kyc/', user_views.kyc_list, name='kyc_list'),
     path('users/<int:pk>/kyc/approve/', user_views.kyc_approve, name='kyc_approve'),
     path('users/<int:pk>/kyc/reject/', user_views.kyc_reject, name='kyc_reject'),
+    
+    # Payment Setting Management
+    path('payment-settings/', user_views.payment_setting_list, name='payment_setting_list'),
+    path('users/<int:pk>/payment-setting/approve/', user_views.payment_setting_approve, name='payment_setting_approve'),
+    path('users/<int:pk>/payment-setting/reject/', user_views.payment_setting_reject, name='payment_setting_reject'),
     path('users/<int:user_pk>/addresses/', user_views.address_list, name='address_list'),
     path('addresses/<int:pk>/', user_views.address_detail, name='address_detail'),
     path('addresses/create/<int:user_pk>/', user_views.address_create, name='address_create'),
@@ -115,6 +121,13 @@ urlpatterns = [
     path('units/<int:pk>/', unit_views.unit_detail, name='unit_detail'),
     path('units/<int:pk>/edit/', unit_views.unit_edit, name='unit_edit'),
     path('units/<int:pk>/delete/', unit_views.unit_delete, name='unit_delete'),
+    
+    # Shipping Charges
+    path('shippingcharges/', shippingcharge_views.shippingcharge_list, name='shippingcharge_list'),
+    path('shippingcharges/create/', shippingcharge_views.shippingcharge_create, name='shippingcharge_create'),
+    path('shippingcharges/<int:pk>/', shippingcharge_views.shippingcharge_detail, name='shippingcharge_detail'),
+    path('shippingcharges/<int:pk>/edit/', shippingcharge_views.shippingcharge_edit, name='shippingcharge_edit'),
+    path('shippingcharges/<int:pk>/delete/', shippingcharge_views.shippingcharge_delete, name='shippingcharge_delete'),
     
     # System Settings
     path('settings/', system_views.settings_view, name='settings_view'),

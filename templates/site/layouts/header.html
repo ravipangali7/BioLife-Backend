@@ -1,171 +1,248 @@
 {% load static %}
-<header class="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-200/50">
+<header class="bg-white sticky top-0 z-50 shadow-sm">
     <div class="container mx-auto px-4">
-        <!-- Top Bar -->
-        <div class="hidden md:flex items-center justify-between py-2.5 text-sm text-gray-600 border-b border-gray-200/50">
-            <div class="flex items-center space-x-6">
-                {% if site_settings.phone %}
-                    <span class="flex items-center space-x-1.5 hover:text-biolife-green transition-colors">
-                        <i data-feather="phone" class="w-4 h-4"></i>
-                        <span>{{ site_settings.phone }}</span>
-                    </span>
-                {% endif %}
-                {% if site_settings.email %}
-                    <span class="flex items-center space-x-1.5 hover:text-biolife-green transition-colors">
-                        <i data-feather="mail" class="w-4 h-4"></i>
-                        <span>{{ site_settings.email }}</span>
-                    </span>
-                {% endif %}
-            </div>
-            <div class="flex items-center space-x-6">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'website:account_dashboard' %}" class="hover:text-biolife-green font-medium transition-colors duration-200">My Account</a>
-                    <a href="{% url 'website:logout' %}" class="hover:text-biolife-green font-medium transition-colors duration-200">Logout</a>
-                {% else %}
-                    <a href="{% url 'website:login' %}" class="hover:text-biolife-green font-medium transition-colors duration-200">Login</a>
-                    <a href="{% url 'website:register' %}" class="bg-gradient-to-r from-biolife-green to-biolife-green-dark text-white px-4 py-1.5 rounded-lg hover:shadow-md transition-all duration-200 font-medium">Register</a>
-                {% endif %}
-            </div>
-        </div>
-        
         <!-- Main Header -->
-        <div class="flex items-center justify-between py-4">
+        <div class="flex items-center justify-between py-3">
             <!-- Logo -->
             <div class="hidden md:flex items-center">
                 <a href="{% url 'website:home' %}" class="flex items-center space-x-2">
-                    <img src="{% static 'core/logo.png' %}" alt="BioLife" class="h-12 w-auto">
+                    <img src="{% static 'core/logo.png' %}" alt="BioLife" class="h-10 w-auto">
                 </a>
             </div>
             
-            <!-- Search Bar -->
+            <!-- Search Bar (Centered) -->
             <div class="hidden md:flex flex-1 max-w-2xl mx-8">
                 <form method="get" action="{% url 'website:product_list' %}" class="w-full flex">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        placeholder="Search products..." 
-                        class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-biolife-green focus:border-transparent"
-                        value="{{ request.GET.search }}"
-                    >
+                    <div class="flex-1 relative">
+                        <i data-feather="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input 
+                            type="text" 
+                            name="search" 
+                            placeholder="Search for Products, Brands and More" 
+                            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                            value="{{ request.GET.search }}"
+                        >
+                    </div>
                     <button 
                         type="submit" 
-                        class="bg-biolife-green text-white px-6 py-2 rounded-r-lg hover:bg-biolife-green-dark transition-colors"
+                        class="bg-blue-500 text-white px-6 py-2.5 rounded-r-md hover:bg-blue-600 transition-colors"
                     >
                         <i data-feather="search" class="w-5 h-5"></i>
                     </button>
                 </form>
             </div>
             
-            <!-- Cart, Wishlist & User -->
-            <div class="hidden md:flex items-center space-x-4">
-                {% if user.is_authenticated %}
-                <a href="{% url 'website:wishlist' %}" class="relative p-2 hover:text-biolife-green transition-colors" title="Wishlist">
-                    <i data-feather="heart" class="w-6 h-6"></i>
-                    {% if wishlist_count > 0 %}
-                        <span class="absolute -top-1 -right-1 bg-biolife-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ wishlist_count }}</span>
-                    {% endif %}
-                </a>
-                {% endif %}
-                <a href="{% url 'website:cart' %}" class="relative p-2 hover:text-biolife-green transition-colors" title="Shopping Cart">
-                    <i data-feather="shopping-cart" class="w-6 h-6"></i>
-                    {% if cart_count > 0 %}
-                        <span class="absolute -top-1 -right-1 bg-biolife-blue text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ cart_count }}</span>
-                    {% endif %}
-                </a>
-            </div>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="hidden md:block border-t border-gray-200/50">
-            <ul class="flex items-center space-x-1 py-3">
-                <li>
-                    <a href="{% url 'website:home' %}" class="text-gray-700 hover:text-biolife-green font-semibold transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50 relative group">
-                        Home
-                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-biolife-green to-biolife-green-dark group-hover:w-full transition-all duration-300"></span>
+            <!-- User Actions (Right) -->
+            <div class="hidden md:flex items-center space-x-6">
+                <!-- Login Dropdown -->
+                <div class="relative group">
+                    <a href="{% if user.is_authenticated %}{% url 'website:account_dashboard' %}{% else %}{% url 'website:login' %}{% endif %}" class="flex items-center space-x-1 text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                        <i data-feather="user" class="w-5 h-5"></i>
+                        <span>{% if user.is_authenticated %}{{ user.name|default:user.email }}{% else %}Login{% endif %}</span>
+                        <i data-feather="chevron-down" class="w-4 h-4"></i>
                     </a>
-                </li>
-                <li>
-                    <a href="{% url 'website:product_list' %}" class="text-gray-700 hover:text-biolife-green font-semibold transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50 relative group">
-                        Products
-                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-biolife-green to-biolife-green-dark group-hover:w-full transition-all duration-300"></span>
-                    </a>
-                </li>
-                <li class="relative group">
-                    <a href="#" class="text-gray-700 hover:text-biolife-green font-semibold transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center relative group">
-                        Categories
-                        <i data-feather="chevron-down" class="w-4 h-4 ml-1 transition-transform duration-200 group-hover:rotate-180"></i>
-                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-biolife-green to-biolife-green-dark group-hover:w-full transition-all duration-300"></span>
-                    </a>
-                    <div class="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 border border-gray-200/50">
-                        <ul class="py-2">
-                            {% for category in nav_categories %}
-                                <li>
-                                    <a href="{% url 'website:category_detail' category.id %}" class="block px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-biolife-green-light hover:to-biolife-green/20 hover:text-biolife-green-dark transition-all duration-200 font-medium">
-                                        {{ category.name }}
-                                    </a>
-                                </li>
-                            {% empty %}
-                                <li class="px-4 py-2 text-gray-500 text-sm">No categories</li>
-                            {% endfor %}
-                        </ul>
+                    {% if not user.is_authenticated %}
+                    <div class="absolute right-0 mt-2 w-32 bg-blue-600 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <a href="{% url 'website:login' %}" class="block px-4 py-2 text-white hover:bg-blue-700 text-center">Login</a>
+                        </div>
                     </div>
-                </li>
-                <li>
-                    <a href="{% url 'website:account_dashboard' %}" class="text-gray-700 hover:text-biolife-green font-semibold transition-all duration-200 px-4 py-2 rounded-lg hover:bg-gray-50 relative group">
-                        My Account
-                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-biolife-green to-biolife-green-dark group-hover:w-full transition-all duration-300"></span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        
-        <!-- Mobile Menu Button -->
-        <div class="md:hidden flex items-center justify-between py-3">
-            <button id="mobile-menu-btn" class="p-2.5 rounded-xl hover:bg-gray-100 transition-all duration-200 active:scale-95">
-                <i data-feather="menu" class="w-6 h-6 text-gray-700"></i>
-            </button>
-            
-            <!-- Mobile Logo (centered between menu and icons) -->
-            <div class="flex items-center flex-1 justify-center">
-                <a href="{% url 'website:home' %}" class="flex items-center space-x-2 group">
-                    <img src="{% static 'core/logo.png' %}" alt="BioLife" class="h-10 w-auto transition-transform duration-300 group-active:scale-95">
+                    {% endif %}
+                </div>
+                
+                <!-- Cart -->
+                <a href="{% url 'website:cart' %}" class="flex items-center space-x-1 text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                    <i data-feather="shopping-cart" class="w-5 h-5"></i>
+                    <span>Cart</span>
+                    {% if cart_count > 0 %}
+                        <span class="bg-blue-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <!-- IBO -->
+                <a href="{% url 'website:register' %}?account_type=influencer" class="flex items-center space-x-1 text-gray-700 hover:text-blue-600 font-medium transition-colors">
+                    <i data-feather="store" class="w-5 h-5"></i>
+                    <span>IBO</span>
+                </a>
+                
+                <!-- More Options -->
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 transition-colors">
+                    <i data-feather="more-vertical" class="w-5 h-5"></i>
                 </a>
             </div>
             
-            <div class="flex items-center space-x-2">
-                {% if user.is_authenticated %}
-                <a href="{% url 'website:wishlist' %}" class="relative p-2.5 rounded-xl hover:bg-gray-100 transition-all duration-200 active:scale-95">
-                    <i data-feather="heart" class="w-6 h-6 text-gray-700"></i>
-                    {% if wishlist_count > 0 %}
-                        <span class="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">{{ wishlist_count }}</span>
-                    {% endif %}
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center justify-between w-full">
+                <button id="mobile-menu-btn" class="p-2">
+                    <i data-feather="menu" class="w-6 h-6 text-gray-700"></i>
+                </button>
+                
+                <a href="{% url 'website:home' %}" class="flex items-center">
+                    <img src="{% static 'core/logo.png' %}" alt="BioLife" class="h-8 w-auto">
                 </a>
-                {% endif %}
-                <a href="{% url 'website:cart' %}" class="relative p-2.5 rounded-xl hover:bg-gray-100 transition-all duration-200 active:scale-95">
-                    <i data-feather="shopping-cart" class="w-6 h-6 text-gray-700"></i>
-                    {% if cart_count > 0 %}
-                        <span class="absolute -top-1 -right-1 bg-gradient-to-r from-biolife-blue to-biolife-blue-dark text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">{{ cart_count }}</span>
-                    {% endif %}
-                </a>
+                
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'website:cart' %}" class="relative">
+                        <i data-feather="shopping-cart" class="w-6 h-6 text-gray-700"></i>
+                        {% if cart_count > 0 %}
+                            <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">{{ cart_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
             </div>
         </div>
         
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200/50 bg-white/95 backdrop-blur-md">
-            <ul class="py-2 space-y-1">
+        <!-- Category Bar (Separate bar below header) -->
+        <div id="category-bar" class="hidden md:block bg-white border-t border-gray-200 overflow-visible">
+            <div class="container mx-auto px-4 overflow-visible">
+                <div class="flex items-center justify-center space-x-1 py-2">
+                    {% for category in nav_categories %}
+                        <div class="category-nav-item relative group flex-shrink-0 overflow-visible" data-category-id="{{ category.id }}">
+                            <a href="{% url 'website:category_detail' category.id %}" class="flex flex-col items-center px-3 py-2 hover:text-blue-600 transition-colors {% if request.resolver_match.url_name == 'home' %}min-w-[80px]{% else %}min-w-[100px]{% endif %}">
+                                {% if request.resolver_match.url_name == 'home' %}
+                                    <!-- Homepage: Show with image -->
+                                    <div class="relative mb-1">
+                                        {% if category.image %}
+                                            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-14 h-14 object-cover rounded">
+                                        {% else %}
+                                            <div class="w-14 h-14 bg-gray-200 rounded flex items-center justify-center">
+                                                <i data-feather="grid" class="w-6 h-6 text-gray-400"></i>
+                                            </div>
+                                        {% endif %}
+                                        <!-- NEW badge can be added here if needed -->
+                                    </div>
+                                    <span class="text-xs text-center font-medium text-gray-700 group-hover:text-blue-600">{{ category.name }}</span>
+                                {% else %}
+                                    <!-- Other pages: Text only -->
+                                    <span class="text-sm font-semibold text-gray-700 group-hover:text-blue-600 flex items-center">
+                                        {{ category.name }}
+                                        {% if category.sub_categories.all %}
+                                            <i data-feather="chevron-down" class="w-4 h-4 ml-1 group-hover:hidden"></i>
+                                            <i data-feather="chevron-up" class="w-4 h-4 ml-1 hidden group-hover:inline"></i>
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </a>
+                            
+                            <!-- Hover Dropdown Menu (Multi-column layout) -->
+                            {% if category.sub_categories.all %}
+                            <div class="category-dropdown fixed left-1/2 -translate-x-1/2 w-[900px] bg-white shadow-2xl hidden group-hover:block pointer-events-none group-hover:pointer-events-auto transition-all duration-200 border border-gray-200" data-dropdown-for="{{ category.id }}" style="z-index:99999 !important;">
+                                <div class="grid grid-cols-4 gap-6 p-6 max-h-[600px] overflow-y-auto">
+                                    {% for subcategory in category.sub_categories.all %}
+                                        <div class="category-column">
+                                            {% if subcategory.child_categories.all %}
+                                                <!-- Parent category with children -->
+                                                <div class="mb-2">
+                                                    <a href="{% url 'website:subcategory_detail' category.id subcategory.id %}" class="font-bold text-gray-900 hover:text-blue-600 flex items-center group/parent text-sm">
+                                                        <span>{{ subcategory.name }}</span>
+                                                        <svg class="w-3 h-3 ml-1 opacity-0 group-hover/parent:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                                <ul class="space-y-1 mb-5">
+                                                    {% for childcategory in subcategory.child_categories.all %}
+                                                        <li>
+                                                            <a href="{% url 'website:subcategory_detail' category.id subcategory.id %}" class="text-sm text-gray-600 hover:text-blue-600 block py-1">
+                                                                {{ childcategory.name }}
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <!-- Standalone subcategory -->
+                                                <div class="mb-5">
+                                                    <a href="{% url 'website:subcategory_detail' category.id subcategory.id %}" class="font-bold text-gray-900 hover:text-blue-600 block text-sm">
+                                                        {{ subcategory.name }}
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white">
+        <div class="px-4 py-2">
+            <!-- Mobile Search -->
+            <form method="get" action="{% url 'website:product_list' %}" class="mb-3">
+                <div class="flex">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        placeholder="Search for Products, Brands and More" 
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none"
+                        value="{{ request.GET.search }}"
+                    >
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r-md">
+                        <i data-feather="search" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Mobile Navigation -->
+            <ul class="space-y-1">
                 <li>
-                    <a href="{% url 'website:home' %}" class="block px-4 py-3 text-gray-700 hover:text-biolife-green hover:bg-gray-50 font-medium transition-all duration-200 rounded-lg mx-2">Home</a>
+                    <a href="{% url 'website:home' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Home</a>
                 </li>
                 <li>
-                    <a href="{% url 'website:product_list' %}" class="block px-4 py-3 text-gray-700 hover:text-biolife-green hover:bg-gray-50 font-medium transition-all duration-200 rounded-lg mx-2">Products</a>
+                    <a href="{% url 'website:product_list' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Products</a>
                 </li>
                 <li>
-                    <div class="px-4 py-2">
-                        <span class="block text-gray-700 font-semibold mb-2 px-2">Categories</span>
-                        <ul class="pl-4 space-y-1">
+                    <div class="px-3 py-2">
+                        <span class="block text-gray-700 font-semibold mb-2">Categories</span>
+                        <ul class="pl-2 space-y-1">
                             {% for category in nav_categories %}
-                                <li>
-                                    <a href="{% url 'website:category_detail' category.id %}" class="block px-2 py-2 text-gray-600 hover:text-biolife-green hover:bg-gray-50 rounded-lg transition-all duration-200">{{ category.name }}</a>
+                                <li class="mobile-category-item">
+                                    <div class="flex items-center justify-between">
+                                        <a href="{% url 'website:category_detail' category.id %}" class="flex-1 block px-2 py-2 text-gray-600 hover:text-blue-600 rounded">
+                                            {{ category.name }}
+                                        </a>
+                                        {% if category.sub_categories.all %}
+                                            <button type="button" class="mobile-category-toggle px-2 py-2 text-gray-500" data-category-id="{{ category.id }}">
+                                                <i data-feather="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if category.sub_categories.all %}
+                                    <ul class="mobile-subcategories hidden pl-4 mt-1 space-y-1" id="subcategories-{{ category.id }}">
+                                        {% for subcategory in category.sub_categories.all %}
+                                            <li class="mobile-subcategory-item">
+                                                <div class="flex items-center justify-between">
+                                                    <a href="{% url 'website:subcategory_detail' category.id subcategory.id %}" class="flex-1 block px-2 py-2 text-gray-500 hover:text-blue-600 rounded text-sm">
+                                                        {{ subcategory.name }}
+                                                    </a>
+                                                    {% if subcategory.child_categories.all %}
+                                                        <button type="button" class="mobile-subcategory-toggle px-2 py-2 text-gray-400" data-subcategory-id="{{ subcategory.id }}">
+                                                            <i data-feather="chevron-down" class="w-3 h-3 transition-transform duration-200"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                {% if subcategory.child_categories.all %}
+                                                <ul class="mobile-childcategories hidden pl-4 mt-1 space-y-1" id="childcategories-{{ subcategory.id }}">
+                                                    {% for childcategory in subcategory.child_categories.all %}
+                                                        <li>
+                                                            <a href="{% url 'website:subcategory_detail' category.id subcategory.id %}" class="block px-2 py-1.5 text-gray-400 hover:text-blue-600 rounded text-xs">
+                                                                {{ childcategory.name }}
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
@@ -173,17 +250,14 @@
                 </li>
                 {% if user.is_authenticated %}
                     <li>
-                        <a href="{% url 'website:account_dashboard' %}" class="block px-4 py-3 text-gray-700 hover:text-biolife-green hover:bg-gray-50 font-medium transition-all duration-200 rounded-lg mx-2">My Account</a>
+                        <a href="{% url 'website:account_dashboard' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">My Account</a>
                     </li>
                     <li>
-                        <a href="{% url 'website:logout' %}" class="block px-4 py-3 text-gray-700 hover:text-biolife-green hover:bg-gray-50 font-medium transition-all duration-200 rounded-lg mx-2">Logout</a>
+                        <a href="{% url 'website:logout' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Logout</a>
                     </li>
                 {% else %}
                     <li>
-                        <a href="{% url 'website:login' %}" class="block px-4 py-3 text-gray-700 hover:text-biolife-green hover:bg-gray-50 font-medium transition-all duration-200 rounded-lg mx-2">Login</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'website:register' %}" class="block px-4 py-3 bg-gradient-to-r from-biolife-green to-biolife-green-dark text-white font-semibold rounded-lg mx-2 text-center shadow-md">Register</a>
+                        <a href="{% url 'website:login' %}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Login</a>
                     </li>
                 {% endif %}
             </ul>
@@ -191,27 +265,67 @@
     </div>
 </header>
 
+<style>
+    /* Hide scrollbar for category bar */
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Category navigation hover states */
+    .category-nav-item:hover > a {
+        color: #2563eb;
+    }
+    
+    /* Active category highlight */
+    .category-nav-item.active > a {
+        color: #2563eb;
+    }
+    
+    /* Ensure dropdown stays visible on hover */
+    .category-nav-item:hover .fixed {
+        pointer-events: auto;
+    }
+    
+    /* Fixed dropdown overlay styles */
+    .category-nav-item .fixed {
+        position: fixed !important;
+        z-index: 99999 !important;
+    }
+    
+    /* Dropdown scrolling styles */
+    .category-nav-item .grid {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+    
+    .category-nav-item .grid::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .category-nav-item .grid::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    
+    .category-nav-item .grid::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    
+    .category-nav-item .grid::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
+
 <script>
-    // Mobile menu toggle with smooth animation
+    // Mobile menu toggle
     document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
         const menu = document.getElementById('mobile-menu');
-        const icon = this.querySelector('i');
-        
         menu.classList.toggle('hidden');
-        
-        // Animate menu items
-        if (!menu.classList.contains('hidden')) {
-            const items = menu.querySelectorAll('li');
-            items.forEach((item, index) => {
-                item.style.opacity = '0';
-                item.style.transform = 'translateY(-10px)';
-                setTimeout(() => {
-                    item.style.transition = 'all 0.3s ease-out';
-                    item.style.opacity = '1';
-                    item.style.transform = 'translateY(0)';
-                }, index * 50);
-            });
-        }
     });
     
     // Close mobile menu when clicking outside
@@ -224,5 +338,159 @@
                 menu.classList.add('hidden');
             }
         }
+    });
+    
+    // Mobile category accordion
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.mobile-category-toggle').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const categoryId = this.getAttribute('data-category-id');
+                const subcategories = document.getElementById('subcategories-' + categoryId);
+                const icon = this.querySelector('i');
+                
+                if (subcategories) {
+                    const isHidden = subcategories.classList.contains('hidden');
+                    
+                    // Close all other subcategories
+                    document.querySelectorAll('.mobile-subcategories').forEach(function(sub) {
+                        if (sub.id !== 'subcategories-' + categoryId) {
+                            sub.classList.add('hidden');
+                        }
+                    });
+                    
+                    // Close all child categories
+                    document.querySelectorAll('.mobile-childcategories').forEach(function(child) {
+                        child.classList.add('hidden');
+                    });
+                    
+                    // Toggle current subcategories
+                    if (isHidden) {
+                        subcategories.classList.remove('hidden');
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        subcategories.classList.add('hidden');
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+        });
+        
+        document.querySelectorAll('.mobile-subcategory-toggle').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const subcategoryId = this.getAttribute('data-subcategory-id');
+                const childcategories = document.getElementById('childcategories-' + subcategoryId);
+                const icon = this.querySelector('i');
+                
+                if (childcategories) {
+                    const isHidden = childcategories.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                        childcategories.classList.remove('hidden');
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        childcategories.classList.add('hidden');
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+        });
+        
+        // Initialize Feather Icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        // Dynamic dropdown positioning
+        function updateDropdownPositions() {
+            const categoryBar = document.getElementById('category-bar');
+            const header = document.querySelector('header');
+            const dropdowns = document.querySelectorAll('.category-dropdown');
+            
+            if (categoryBar && header && dropdowns.length > 0) {
+                // Calculate the bottom position of category bar
+                const headerRect = header.getBoundingClientRect();
+                const categoryBarRect = categoryBar.getBoundingClientRect();
+                const topPosition = categoryBarRect.bottom;
+                
+                // Apply to all dropdowns
+                dropdowns.forEach(function(dropdown) {
+                    dropdown.style.top = topPosition + 'px';
+                });
+            }
+        }
+        
+        // Update positions on load
+        updateDropdownPositions();
+        
+        // Update positions on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(updateDropdownPositions, 100);
+        });
+        
+        // Fix dropdown hover gap issue - keep dropdown visible when moving between category and dropdown
+        const categoryItems = document.querySelectorAll('.category-nav-item');
+        const hideTimers = {};
+        
+        categoryItems.forEach(function(categoryItem) {
+            const categoryId = categoryItem.getAttribute('data-category-id');
+            const dropdown = document.querySelector('[data-dropdown-for="' + categoryId + '"]');
+            
+            if (!dropdown) return;
+            
+            // Show dropdown on category item hover
+            categoryItem.addEventListener('mouseenter', function() {
+                clearTimeout(hideTimers[categoryId]);
+                dropdown.classList.remove('hidden');
+                dropdown.classList.add('block');
+                dropdown.style.pointerEvents = 'auto';
+            });
+            
+            // Hide dropdown when leaving category item (with delay)
+            categoryItem.addEventListener('mouseleave', function(e) {
+                // Check if mouse is moving to dropdown
+                const relatedTarget = e.relatedTarget;
+                if (relatedTarget && (relatedTarget === dropdown || dropdown.contains(relatedTarget))) {
+                    return; // Don't hide if moving to dropdown
+                }
+                
+                hideTimers[categoryId] = setTimeout(function() {
+                    if (!dropdown.matches(':hover')) {
+                        dropdown.classList.add('hidden');
+                        dropdown.classList.remove('block');
+                        dropdown.style.pointerEvents = 'none';
+                    }
+                }, 150);
+            });
+            
+            // Keep dropdown visible when hovering over it
+            dropdown.addEventListener('mouseenter', function() {
+                clearTimeout(hideTimers[categoryId]);
+                dropdown.classList.remove('hidden');
+                dropdown.classList.add('block');
+                dropdown.style.pointerEvents = 'auto';
+            });
+            
+            // Hide dropdown when leaving dropdown (with delay)
+            dropdown.addEventListener('mouseleave', function(e) {
+                const relatedTarget = e.relatedTarget;
+                if (relatedTarget && (relatedTarget === categoryItem || categoryItem.contains(relatedTarget))) {
+                    return; // Don't hide if moving to category item
+                }
+                
+                hideTimers[categoryId] = setTimeout(function() {
+                    if (!categoryItem.matches(':hover')) {
+                        dropdown.classList.add('hidden');
+                        dropdown.classList.remove('block');
+                        dropdown.style.pointerEvents = 'none';
+                    }
+                }, 150);
+            });
+        });
     });
 </script>

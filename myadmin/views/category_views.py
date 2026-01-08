@@ -52,10 +52,11 @@ def category_create(request):
     """Create new category"""
     CategoryForm = modelform_factory(
         Category,
-        fields=['name', 'image'],
+        fields=['name', 'image', 'is_featured'],
         widgets={
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     )
     
@@ -78,10 +79,11 @@ def category_edit(request, pk):
     
     CategoryForm = modelform_factory(
         Category,
-        fields=['name', 'image'],
+        fields=['name', 'image', 'is_featured'],
         widgets={
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     )
     

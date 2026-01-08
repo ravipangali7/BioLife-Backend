@@ -40,8 +40,8 @@ def cart_view(request):
     # Calculate shipping (free shipping over $50, otherwise $5)
     shipping = Decimal('0.00') if subtotal >= 50 else Decimal('5.00')
     
-    # Calculate tax (10% of subtotal)
-    tax = subtotal * Decimal('0.10')
+    # Tax removed from system
+    tax = Decimal('0.00')
     
     # Apply coupon if exists
     discount = Decimal('0.00')
@@ -61,7 +61,7 @@ def cart_view(request):
             cart['coupon_code'] = None
             request.session.modified = True
     
-    total = subtotal + shipping + tax - discount
+    total = subtotal + shipping - discount
     
     context = {
         'cart_items': cart_items,

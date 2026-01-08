@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 from django.db import transaction
+from django.views.decorators.http import require_http_methods
 from decimal import Decimal
 from core.models import User, Address, Transaction, Withdrawal
 from django.forms import modelform_factory
@@ -232,10 +233,26 @@ def address_delete(request, pk):
     address = get_object_or_404(Address, pk=pk)
     
     if request.method == 'POST':
-        address_title = address.title
-        user_pk = address.user.pk
-        address.delete()
-        messages.success(request, f'Address "{address_title}" deleted successfully.')
+        # Check if address is referenced by any orders
+        billing_orders_count = address.billing_orders.count()
+        shipping_orders_count = address.shipping_orders.count()
+        total_orders = billing_orders_count + shipping_orders_count
+        
+        if total_orders > 0:
+            messages.error(request, f'Cannot delete address "{address.title}" because it is referenced by {total_orders} order(s).')
+            user_pk = address.user.pk
+            return redirect('myadmin:address_list', user_pk=user_pk)
+        
+        try:
+            address_title = address.title
+            user_pk = address.user.pk
+            address.delete()
+            messages.success(request, f'Address "{address_title}" deleted successfully.')
+        except Exception as e:
+            messages.error(request, f'Error deleting address: {str(e)}')
+            user_pk = address.user.pk
+            return redirect('myadmin:address_list', user_pk=user_pk)
+        
         return redirect('myadmin:address_list', user_pk=user_pk)
     
     return render(request, 'admin/users/address_delete.html', {'address': address})
@@ -476,4 +493,84 @@ def kyc_reject(request, pk):
         return redirect('myadmin:kyc_list')
     
     return redirect('myadmin:user_detail', pk=pk)
+
+
+@login_required
+def payment_setting_list(request):
+    """List all payment setting verification requests"""
+    users = User.objects.filter(is_influencer=True).exclude(payment_setting_status=None)
+    
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        users = users.filter(payment_setting_status=status_filter)
+    else:
+        # Default to pending if no filter
+        users = users.filter(payment_setting_status='pending')
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        users = users.filter(
+            Q(email__icontains=search_query) |
+            Q(name__icontains=search_query)
+        )
+    
+    paginator = Paginator(users, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Statistics
+    stats = {
+        'pending': User.objects.filter(is_influencer=True, payment_setting_status='pending').count(),
+        'approved': User.objects.filter(is_influencer=True, payment_setting_status='approved').count(),
+        'rejected': User.objects.filter(is_influencer=True, payment_setting_status='rejected').count(),
+    }
+    
+    context = {
+        'page_obj': page_obj,
+        'users': page_obj,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'stats': stats,
+    }
+    
+    return render(request, 'admin/users/payment_setting_list.html', context)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def payment_setting_approve(request, pk):
+    """Approve user payment settings"""
+    # Handle GET requests immediately (redirect to list page)
+    if request.method != 'POST':
+        return redirect('myadmin:payment_setting_list')
+    
+    user = get_object_or_404(User, pk=pk, is_influencer=True)
+    
+    user.payment_setting_status = 'approved'
+    user.payment_setting_reject_reason = None
+    user.save()
+    messages.success(request, f'Payment settings approved for {user.email}.')
+    return redirect('myadmin:payment_setting_list')
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def payment_setting_reject(request, pk):
+    """Reject user payment settings"""
+    # Handle GET requests immediately (redirect to list page)
+    if request.method != 'POST':
+        return redirect('myadmin:payment_setting_list')
+    
+    user = get_object_or_404(User, pk=pk, is_influencer=True)
+    
+    reject_reason = request.POST.get('reject_reason', '').strip()
+    if not reject_reason:
+        messages.error(request, 'Rejection reason is required.')
+        return redirect('myadmin:payment_setting_list')
+    
+    user.payment_setting_status = 'rejected'
+    user.payment_setting_reject_reason = reject_reason
+    user.save()
+    messages.success(request, f'Payment settings rejected for {user.email}.')
+    return redirect('myadmin:payment_setting_list')
 

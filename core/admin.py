@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
-    User, Address, Unit, Category, SubCategory, ChildCategory,
+    User, Address, ShippingCharge, Unit, Category, SubCategory, ChildCategory,
     Brand, Product, ProductImage, ProductReview, Wishlist, Banner, Coupon,
     CMSPage, Order, OrderItem, PasswordResetOTP, FlashDeal
 )
@@ -35,10 +35,17 @@ class UserAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(ShippingCharge)
+class ShippingChargeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'charge', 'created_at']
+    search_fields = ['name']
+    readonly_fields = ['created_at', 'updated_at']
+
+
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ['title', 'user', 'city', 'state', 'country', 'created_at']
-    list_filter = ['country', 'state', 'created_at']
+    list_display = ['title', 'user', 'city', 'shipping_charge', 'state', 'country', 'created_at']
+    list_filter = ['country', 'state', 'shipping_charge', 'created_at']
     search_fields = ['title', 'user__email', 'user__name', 'city', 'state', 'country']
     readonly_fields = ['created_at', 'updated_at']
 
@@ -56,10 +63,23 @@ class SubCategoryInline(admin.TabularInline):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'image_preview', 'created_at']
+    list_display = ['name', 'is_featured', 'image_preview', 'created_at']
+    list_filter = ['is_featured', 'created_at']
     search_fields = ['name']
     readonly_fields = ['created_at', 'updated_at', 'image_preview']
     inlines = [SubCategoryInline]
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'image', 'image_preview')
+        }),
+        ('Display Settings', {
+            'fields': ('is_featured',),
+            'description': 'Featured categories will appear in the header category bar'
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
     
     def image_preview(self, obj):
         if obj.image:
@@ -298,20 +318,23 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'payment_status', 'order_status', 'sub_total', 'shipping', 'tax', 'total', 'created_at']
-    list_filter = ['payment_status', 'order_status', 'created_at']
+    list_display = ['id', 'user', 'payment_status', 'order_status', 'payment_method', 'sub_total', 'shipping', 'total', 'created_at']
+    list_filter = ['payment_status', 'order_status', 'payment_method', 'created_at']
     search_fields = ['user__email', 'user__name', 'id']
     readonly_fields = ['created_at', 'updated_at', 'total']
     inlines = [OrderItemInline]
     fieldsets = (
         ('Order Information', {
-            'fields': ('user', 'payment_status', 'order_status')
+            'fields': ('user', 'payment_status', 'order_status', 'payment_method')
         }),
         ('Addresses', {
             'fields': ('billing_address', 'shipping_address')
         }),
+        ('Shipping', {
+            'fields': ('shipping_charge',)
+        }),
         ('Pricing', {
-            'fields': ('sub_total', 'shipping', 'tax', 'total')
+            'fields': ('sub_total', 'shipping', 'total')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at')

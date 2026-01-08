@@ -47,6 +47,12 @@
                         <span class="badge bg-danger">Failed</span>
                         {% endif %}
                     </p>
+                    <p><strong>Payment Method:</strong> 
+                        <span class="badge bg-info">{{ order.get_payment_method_display }}</span>
+                    </p>
+                    {% if order.shipping_charge %}
+                    <p><strong>Shipping Charge:</strong> {{ order.shipping_charge.name }} - Rs {{ order.shipping_charge.charge|floatformat:2 }}</p>
+                    {% endif %}
                     <p><strong>Created:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
                 </div>
             </div>
@@ -121,10 +127,9 @@
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping:</span>
                         <strong>Rs {{ order.shipping|floatformat:2 }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Tax:</span>
-                        <strong>Rs {{ order.tax|floatformat:2 }}</strong>
+                        {% if order.shipping_charge %}
+                        <small class="text-muted">({{ order.shipping_charge.name }})</small>
+                        {% endif %}
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
