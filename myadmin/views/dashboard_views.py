@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from core.models import (
     User, Product, Order, OrderItem, Category, 
     SubCategory, ChildCategory, Brand, Banner, Coupon, Setting
@@ -10,7 +10,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 
-@login_required
+@superuser_required
 def dashboard(request):
     """Dashboard view with analytics"""
     

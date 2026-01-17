@@ -25,7 +25,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                 {% for item in wishlist_items %}
-                <div class="card overflow-hidden group">
+                <div class="card overflow-hidden group bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                     <a href="{% url 'website:product_detail' item.product.id %}">
                         <div class="relative overflow-hidden">
                             {% if item.product.image %}
@@ -58,19 +58,16 @@
                         </div>
                         <div class="p-4">
                             {% if item.product.category %}
-                            <span class="text-xs font-medium text-biolife-green mb-2 block">{{
-                                item.product.category.name }}</span>
+                            <span class="text-xs font-medium text-biolife-green mb-2 block">{{ item.product.category.name }}</span>
                             {% endif %}
                             <h3
                                 class="font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-biolife-green transition-colors">
                                 {{ item.product.name }}</h3>
                             <div class="flex items-center justify-between mb-3">
                                 <div>
-                                    <span class="text-lg md:text-xl font-bold text-biolife-green">Rs {{
-                                        item.product.get_final_price|floatformat:2 }}</span>
+                                    <span class="text-lg md:text-xl font-bold text-biolife-green">Rs {{ item.product.get_final_price|floatformat:2 }}</span>
                                     {% if item.product.discount %}
-                                    <span class="text-sm text-gray-500 line-through ml-2">Rs {{
-                                        item.product.regular_price|floatformat:2 }}</span>
+                                    <span class="text-sm text-gray-500 line-through ml-2">Rs {{ item.product.regular_price|floatformat:2 }}</span>
                                     {% endif %}
                                 </div>
                             </div>

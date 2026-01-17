@@ -4,9 +4,11 @@
 <div class="container-fluid p-0">
     <div class="mb-3">
         <h1 class="h3 d-inline align-middle">Flash Deals</h1>
+        {% if not has_existing_flash_deal %}
         <a href="{% url 'myadmin:flashdeal_create' %}" class="btn btn-primary ms-2">
             <i class="align-middle" data-feather="plus"></i> Add Flash Deal
         </a>
+        {% endif %}
     </div>
 
     <div class="row">

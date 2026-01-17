@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -8,7 +8,7 @@ from django.forms import modelform_factory
 from django import forms
 
 
-@login_required
+@superuser_required
 def brand_list(request):
     """List all brands"""
     brands = Brand.objects.all()
@@ -30,7 +30,7 @@ def brand_list(request):
     return render(request, 'admin/brands/list.html', context)
 
 
-@login_required
+@superuser_required
 def brand_detail(request, pk):
     """Brand detail view"""
     brand = get_object_or_404(Brand, pk=pk)
@@ -44,7 +44,7 @@ def brand_detail(request, pk):
     return render(request, 'admin/brands/detail.html', context)
 
 
-@login_required
+@superuser_required
 def brand_create(request):
     """Create new brand"""
     BrandForm = modelform_factory(
@@ -68,7 +68,7 @@ def brand_create(request):
     return render(request, 'admin/brands/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def brand_edit(request, pk):
     """Edit brand"""
     brand = get_object_or_404(Brand, pk=pk)
@@ -94,7 +94,7 @@ def brand_edit(request, pk):
     return render(request, 'admin/brands/form.html', {'form': form, 'brand': brand})
 
 
-@login_required
+@superuser_required
 def brand_delete(request, pk):
     """Delete brand"""
     brand = get_object_or_404(Brand, pk=pk)

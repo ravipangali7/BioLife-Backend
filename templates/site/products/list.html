@@ -40,36 +40,50 @@
                     <div class="max-h-96 overflow-y-auto border-2 border-gray-200 rounded-xl p-4 space-y-2 scrollbar-hide bg-gray-50/50">
                         {% for category in categories %}
                         <div class="category-item">
-                            <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors group">
-                                <input type="checkbox" 
-                                       name="category" 
-                                       value="{{ category.id }}" 
-                                       form="filter-form"
-                                       class="w-4 h-4 text-biolife-green border-gray-300 rounded focus:ring-biolife-green"
-                                       {% if category.id in selected_category_ids %}checked{% endif %}
-                                       onchange="document.getElementById('filter-form').submit()">
-                                <span class="ml-2 text-sm font-medium text-gray-700 group-hover:text-biolife-green">{{ category.name }}</span>
-                            </label>
+                            <div class="flex items-center">
+                                <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors group flex-1">
+                                    <input type="checkbox" 
+                                           name="category" 
+                                           value="{{ category.id }}" 
+                                           form="filter-form"
+                                           class="w-4 h-4 text-biolife-green border-gray-300 rounded focus:ring-biolife-green"
+                                           {% if category.id in selected_category_ids %}checked{% endif %}
+                                           onchange="document.getElementById('filter-form').submit()">
+                                    <span class="ml-2 text-sm font-medium text-gray-700 group-hover:text-biolife-green">{{ category.name }}</span>
+                                </label>
+                                {% if category.sub_categories.all %}
+                                <button type="button" class="category-toggle-btn p-2 hover:bg-gray-50 rounded transition-colors" data-category-id="{{ category.id }}">
+                                    <i data-feather="chevron-right" class="w-4 h-4 text-gray-600 category-chevron-{{ category.id }} transition-transform duration-200"></i>
+                                </button>
+                                {% endif %}
+                            </div>
                             
                             <!-- Sub Categories -->
                             {% if category.sub_categories.all %}
-                            <div class="ml-6 mt-1 space-y-1">
+                            <div id="filter-subcategories-{{ category.id }}" class="ml-6 mt-1 space-y-1 hidden transition-all duration-200">
                                 {% for subcategory in category.sub_categories.all %}
                                 <div class="subcategory-item">
-                                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors group">
-                                        <input type="checkbox" 
-                                               name="subcategory" 
-                                               value="{{ subcategory.id }}" 
-                                               form="filter-form"
-                                               class="w-4 h-4 text-biolife-green border-gray-300 rounded focus:ring-biolife-green"
-                                               {% if subcategory.id in selected_subcategory_ids %}checked{% endif %}
-                                               onchange="document.getElementById('filter-form').submit()">
-                                        <span class="ml-2 text-sm text-gray-600 group-hover:text-biolife-green">{{ subcategory.name }}</span>
-                                    </label>
+                                    <div class="flex items-center">
+                                        <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors group flex-1">
+                                            <input type="checkbox" 
+                                                   name="subcategory" 
+                                                   value="{{ subcategory.id }}" 
+                                                   form="filter-form"
+                                                   class="w-4 h-4 text-biolife-green border-gray-300 rounded focus:ring-biolife-green"
+                                                   {% if subcategory.id in selected_subcategory_ids %}checked{% endif %}
+                                                   onchange="document.getElementById('filter-form').submit()">
+                                            <span class="ml-2 text-sm text-gray-600 group-hover:text-biolife-green">{{ subcategory.name }}</span>
+                                        </label>
+                                        {% if subcategory.child_categories.all %}
+                                        <button type="button" class="subcategory-toggle-btn p-1.5 hover:bg-gray-50 rounded transition-colors" data-subcategory-id="{{ subcategory.id }}">
+                                            <i data-feather="chevron-right" class="w-3 h-3 text-gray-500 subcategory-chevron-{{ subcategory.id }} transition-transform duration-200"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                     
                                     <!-- Child Categories -->
                                     {% if subcategory.child_categories.all %}
-                                    <div class="ml-6 mt-1 space-y-1">
+                                    <div id="filter-childcategories-{{ subcategory.id }}" class="ml-6 mt-1 space-y-1 hidden transition-all duration-200">
                                         {% for childcategory in subcategory.child_categories.all %}
                                         <label class="flex items-center cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors group">
                                             <input type="checkbox" 
@@ -225,7 +239,7 @@
                 <!-- Grid View -->
                 <div id="grid-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {% for product in products %}
-                    <div class="card overflow-hidden group bg-white hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-biolife-green/20">
+                    <div class="card overflow-hidden group bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:border-biolife-green/20">
                         <a href="{% url 'website:product_detail' product.id %}">
                             <div class="relative overflow-hidden">
                                 {% if product.image %}
@@ -319,7 +333,7 @@
                 <!-- List View -->
                 <div id="list-view" class="hidden space-y-4">
                     {% for product in products %}
-                    <div class="card overflow-hidden group bg-white hover:shadow-lg transition-all duration-300">
+                    <div class="card overflow-hidden group bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                         <a href="{% url 'website:product_detail' product.id %}" class="flex flex-col md:flex-row">
                             <div class="relative w-full md:w-64 flex-shrink-0 overflow-hidden">
                                 {% if product.image %}
@@ -458,10 +472,19 @@
         const gridView = document.getElementById('grid-view');
         const listView = document.getElementById('list-view');
         
+        // Check if elements exist before proceeding
+        if (!gridViewBtn || !listViewBtn || !gridView || !listView) {
+            return; // Exit if view toggle elements don't exist
+        }
+        
         // Get saved preference from localStorage
         const savedView = localStorage.getItem('productView') || 'grid';
         
         function setView(view) {
+            if (!gridView || !listView || !gridViewBtn || !listViewBtn) {
+                return; // Safety check
+            }
+            
             if (view === 'grid') {
                 gridView.classList.remove('hidden');
                 listView.classList.add('hidden');
@@ -492,5 +515,151 @@
             feather.replace();
         }
     })();
+    
+    // Category Expand/Collapse Functionality
+    function toggleCategory(categoryId) {
+        try {
+            const button = document.querySelector(`[data-category-id="${categoryId}"]`);
+            const subcategoriesDiv = document.getElementById('filter-subcategories-' + categoryId);
+            
+            if (!button || !subcategoriesDiv) {
+                console.warn('Category toggle elements not found for category:', categoryId);
+                return;
+            }
+            
+            // Find chevron icon within button (works with both <i> and <svg> from feather)
+            const chevron = button.querySelector('svg, i[data-feather]');
+            
+            if (!chevron) {
+                console.warn('Chevron icon not found for category:', categoryId);
+                return;
+            }
+            
+            const isHidden = subcategoriesDiv.classList.contains('hidden');
+            
+            if (isHidden) {
+                subcategoriesDiv.classList.remove('hidden');
+                chevron.style.transform = 'rotate(90deg)';
+            } else {
+                subcategoriesDiv.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        } catch (error) {
+            console.error('Error toggling category:', error);
+        }
+    }
+    
+    function toggleSubcategory(subcategoryId) {
+        try {
+            const button = document.querySelector(`[data-subcategory-id="${subcategoryId}"]`);
+            const childcategoriesDiv = document.getElementById('filter-childcategories-' + subcategoryId);
+            
+            if (!button || !childcategoriesDiv) {
+                console.warn('Subcategory toggle elements not found for subcategory:', subcategoryId);
+                return;
+            }
+            
+            // Find chevron icon within button (works with both <i> and <svg> from feather)
+            const chevron = button.querySelector('svg, i[data-feather]');
+            
+            if (!chevron) {
+                console.warn('Chevron icon not found for subcategory:', subcategoryId);
+                return;
+            }
+            
+            const isHidden = childcategoriesDiv.classList.contains('hidden');
+            
+            if (isHidden) {
+                childcategoriesDiv.classList.remove('hidden');
+                chevron.style.transform = 'rotate(90deg)';
+            } else {
+                childcategoriesDiv.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        } catch (error) {
+            console.error('Error toggling subcategory:', error);
+        }
+    }
+    
+    // Auto-expand categories/subcategories that have selected items
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize feather icons first
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        // Wait a bit for feather icons to be replaced, then auto-expand
+        setTimeout(function() {
+            // Expand categories with selected subcategories or child categories
+            {% for category in categories %}
+                {% if category.sub_categories.all %}
+                    {% for subcategory in category.sub_categories.all %}
+                        {% if subcategory.id in selected_subcategory_ids %}
+                            toggleCategory('{{ category.id }}');
+                        {% endif %}
+                        {% if subcategory.child_categories.all %}
+                            {% for childcategory in subcategory.child_categories.all %}
+                                {% if childcategory.id in selected_childcategory_ids %}
+                                    toggleCategory('{{ category.id }}');
+                                    toggleSubcategory('{{ subcategory.id }}');
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        }, 100);
+        
+        // Event delegation for category toggle buttons
+        document.addEventListener('click', function(e) {
+            // Check if clicked element or its parent is a category toggle button
+            const categoryBtn = e.target.closest('.category-toggle-btn');
+            
+            if (categoryBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const categoryId = categoryBtn.getAttribute('data-category-id');
+                if (categoryId) {
+                    toggleCategory(categoryId);
+                }
+                return;
+            }
+            
+            // Check if clicked element or its parent is a subcategory toggle button
+            const subcategoryBtn = e.target.closest('.subcategory-toggle-btn');
+            if (subcategoryBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const subcategoryId = subcategoryBtn.getAttribute('data-subcategory-id');
+                if (subcategoryId) {
+                    toggleSubcategory(subcategoryId);
+                }
+            }
+        });
+    });
 </script>
+
+<style>
+    /* Category expand/collapse transitions */
+    [id^="filter-subcategories-"],
+    [id^="filter-childcategories-"] {
+        transition: opacity 0.2s ease, max-height 0.3s ease;
+    }
+    
+    [class^="category-chevron-"],
+    [class^="subcategory-chevron-"] {
+        transition: transform 0.2s ease;
+    }
+    
+    .category-toggle-btn,
+    .subcategory-toggle-btn {
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    
+    .category-toggle-btn:hover,
+    .subcategory-toggle-btn:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+</style>
 {% endblock %}

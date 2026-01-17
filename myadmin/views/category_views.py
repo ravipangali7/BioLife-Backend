@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -9,7 +9,7 @@ from django import forms
 
 
 # Category Views
-@login_required
+@superuser_required
 def category_list(request):
     """List all categories"""
     categories = Category.objects.all()
@@ -31,7 +31,7 @@ def category_list(request):
     return render(request, 'admin/categories/list.html', context)
 
 
-@login_required
+@superuser_required
 def category_detail(request, pk):
     """Category detail view"""
     category = get_object_or_404(Category, pk=pk)
@@ -47,7 +47,7 @@ def category_detail(request, pk):
     return render(request, 'admin/categories/detail.html', context)
 
 
-@login_required
+@superuser_required
 def category_create(request):
     """Create new category"""
     CategoryForm = modelform_factory(
@@ -72,7 +72,7 @@ def category_create(request):
     return render(request, 'admin/categories/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def category_edit(request, pk):
     """Edit category"""
     category = get_object_or_404(Category, pk=pk)
@@ -99,7 +99,7 @@ def category_edit(request, pk):
     return render(request, 'admin/categories/form.html', {'form': form, 'category': category})
 
 
-@login_required
+@superuser_required
 def category_delete(request, pk):
     """Delete category"""
     category = get_object_or_404(Category, pk=pk)
@@ -114,7 +114,7 @@ def category_delete(request, pk):
 
 
 # SubCategory Views
-@login_required
+@superuser_required
 def subcategory_list(request):
     """List all subcategories"""
     subcategories = SubCategory.objects.select_related('category').all()
@@ -144,7 +144,7 @@ def subcategory_list(request):
     return render(request, 'admin/subcategories/list.html', context)
 
 
-@login_required
+@superuser_required
 def subcategory_detail(request, pk):
     """SubCategory detail view"""
     subcategory = get_object_or_404(SubCategory.objects.select_related('category'), pk=pk)
@@ -160,7 +160,7 @@ def subcategory_detail(request, pk):
     return render(request, 'admin/subcategories/detail.html', context)
 
 
-@login_required
+@superuser_required
 def subcategory_create(request):
     """Create new subcategory"""
     SubCategoryForm = modelform_factory(
@@ -186,7 +186,7 @@ def subcategory_create(request):
     return render(request, 'admin/subcategories/form.html', {'form': form, 'categories': categories})
 
 
-@login_required
+@superuser_required
 def subcategory_edit(request, pk):
     """Edit subcategory"""
     subcategory = get_object_or_404(SubCategory, pk=pk)
@@ -214,7 +214,7 @@ def subcategory_edit(request, pk):
     return render(request, 'admin/subcategories/form.html', {'form': form, 'subcategory': subcategory, 'categories': categories})
 
 
-@login_required
+@superuser_required
 def subcategory_delete(request, pk):
     """Delete subcategory"""
     subcategory = get_object_or_404(SubCategory, pk=pk)
@@ -229,7 +229,7 @@ def subcategory_delete(request, pk):
 
 
 # ChildCategory Views
-@login_required
+@superuser_required
 def childcategory_list(request):
     """List all child categories"""
     childcategories = ChildCategory.objects.select_related('sub_category__category').all()
@@ -259,7 +259,7 @@ def childcategory_list(request):
     return render(request, 'admin/childcategories/list.html', context)
 
 
-@login_required
+@superuser_required
 def childcategory_detail(request, pk):
     """ChildCategory detail view"""
     childcategory = get_object_or_404(ChildCategory.objects.select_related('sub_category__category'), pk=pk)
@@ -273,7 +273,7 @@ def childcategory_detail(request, pk):
     return render(request, 'admin/childcategories/detail.html', context)
 
 
-@login_required
+@superuser_required
 def childcategory_create(request):
     """Create new child category"""
     ChildCategoryForm = modelform_factory(
@@ -299,7 +299,7 @@ def childcategory_create(request):
     return render(request, 'admin/childcategories/form.html', {'form': form, 'subcategories': subcategories})
 
 
-@login_required
+@superuser_required
 def childcategory_edit(request, pk):
     """Edit child category"""
     childcategory = get_object_or_404(ChildCategory, pk=pk)
@@ -327,7 +327,7 @@ def childcategory_edit(request, pk):
     return render(request, 'admin/childcategories/form.html', {'form': form, 'childcategory': childcategory, 'subcategories': subcategories})
 
 
-@login_required
+@superuser_required
 def childcategory_delete(request, pk):
     """Delete child category"""
     childcategory = get_object_or_404(ChildCategory, pk=pk)

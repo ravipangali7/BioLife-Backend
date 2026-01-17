@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -8,7 +8,7 @@ from django.forms import modelform_factory
 from django import forms
 
 
-@login_required
+@superuser_required
 def unit_list(request):
     """List all units"""
     units = Unit.objects.all()
@@ -33,7 +33,7 @@ def unit_list(request):
     return render(request, 'admin/units/list.html', context)
 
 
-@login_required
+@superuser_required
 def unit_detail(request, pk):
     """Unit detail view"""
     unit = get_object_or_404(Unit, pk=pk)
@@ -47,7 +47,7 @@ def unit_detail(request, pk):
     return render(request, 'admin/units/detail.html', context)
 
 
-@login_required
+@superuser_required
 def unit_create(request):
     """Create new unit"""
     UnitForm = modelform_factory(
@@ -71,7 +71,7 @@ def unit_create(request):
     return render(request, 'admin/units/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def unit_edit(request, pk):
     """Edit unit"""
     unit = get_object_or_404(Unit, pk=pk)
@@ -97,7 +97,7 @@ def unit_edit(request, pk):
     return render(request, 'admin/units/form.html', {'form': form, 'unit': unit})
 
 
-@login_required
+@superuser_required
 def unit_delete(request, pk):
     """Delete unit"""
     unit = get_object_or_404(Unit, pk=pk)

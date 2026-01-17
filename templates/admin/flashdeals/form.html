@@ -29,7 +29,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Products *</label>
-                            <small class="text-muted d-block mb-2">Hold Ctrl (Windows) or Cmd (Mac) to select multiple products</small>
+                            <small class="text-muted d-block mb-2">Type to search and select multiple products</small>
                             {{ form.products }}
                             {% if form.products.errors %}
                             <div class="text-danger">{{ form.products.errors }}</div>
@@ -104,4 +104,63 @@
         </div>
     </div>
 </div>
+
+<!-- Choices.js CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
+<!-- Choices.js JS -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+<script>
+    // Initialize Choices.js on products select field
+    document.addEventListener('DOMContentLoaded', function() {
+        const productsSelect = document.getElementById('id_products');
+        
+        if (productsSelect) {
+            const choices = new Choices(productsSelect, {
+                removeItemButton: true,
+                searchEnabled: true,
+                searchChoices: true,
+                searchFields: ['label', 'value'],
+                placeholder: true,
+                placeholderValue: 'Search and select products...',
+                searchPlaceholderValue: 'Type to search products...',
+                itemSelectText: 'Press to select',
+                noResultsText: 'No products found',
+                noChoicesText: 'No products available',
+                maxItemText: 'Only {count} products can be selected',
+                uniqueItemText: 'Only unique products can be selected',
+                classNames: {
+                    containerOuter: 'choices',
+                    containerInner: 'choices__inner',
+                    input: 'choices__input',
+                    inputCloned: 'choices__input--cloned',
+                    list: 'choices__list',
+                    listItems: 'choices__list--multiple',
+                    listSingle: 'choices__list--single',
+                    listDropdown: 'choices__list--dropdown',
+                    item: 'choices__item',
+                    itemSelectable: 'choices__item--selectable',
+                    itemDisabled: 'choices__item--disabled',
+                    itemChoice: 'choices__item--choice',
+                    placeholder: 'choices__placeholder',
+                    group: 'choices__group',
+                    groupHeading: 'choices__heading',
+                    button: 'choices__button',
+                    activeState: 'is-active',
+                    focusState: 'is-focused',
+                    openState: 'is-open',
+                    disabledState: 'is-disabled',
+                    highlightedState: 'is-highlighted',
+                    selectedState: 'is-selected',
+                    flippedState: 'is-flipped',
+                    loadingState: 'is-loading',
+                    noResults: 'has-no-results',
+                    noChoices: 'has-no-choices'
+                }
+            });
+        }
+    });
+</script>
+
 {% endblock %}

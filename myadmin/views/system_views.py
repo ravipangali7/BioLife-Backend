@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -8,7 +8,7 @@ from django.forms import modelform_factory
 from django import forms
 
 # --- SETTINGS ---
-@login_required
+@superuser_required
 def settings_view(request):
     """Manage system settings (Singleton)"""
     # Ensure only one setting object exists or get the first one
@@ -51,7 +51,7 @@ def settings_view(request):
 
 
 # --- TASKS ---
-@login_required
+@superuser_required
 def task_list(request):
     """List all tasks"""
     tasks = Task.objects.all()
@@ -62,7 +62,7 @@ def task_list(request):
     
     return render(request, 'admin/system/task_list.html', {'page_obj': page_obj})
 
-@login_required
+@superuser_required
 def task_create(request):
     """Create new task"""
     TaskForm = modelform_factory(
@@ -88,7 +88,7 @@ def task_create(request):
         
     return render(request, 'admin/system/task_form.html', {'form': form})
 
-@login_required
+@superuser_required
 def task_edit(request, pk):
     """Edit task"""
     task = get_object_or_404(Task, pk=pk)
@@ -116,7 +116,7 @@ def task_edit(request, pk):
         
     return render(request, 'admin/system/task_form.html', {'form': form, 'task': task})
 
-@login_required
+@superuser_required
 def task_delete(request, pk):
     """Delete task"""
     task = get_object_or_404(Task, pk=pk)
@@ -131,7 +131,7 @@ def task_delete(request, pk):
 
 
 # --- USER TASKS (SUBMISSIONS) ---
-@login_required
+@superuser_required
 def usertask_list(request):
     """List user submissions"""
     usertasks = UserTask.objects.select_related('user', 'task').all().order_by('-created_at')
@@ -149,7 +149,7 @@ def usertask_list(request):
         'status_filter': status_filter
     })
 
-@login_required
+@superuser_required
 def usertask_detail(request, pk):
     """View submission detail"""
     usertask = get_object_or_404(UserTask.objects.select_related('user', 'task'), pk=pk)
@@ -201,7 +201,7 @@ def usertask_detail(request, pk):
 
 
 # --- WITHDRAWALS ---
-@login_required
+@superuser_required
 def withdrawal_list(request):
     """List withdrawals"""
     withdrawals = Withdrawal.objects.select_related('user').all().order_by('-created_at')
@@ -219,7 +219,7 @@ def withdrawal_list(request):
         'status_filter': status_filter
     })
 
-@login_required
+@superuser_required
 def withdrawal_detail(request, pk):
     """Withdrawal detail and action"""
     withdrawal = get_object_or_404(Withdrawal.objects.select_related('user'), pk=pk)
@@ -276,7 +276,7 @@ def withdrawal_detail(request, pk):
 
 
 # --- TRANSACTIONS ---
-@login_required
+@superuser_required
 def transaction_list(request):
     """List transactions"""
     transactions = Transaction.objects.select_related('user').all().order_by('-created_at')

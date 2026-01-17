@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -10,7 +10,7 @@ from django.forms import modelform_factory
 from django import forms
 
 
-@login_required
+@superuser_required
 def order_list(request):
     """List all orders"""
     orders = Order.objects.select_related('user', 'billing_address', 'shipping_address').all()
@@ -46,7 +46,7 @@ def order_list(request):
     return render(request, 'admin/orders/list.html', context)
 
 
-@login_required
+@superuser_required
 def order_detail(request, pk):
     """Order detail view"""
     order = get_object_or_404(Order.objects.select_related(
@@ -63,7 +63,7 @@ def order_detail(request, pk):
     return render(request, 'admin/orders/detail.html', context)
 
 
-@login_required
+@superuser_required
 def order_edit(request, pk):
     """Edit order"""
     order = get_object_or_404(Order, pk=pk)
@@ -119,7 +119,7 @@ def order_edit(request, pk):
     return render(request, 'admin/orders/form.html', {'form': form, 'order': order})
 
 
-@login_required
+@superuser_required
 def order_delete(request, pk):
     """Delete order"""
     order = get_object_or_404(Order, pk=pk)

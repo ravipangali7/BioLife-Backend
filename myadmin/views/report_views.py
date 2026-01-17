@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count, Avg, F, DecimalField
@@ -16,13 +16,13 @@ import csv
 import json
 
 
-@login_required
+@superuser_required
 def reports_index(request):
     """Reports dashboard/landing page"""
     return render(request, 'admin/reports/reports_index.html')
 
 
-@login_required
+@superuser_required
 def sales_report(request):
     """Sales report with filters"""
     # Default date range: last 30 days
@@ -138,7 +138,7 @@ def sales_report(request):
     return render(request, 'admin/reports/sales_report.html', context)
 
 
-@login_required
+@superuser_required
 def inventory_report(request):
     """Inventory status report"""
     # Get global low stock threshold from settings
@@ -217,7 +217,7 @@ def inventory_report(request):
     return render(request, 'admin/reports/inventory_report.html', context)
 
 
-@login_required
+@superuser_required
 def product_performance_report(request):
     """Product sales performance report"""
     # Default date range: last 30 days
@@ -297,7 +297,7 @@ def product_performance_report(request):
     return render(request, 'admin/reports/product_performance.html', context)
 
 
-@login_required
+@superuser_required
 def customer_report(request):
     """Customer analytics report"""
     # Default date range: last 30 days
@@ -457,7 +457,7 @@ def export_customer_report_csv(customer_stats, start_date, end_date):
     return response
 
 
-@login_required
+@superuser_required
 def finance_report(request):
     """Finance report with withdrawals, transactions, and system balance"""
     # Default date range: last 30 days
@@ -606,7 +606,7 @@ def finance_report(request):
     return render(request, 'admin/reports/finance_report.html', context)
 
 
-@login_required
+@superuser_required
 def influencer_report(request):
     """Influencer performance report"""
     # Default date range: last 30 days

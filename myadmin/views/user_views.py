@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
@@ -11,7 +11,7 @@ from django.forms import modelform_factory
 from django import forms
 
 
-@login_required
+@superuser_required
 def user_list(request):
     """List all users"""
     users = User.objects.all()
@@ -51,7 +51,7 @@ def user_list(request):
     return render(request, 'admin/users/list.html', context)
 
 
-@login_required
+@superuser_required
 def user_detail(request, pk):
     """User detail view"""
     user = get_object_or_404(User, pk=pk)
@@ -101,7 +101,7 @@ def user_detail(request, pk):
     return render(request, 'admin/users/detail.html', context)
 
 
-@login_required
+@superuser_required
 def user_edit(request, pk):
     """Edit user"""
     user = get_object_or_404(User, pk=pk)
@@ -139,7 +139,7 @@ def user_edit(request, pk):
     return render(request, 'admin/users/form.html', {'form': form, 'user': user})
 
 
-@login_required
+@superuser_required
 def address_list(request, user_pk):
     """List user addresses"""
     user = get_object_or_404(User, pk=user_pk)
@@ -153,7 +153,7 @@ def address_list(request, user_pk):
     return render(request, 'admin/users/address_list.html', context)
 
 
-@login_required
+@superuser_required
 def address_detail(request, pk):
     """Address detail view"""
     address = get_object_or_404(Address.objects.select_related('user'), pk=pk)
@@ -165,7 +165,7 @@ def address_detail(request, pk):
     return render(request, 'admin/users/address_detail.html', context)
 
 
-@login_required
+@superuser_required
 def address_create(request, user_pk):
     """Create new address"""
     user = get_object_or_404(User, pk=user_pk)
@@ -197,7 +197,7 @@ def address_create(request, user_pk):
     return render(request, 'admin/users/address_form.html', {'form': form, 'user': user})
 
 
-@login_required
+@superuser_required
 def address_edit(request, pk):
     """Edit address"""
     address = get_object_or_404(Address, pk=pk)
@@ -227,7 +227,7 @@ def address_edit(request, pk):
     return render(request, 'admin/users/address_form.html', {'form': form, 'address': address})
 
 
-@login_required
+@superuser_required
 def address_delete(request, pk):
     """Delete address"""
     address = get_object_or_404(Address, pk=pk)
@@ -260,7 +260,7 @@ def address_delete(request, pk):
 
 # --- WALLET & TRANSACTION MANAGEMENT ---
 
-@login_required
+@superuser_required
 def user_balance_adjust(request, pk):
     """Manually adjust user balance"""
     user = get_object_or_404(User, pk=pk)
@@ -307,7 +307,7 @@ def user_balance_adjust(request, pk):
     return redirect('myadmin:user_detail', pk=pk)
 
 
-@login_required
+@superuser_required
 def user_transactions(request, pk):
     """List all transactions for a specific user"""
     user = get_object_or_404(User, pk=pk)
@@ -337,7 +337,7 @@ def user_transactions(request, pk):
     return render(request, 'admin/users/transaction_list.html', context)
 
 
-@login_required
+@superuser_required
 def user_withdrawals(request, pk):
     """List all withdrawals for a specific user"""
     user = get_object_or_404(User, pk=pk)
@@ -362,7 +362,7 @@ def user_withdrawals(request, pk):
     return render(request, 'admin/users/withdrawal_list.html', context)
 
 
-@login_required
+@superuser_required
 def user_withdrawal_action(request, pk, withdrawal_pk):
     """Quick action for withdrawal approval/rejection from user page"""
     user = get_object_or_404(User, pk=pk)
@@ -418,7 +418,7 @@ def user_withdrawal_action(request, pk, withdrawal_pk):
     return redirect('myadmin:user_detail', pk=pk)
 
 
-@login_required
+@superuser_required
 def kyc_list(request):
     """List all KYC verification requests"""
     users = User.objects.filter(is_influencer=True).exclude(kyc_status=None)
@@ -460,7 +460,7 @@ def kyc_list(request):
     return render(request, 'admin/users/kyc_list.html', context)
 
 
-@login_required
+@superuser_required
 def kyc_approve(request, pk):
     """Approve user KYC verification"""
     user = get_object_or_404(User, pk=pk, is_influencer=True)
@@ -475,7 +475,7 @@ def kyc_approve(request, pk):
     return redirect('myadmin:user_detail', pk=pk)
 
 
-@login_required
+@superuser_required
 def kyc_reject(request, pk):
     """Reject user KYC verification"""
     user = get_object_or_404(User, pk=pk, is_influencer=True)
@@ -495,7 +495,7 @@ def kyc_reject(request, pk):
     return redirect('myadmin:user_detail', pk=pk)
 
 
-@login_required
+@superuser_required
 def payment_setting_list(request):
     """List all payment setting verification requests"""
     users = User.objects.filter(is_influencer=True).exclude(payment_setting_status=None)
@@ -536,7 +536,7 @@ def payment_setting_list(request):
     return render(request, 'admin/users/payment_setting_list.html', context)
 
 
-@login_required
+@superuser_required
 @require_http_methods(["GET", "POST"])
 def payment_setting_approve(request, pk):
     """Approve user payment settings"""
@@ -553,7 +553,7 @@ def payment_setting_approve(request, pk):
     return redirect('myadmin:payment_setting_list')
 
 
-@login_required
+@superuser_required
 @require_http_methods(["GET", "POST"])
 def payment_setting_reject(request, pk):
     """Reject user payment settings"""

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -8,7 +8,7 @@ from django.forms import modelform_factory
 from django import forms
 
 
-@login_required
+@superuser_required
 def shippingcharge_list(request):
     """List all shipping charges"""
     shipping_charges = ShippingCharge.objects.all()
@@ -32,7 +32,7 @@ def shippingcharge_list(request):
     return render(request, 'admin/shippingcharges/list.html', context)
 
 
-@login_required
+@superuser_required
 def shippingcharge_detail(request, pk):
     """Shipping charge detail view"""
     shipping_charge = get_object_or_404(ShippingCharge, pk=pk)
@@ -50,7 +50,7 @@ def shippingcharge_detail(request, pk):
     return render(request, 'admin/shippingcharges/detail.html', context)
 
 
-@login_required
+@superuser_required
 def shippingcharge_create(request):
     """Create new shipping charge"""
     ShippingChargeForm = modelform_factory(
@@ -74,7 +74,7 @@ def shippingcharge_create(request):
     return render(request, 'admin/shippingcharges/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def shippingcharge_edit(request, pk):
     """Edit shipping charge"""
     shipping_charge = get_object_or_404(ShippingCharge, pk=pk)
@@ -100,7 +100,7 @@ def shippingcharge_edit(request, pk):
     return render(request, 'admin/shippingcharges/form.html', {'form': form, 'shipping_charge': shipping_charge})
 
 
-@login_required
+@superuser_required
 def shippingcharge_delete(request, pk):
     """Delete shipping charge"""
     shipping_charge = get_object_or_404(ShippingCharge, pk=pk)

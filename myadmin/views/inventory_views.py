@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count, F
@@ -9,7 +9,7 @@ from django import forms
 from django.forms import modelform_factory
 
 
-@login_required
+@superuser_required
 def inventory_dashboard(request):
     """Inventory overview dashboard"""
     # Get global low stock threshold from settings
@@ -54,7 +54,7 @@ def inventory_dashboard(request):
     return render(request, 'admin/inventory/dashboard.html', context)
 
 
-@login_required
+@superuser_required
 def low_stock_list(request):
     """List products with low stock"""
     # Get global low stock threshold from settings
@@ -97,7 +97,7 @@ def low_stock_list(request):
     return render(request, 'admin/inventory/low_stock.html', context)
 
 
-@login_required
+@superuser_required
 def bulk_stock_update(request):
     """Bulk stock operations (CSV import/export)"""
     if request.method == 'POST' and 'export' in request.POST:

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -10,7 +10,7 @@ from django import forms
 
 
 # Banner Views
-@login_required
+@superuser_required
 def banner_list(request):
     """List all banners"""
     banners = Banner.objects.all()
@@ -39,7 +39,7 @@ def banner_list(request):
     return render(request, 'admin/banners/list.html', context)
 
 
-@login_required
+@superuser_required
 def banner_detail(request, pk):
     """Banner detail view"""
     banner = get_object_or_404(Banner, pk=pk)
@@ -51,7 +51,7 @@ def banner_detail(request, pk):
     return render(request, 'admin/banners/detail.html', context)
 
 
-@login_required
+@superuser_required
 def banner_create(request):
     """Create new banner"""
     BannerForm = modelform_factory(
@@ -77,7 +77,7 @@ def banner_create(request):
     return render(request, 'admin/banners/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def banner_edit(request, pk):
     """Edit banner"""
     banner = get_object_or_404(Banner, pk=pk)
@@ -105,7 +105,7 @@ def banner_edit(request, pk):
     return render(request, 'admin/banners/form.html', {'form': form, 'banner': banner})
 
 
-@login_required
+@superuser_required
 def banner_delete(request, pk):
     """Delete banner"""
     banner = get_object_or_404(Banner, pk=pk)
@@ -120,7 +120,7 @@ def banner_delete(request, pk):
 
 
 # Coupon Views
-@login_required
+@superuser_required
 def coupon_list(request):
     """List all coupons"""
     coupons = Coupon.objects.all()
@@ -149,7 +149,7 @@ def coupon_list(request):
     return render(request, 'admin/coupons/list.html', context)
 
 
-@login_required
+@superuser_required
 def coupon_detail(request, pk):
     """Coupon detail view"""
     coupon = get_object_or_404(Coupon, pk=pk)
@@ -162,7 +162,7 @@ def coupon_detail(request, pk):
     return render(request, 'admin/coupons/detail.html', context)
 
 
-@login_required
+@superuser_required
 def coupon_create(request):
     """Create new coupon"""
     CouponForm = modelform_factory(
@@ -191,7 +191,7 @@ def coupon_create(request):
     return render(request, 'admin/coupons/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def coupon_edit(request, pk):
     """Edit coupon"""
     coupon = get_object_or_404(Coupon, pk=pk)
@@ -222,7 +222,7 @@ def coupon_edit(request, pk):
     return render(request, 'admin/coupons/form.html', {'form': form, 'coupon': coupon})
 
 
-@login_required
+@superuser_required
 def coupon_delete(request, pk):
     """Delete coupon"""
     coupon = get_object_or_404(Coupon, pk=pk)
@@ -237,7 +237,7 @@ def coupon_delete(request, pk):
 
 
 # CMS Page Views
-@login_required
+@superuser_required
 def cmspage_list(request):
     """List all CMS pages"""
     pages = CMSPage.objects.all()
@@ -269,7 +269,7 @@ def cmspage_list(request):
     return render(request, 'admin/cmspages/list.html', context)
 
 
-@login_required
+@superuser_required
 def cmspage_detail(request, pk):
     """CMS page detail view"""
     page = get_object_or_404(CMSPage, pk=pk)
@@ -281,7 +281,7 @@ def cmspage_detail(request, pk):
     return render(request, 'admin/cmspages/detail.html', context)
 
 
-@login_required
+@superuser_required
 def cmspage_create(request):
     """Create new CMS page"""
     CMSPageForm = modelform_factory(
@@ -310,7 +310,7 @@ def cmspage_create(request):
     return render(request, 'admin/cmspages/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def cmspage_edit(request, pk):
     """Edit CMS page"""
     page = get_object_or_404(CMSPage, pk=pk)
@@ -341,7 +341,7 @@ def cmspage_edit(request, pk):
     return render(request, 'admin/cmspages/form.html', {'form': form, 'page': page})
 
 
-@login_required
+@superuser_required
 def cmspage_delete(request, pk):
     """Delete CMS page"""
     page = get_object_or_404(CMSPage, pk=pk)
@@ -356,7 +356,7 @@ def cmspage_delete(request, pk):
 
 
 # Flash Deal Views
-@login_required
+@superuser_required
 def flashdeal_list(request):
     """List all flash deals"""
     flash_deals = FlashDeal.objects.all()
@@ -380,17 +380,21 @@ def flashdeal_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # Check if any flash deal exists
+    has_existing_flash_deal = FlashDeal.objects.exists()
+    
     context = {
         'page_obj': page_obj,
         'flash_deals': page_obj,
         'search_query': search_query,
         'status_filter': status_filter,
+        'has_existing_flash_deal': has_existing_flash_deal,
     }
     
     return render(request, 'admin/flashdeals/list.html', context)
 
 
-@login_required
+@superuser_required
 def flashdeal_detail(request, pk):
     """Flash deal detail view"""
     flash_deal = get_object_or_404(FlashDeal, pk=pk)
@@ -415,9 +419,15 @@ def flashdeal_detail(request, pk):
     return render(request, 'admin/flashdeals/detail.html', context)
 
 
-@login_required
+@superuser_required
 def flashdeal_create(request):
     """Create new flash deal"""
+    # Check if a flash deal already exists
+    existing_flash_deal = FlashDeal.objects.first()
+    if existing_flash_deal:
+        messages.info(request, 'Only one flash deal can exist at a time. Redirecting to edit existing flash deal.')
+        return redirect('myadmin:flashdeal_edit', pk=existing_flash_deal.pk)
+    
     FlashDealForm = modelform_factory(
         FlashDeal,
         fields=['title', 'products', 'discount_type', 'discount', 'start_time', 'end_time', 'is_active', 'image'],
@@ -434,6 +444,12 @@ def flashdeal_create(request):
     )
     
     if request.method == 'POST':
+        # Additional validation: prevent creating multiple flash deals
+        if FlashDeal.objects.exists():
+            messages.error(request, 'A flash deal already exists. Only one flash deal is allowed at a time.')
+            existing_flash_deal = FlashDeal.objects.first()
+            return redirect('myadmin:flashdeal_edit', pk=existing_flash_deal.pk)
+        
         form = FlashDealForm(request.POST, request.FILES)
         if form.is_valid():
             flash_deal = form.save()
@@ -449,7 +465,7 @@ def flashdeal_create(request):
     return render(request, 'admin/flashdeals/form.html', {'form': form})
 
 
-@login_required
+@superuser_required
 def flashdeal_edit(request, pk):
     """Edit flash deal"""
     flash_deal = get_object_or_404(FlashDeal, pk=pk)
@@ -485,7 +501,7 @@ def flashdeal_edit(request, pk):
     return render(request, 'admin/flashdeals/form.html', {'form': form, 'flash_deal': flash_deal})
 
 
-@login_required
+@superuser_required
 def flashdeal_delete(request, pk):
     """Delete flash deal"""
     flash_deal = get_object_or_404(FlashDeal, pk=pk)

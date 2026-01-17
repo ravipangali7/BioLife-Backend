@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -9,7 +9,7 @@ from django import forms
 import json
 
 
-@login_required
+@superuser_required
 def product_list(request):
     """List all products with search and filters"""
     products = Product.objects.select_related('category', 'brand', 'unit').all()
@@ -81,7 +81,7 @@ def product_list(request):
     return render(request, 'admin/products/list.html', context)
 
 
-@login_required
+@superuser_required
 def product_detail(request, pk):
     """Product detail view"""
     product = get_object_or_404(Product.objects.select_related(
@@ -103,7 +103,7 @@ def product_detail(request, pk):
     return render(request, 'admin/products/detail.html', context)
 
 
-@login_required
+@superuser_required
 def product_create(request):
     """Create new product"""
     ProductForm = modelform_factory(
@@ -203,7 +203,7 @@ def product_create(request):
     return render(request, 'admin/products/form.html', context)
 
 
-@login_required
+@superuser_required
 def product_edit(request, pk):
     """Edit product"""
     product = get_object_or_404(Product, pk=pk)
@@ -310,7 +310,7 @@ def product_edit(request, pk):
     return render(request, 'admin/products/form.html', context)
 
 
-@login_required
+@superuser_required
 def product_delete(request, pk):
     """Delete product"""
     product = get_object_or_404(Product, pk=pk)
@@ -336,7 +336,7 @@ def product_delete(request, pk):
     return render(request, 'admin/products/delete.html', {'product': product})
 
 
-@login_required
+@superuser_required
 def product_image_list(request, product_pk):
     """List product images"""
     product = get_object_or_404(Product, pk=product_pk)
@@ -350,7 +350,7 @@ def product_image_list(request, product_pk):
     return render(request, 'admin/products/image_list.html', context)
 
 
-@login_required
+@superuser_required
 def product_review_list(request, product_pk):
     """List product reviews"""
     product = get_object_or_404(Product, pk=product_pk)

@@ -153,6 +153,16 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# File Upload Settings
+# Maximum size for request body (non-file data) - 500 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500 MB
+
+# Maximum size for file uploads - 500 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500 MB
+
+# Maximum number of form fields - increase if needed for complex forms
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
