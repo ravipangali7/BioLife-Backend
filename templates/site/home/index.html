@@ -92,24 +92,28 @@
         <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-3">Shop by Category</h2>
         <p class="text-gray-600 text-lg">Explore our wide range of health and wellness products</p>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">
-        {% for category in categories %}
-        <a href="{% url 'website:category_detail' category.id %}" class="group text-center">
-            <div class="card-gradient p-4 md:p-6 mb-3 transform hover:-translate-y-2 transition-all duration-300">
-                {% if category.image %}
-                    <div class="relative overflow-hidden rounded-xl mb-3">
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-24 md:h-32 object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                {% else %}
-                    <div class="w-full h-24 md:h-32 bg-gradient-to-br from-biolife-green-light to-biolife-green/20 rounded-xl mb-3 flex items-center justify-center group-hover:from-biolife-green group-hover:to-biolife-green-dark transition-all duration-300">
-                        <i data-feather="package" class="w-10 h-10 md:w-14 md:h-14 text-biolife-green group-hover:text-white transition-colors"></i>
-                    </div>
-                {% endif %}
+    <div class="category-carousel-wrapper relative">
+        <!-- Pagination Dots -->
+        <div class="category-pagination-dots flex justify-center gap-2 mb-4">
+            {% for category in categories %}
+            <button class="category-dot w-2 h-2 rounded-full bg-gray-300 transition-all duration-300 {% if forloop.first %}bg-gray-600{% endif %}" data-index="{{ forloop.counter0 }}"></button>
+            {% endfor %}
+        </div>
+        <!-- Carousel Container -->
+        <div class="category-carousel-container overflow-x-auto scroll-smooth scrollbar-hide">
+            <div class="category-carousel-track flex gap-6 md:gap-8">
+                {% for category in categories %}
+                    {% include 'site/components/category_item.html' with category=category %}
+                {% endfor %}
             </div>
-            <h3 class="text-sm md:text-base font-semibold text-gray-700 group-hover:text-biolife-green transition-colors">{{ category.name }}</h3>
-        </a>
-        {% endfor %}
+        </div>
+        <!-- Navigation Arrows -->
+        <button class="category-carousel-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300">
+            <i data-feather="chevron-left" class="w-5 h-5 text-gray-800"></i>
+        </button>
+        <button class="category-carousel-next absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300">
+            <i data-feather="chevron-right" class="w-5 h-5 text-gray-800"></i>
+        </button>
     </div>
 </section>
 {% endif %}
@@ -596,6 +600,251 @@
             padding: 0.5rem;
         }
     }
+    
+    /* Category Carousel Wrapper */
+    .category-carousel-wrapper {
+        position: relative;
+        padding: 0 3rem;
+    }
+    
+    .category-carousel-container {
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .category-carousel-container::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .category-carousel-track {
+        display: flex;
+        padding-bottom: 1rem;
+    }
+    
+    /* Category Card Arch Design */
+    .category-card-arch {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        width: 220px;
+        min-width: 220px;
+        height: 340px;
+        overflow: visible;
+    }
+    
+    .category-card-arch:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Pink Arch Background (behind image) */
+    .category-arch-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 240px;
+        background-color: #F9B4D5;
+        border-radius: 60% 60% 0 0;
+        z-index: 1;
+    }
+    
+    /* Category Image (in front of arch) */
+    .category-image-arch {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150%;
+        height: 300px;
+        object-fit: cover;
+        object-position: center;
+        z-index: 2;
+    }
+    
+    .category-image-placeholder {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150%;
+        height: 300px;
+        background-color: rgba(249, 180, 213, 0.3);
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Pill-shaped Title Box (below arch) */
+    .category-title-box {
+        position: absolute;
+        top: 240px;
+        left: 0;
+        width: 100%;
+        background-color: #F9B4D5;
+        border-radius: 9999px;
+        padding: 14px 20px 36px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+    }
+    
+    .category-title-text {
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 1rem;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    
+    /* Arrow Icon */
+    .category-arrow-icon {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 26px;
+        height: 26px;
+        background-color: #EB8DC2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(235, 141, 194, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .category-arrow-icon i {
+        color: #FFFFFF;
+        stroke-width: 3;
+    }
+    
+    /* Pagination Dots */
+    .category-pagination-dots {
+        margin-bottom: 1.5rem;
+    }
+    
+    .category-dot {
+        cursor: pointer;
+        border: none;
+        padding: 0;
+        transition: all 0.3s ease;
+        background-color: #D1D5DB;
+    }
+    
+    .category-dot.active {
+        background-color: #4B5563 !important;
+        width: 8px;
+        height: 8px;
+    }
+    
+    /* Navigation Arrows */
+    .category-carousel-prev,
+    .category-carousel-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .category-carousel-prev:hover,
+    .category-carousel-next:hover {
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    /* Responsive adjustments for category cards */
+    @media (max-width: 1024px) {
+        .category-card-arch {
+            width: 200px;
+            min-width: 200px;
+            height: 300px;
+        }
+        
+        .category-arch-background {
+            height: 200px;
+        }
+        
+        .category-image-arch {
+            top: -35px;
+            width: 145%;
+            height: 260px;
+        }
+        
+        .category-image-placeholder {
+            top: -35px;
+            width: 145%;
+            height: 260px;
+        }
+        
+        .category-title-box {
+            top: 200px;
+        }
+        
+        .category-title-text {
+            font-size: 0.875rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .category-carousel-wrapper {
+            padding: 0 2.5rem;
+        }
+        
+        .category-card-arch {
+            width: 180px;
+            min-width: 180px;
+            height: 280px;
+        }
+        
+        .category-arch-background {
+            height: 180px;
+        }
+        
+        .category-image-arch {
+            top: -30px;
+            width: 140%;
+            height: 240px;
+        }
+        
+        .category-image-placeholder {
+            top: -30px;
+            width: 140%;
+            height: 240px;
+        }
+        
+        .category-title-box {
+            top: 180px;
+            padding: 12px 16px 32px 16px;
+        }
+        
+        .category-title-text {
+            font-size: 0.75rem;
+        }
+        
+        .category-arrow-icon {
+            width: 22px;
+            height: 22px;
+            bottom: 8px;
+        }
+        
+        .category-arrow-icon i {
+            width: 12px;
+            height: 12px;
+        }
+    }
 </style>
 
 {% block extra_js %}
@@ -808,8 +1057,152 @@
         }
     }
     
+    // Category Carousel with Pagination
+    function initCategoryCarousel() {
+        const carousel = document.querySelector('.category-carousel-container');
+        const track = document.querySelector('.category-carousel-track');
+        const prevBtn = document.querySelector('.category-carousel-prev');
+        const nextBtn = document.querySelector('.category-carousel-next');
+        const dots = document.querySelectorAll('.category-dot');
+        
+        if (!carousel || !track || !prevBtn || !nextBtn) return;
+        
+        const cards = track.querySelectorAll('.category-card-arch');
+        if (cards.length === 0) return;
+        
+        let currentIndex = 0;
+        const itemsPerView = window.innerWidth >= 1024 ? 4 : window.innerWidth >= 768 ? 3 : 2;
+        
+        function updatePagination() {
+            dots.forEach((dot, index) => {
+                if (index === currentIndex) {
+                    dot.classList.add('active');
+                    dot.classList.remove('bg-gray-300');
+                } else {
+                    dot.classList.remove('active');
+                    dot.classList.add('bg-gray-300');
+                }
+            });
+        }
+        
+        function updateButtons() {
+            const maxIndex = Math.max(0, cards.length - itemsPerView);
+            prevBtn.disabled = currentIndex <= 0;
+            nextBtn.disabled = currentIndex >= maxIndex;
+            
+            if (prevBtn.disabled) {
+                prevBtn.style.opacity = '0.3';
+                prevBtn.style.cursor = 'not-allowed';
+            } else {
+                prevBtn.style.opacity = '1';
+                prevBtn.style.cursor = 'pointer';
+            }
+            
+            if (nextBtn.disabled) {
+                nextBtn.style.opacity = '0.3';
+                nextBtn.style.cursor = 'not-allowed';
+            } else {
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+        }
+        
+        function scrollToIndex(index) {
+            if (cards.length === 0) return;
+            
+            const cardWidth = cards[0].offsetWidth;
+            const gap = parseInt(window.getComputedStyle(track).gap) || 24;
+            const scrollAmount = (cardWidth + gap) * index;
+            
+            carousel.scrollTo({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+            
+            currentIndex = index;
+            updateButtons();
+            updatePagination();
+        }
+        
+        function goToNext() {
+            const maxIndex = Math.max(0, cards.length - itemsPerView);
+            if (currentIndex < maxIndex) {
+                scrollToIndex(currentIndex + 1);
+            }
+        }
+        
+        function goToPrev() {
+            if (currentIndex > 0) {
+                scrollToIndex(currentIndex - 1);
+            }
+        }
+        
+        // Event listeners
+        nextBtn.addEventListener('click', goToNext);
+        prevBtn.addEventListener('click', goToPrev);
+        
+        // Pagination dots
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                scrollToIndex(index);
+            });
+        });
+        
+        // Update on scroll
+        carousel.addEventListener('scroll', () => {
+            const cardWidth = cards[0]?.offsetWidth || 0;
+            const gap = parseInt(window.getComputedStyle(track).gap) || 24;
+            const scrollAmount = cardWidth + gap;
+            const newIndex = Math.round(carousel.scrollLeft / scrollAmount);
+            
+            if (newIndex !== currentIndex) {
+                currentIndex = newIndex;
+                updateButtons();
+                updatePagination();
+            }
+        });
+        
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        carousel.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        carousel.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            const swipeThreshold = 50;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    goToNext();
+                } else {
+                    goToPrev();
+                }
+            }
+        }, { passive: true });
+        
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                scrollToIndex(0);
+            }, 250);
+        });
+        
+        // Initialize
+        updateButtons();
+        updatePagination();
+    }
+    
     // Initialize all carousels when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
+        // Category Carousel
+        initCategoryCarousel();
+        
         // Featured Products - 2 mobile, 4 desktop
         initCarousel('featured-products-carousel', 'featured-prev-btn', 'featured-next-btn', 2, 4);
         

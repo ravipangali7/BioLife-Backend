@@ -41,6 +41,7 @@
                 <div class="card-body">
                     <h3>{{ category.name }}</h3>
                     <hr>
+                    <p><strong>Order:</strong> {{ category.order|default:"—" }}</p>
                     <p><strong>Created:</strong> {{ category.created_at|date:"M d, Y" }}</p>
                     <p><strong>Updated:</strong> {{ category.updated_at|date:"M d, Y" }}</p>
                 </div>

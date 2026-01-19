@@ -25,7 +25,7 @@ def categories(request):
         is_featured=True
     ).prefetch_related(
         'sub_categories__child_categories'
-    ).all()  # Only featured categories for header
+    ).order_by('order', 'name')  # Only featured categories for header
     return {'nav_categories': categories_list}
 
 

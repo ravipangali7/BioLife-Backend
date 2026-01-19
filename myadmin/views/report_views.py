@@ -113,7 +113,7 @@ def sales_report(request):
     if export_format == 'csv':
         return export_sales_report_csv(orders, order_items)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     products = Product.objects.filter(is_active=True).order_by('name')
     
     context = {
@@ -199,7 +199,7 @@ def inventory_report(request):
     if export_format == 'csv':
         return export_inventory_report_csv(products)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     
     context = {
         'page_obj': page_obj,
@@ -281,7 +281,7 @@ def product_performance_report(request):
     if export_format == 'csv':
         return export_product_performance_csv(product_performance, start_date, end_date)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     
     context = {
         'product_performance': product_performance[:50],

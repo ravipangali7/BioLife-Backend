@@ -178,13 +178,35 @@ class Category(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
     is_featured = models.BooleanField(default=False, help_text='Show in header category bar')
+    order = models.IntegerField(unique=True, null=True, blank=True, help_text='Display order (auto-incremented if empty or duplicate)')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
-        ordering = ['name']
+        ordering = ['order', 'name']
+    
+    def save(self, *args, **kwargs):
+        """Auto-increment order field if empty or duplicate"""
+        # If order is None or empty, auto-increment
+        if self.order is None:
+            # Get the maximum order value from existing categories
+            max_order = Category.objects.aggregate(models.Max('order'))['order__max']
+            if max_order is None:
+                self.order = 1
+            else:
+                self.order = max_order + 1
+        else:
+            # Check if another category (excluding self) has this order
+            existing = Category.objects.filter(order=self.order).exclude(pk=self.pk).first()
+            if existing:
+                # Increment all categories with order >= provided_order by 1
+                Category.objects.filter(order__gte=self.order).exclude(pk=self.pk).update(
+                    order=models.F('order') + 1
+                )
+        
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return self.name

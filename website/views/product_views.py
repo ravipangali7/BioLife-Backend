@@ -113,7 +113,7 @@ def product_list(request):
     page_obj = paginator.get_page(page_number)
     
     # Get filter options with hierarchy
-    categories = Category.objects.prefetch_related('sub_categories__child_categories').all()
+    categories = Category.objects.prefetch_related('sub_categories__child_categories').order_by('order', 'name')
     brands = Brand.objects.all()
     
     # Get selected IDs for template

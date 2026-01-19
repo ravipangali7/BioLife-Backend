@@ -62,7 +62,7 @@ def product_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     brands = Brand.objects.all()
     
     context = {
@@ -167,7 +167,7 @@ def product_create(request):
     else:
         form = ProductForm()
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     subcategories = SubCategory.objects.all().select_related('category')
     childcategories = ChildCategory.objects.all().select_related('sub_category', 'sub_category__category')
     brands = Brand.objects.all()
@@ -269,7 +269,7 @@ def product_edit(request, pk):
     else:
         form = ProductForm(instance=product)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     subcategories = SubCategory.objects.all().select_related('category')
     childcategories = ChildCategory.objects.all().select_related('sub_category', 'sub_category__category')
     brands = Brand.objects.all()

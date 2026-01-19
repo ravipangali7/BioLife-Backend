@@ -15,7 +15,7 @@ def home(request):
     banners = Banner.objects.filter(is_active=True).order_by('-created_at')[:5]
     
     # Get featured categories
-    categories = Category.objects.all()[:8]
+    categories = Category.objects.order_by('order', 'name')[:8]
     
     # Get featured products
     featured_products = Product.objects.filter(is_featured=True, is_active=True)[:8]

@@ -63,7 +63,7 @@ class SubCategoryInline(admin.TabularInline):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'is_featured', 'image_preview', 'created_at']
+    list_display = ['name', 'order', 'is_featured', 'image_preview', 'created_at']
     list_filter = ['is_featured', 'created_at']
     search_fields = ['name']
     readonly_fields = ['created_at', 'updated_at', 'image_preview']
@@ -73,8 +73,8 @@ class CategoryAdmin(admin.ModelAdmin):
             'fields': ('name', 'image', 'image_preview')
         }),
         ('Display Settings', {
-            'fields': ('is_featured',),
-            'description': 'Featured categories will appear in the header category bar'
+            'fields': ('order', 'is_featured',),
+            'description': 'Order determines display sequence (auto-incremented if empty or duplicate). Featured categories will appear in the header category bar'
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at')

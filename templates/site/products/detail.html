@@ -185,12 +185,12 @@
             
             <!-- Earn from Product Button (for influencers) -->
             {% if can_earn and user_earn_code %}
-            <div class="mb-6">
+            {% comment %} <div class="mb-6">
                 <button type="button" onclick="openEarnDialog()" class="w-full bg-biolife-blue text-white py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-semibold text-lg shadow-md hover:shadow-lg">
                     <i data-feather="dollar-sign" class="w-5 h-5 inline mr-2"></i>
                     Earn from Product
                 </button>
-            </div>
+            </div> {% endcomment %}
             {% endif %}
             
             <!-- Wishlist Button -->

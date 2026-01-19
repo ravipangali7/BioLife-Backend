@@ -1,0 +1,74 @@
+<a href="{% url 'website:category_detail' category.id %}" class="category-card-arch group flex-shrink-0">
+    <!-- Pink Arch Background -->
+    <div class="category-arch-background"></div>
+    <!-- Category Image (in front of arch) -->
+    {% if category.image %}
+    <div class="category-image-arch">
+        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-10 h-10 object-cover">
+    </div>
+    {% else %}
+        <div class="category-image-arch category-image-placeholder flex items-center justify-center">
+            <i data-feather="package" class="w-16 h-16 text-white"></i>
+        </div>
+    {% endif %}
+    <!-- Pill-shaped Title Box -->
+    <div class="category-title-box relative">
+        <span class="category-title-text">{{ category.name }}</span>
+        <div class="category-arrow-icon">
+            <i data-feather="arrow-right" class="w-4 h-4"></i>
+        </div>
+    </div>
+</a>
+
+<style>
+    .category-card-arch {
+        position: relative;
+        height: 17rem;
+        display: flex;
+        flex-direction: column;
+        width: 12rem;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    .category-arch-background {
+        background: linear-gradient(135deg, #3b82f6 0%,rgb(153, 192, 255) 100%);
+        height: 15rem;
+        width: 10rem;
+        z-index: -1;
+        drop-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-top-left-radius: 100rem;
+        border-top-right-radius: 100rem;
+    }
+    .category-image-arch img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    .category-image-arch{
+        width: 12rem;
+        position: absolute;
+        bottom: 4rem;
+        left: 0;
+        height: 10rem;
+    }
+    .category-title-box {
+        background-color: #3b82f6;
+        height: 4rem;
+        box-shadow: 0 .1rem 1rem rgba(0, 0, 0, .2);
+        position: absolute;
+        bottom: 0.5rem;
+        left: 0;
+        width: 12rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        padding: 0 1rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        text-align: center;
+    }
+</style>

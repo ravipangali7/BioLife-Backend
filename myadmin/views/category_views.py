@@ -12,7 +12,7 @@ from django import forms
 @superuser_required
 def category_list(request):
     """List all categories"""
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     
     search_query = request.GET.get('search', '')
     if search_query:
@@ -52,10 +52,11 @@ def category_create(request):
     """Create new category"""
     CategoryForm = modelform_factory(
         Category,
-        fields=['name', 'image', 'is_featured'],
+        fields=['name', 'image', 'order', 'is_featured'],
         widgets={
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Auto-incremented if empty'}),
             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     )
@@ -79,10 +80,11 @@ def category_edit(request, pk):
     
     CategoryForm = modelform_factory(
         Category,
-        fields=['name', 'image', 'is_featured'],
+        fields=['name', 'image', 'order', 'is_featured'],
         widgets={
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Auto-incremented if empty'}),
             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     )
@@ -131,7 +133,7 @@ def subcategory_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     
     context = {
         'page_obj': page_obj,
@@ -182,7 +184,7 @@ def subcategory_create(request):
     else:
         form = SubCategoryForm()
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     return render(request, 'admin/subcategories/form.html', {'form': form, 'categories': categories})
 
 
@@ -210,7 +212,7 @@ def subcategory_edit(request, pk):
     else:
         form = SubCategoryForm(instance=subcategory)
     
-    categories = Category.objects.all()
+    categories = Category.objects.order_by('order', 'name')
     return render(request, 'admin/subcategories/form.html', {'form': form, 'subcategory': subcategory, 'categories': categories})
 
 
