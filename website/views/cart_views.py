@@ -125,28 +125,36 @@ def add_to_cart(request, product_id):
             
             cart = get_cart(request)
             
-            # Get earn_code from session if available (from affiliate link)
-            earn_code = request.session.get('affiliate_earn_code', '')
+            # Get campaign_id and earncode from session if available
+            campaign_id = request.session.get('campaign_id', '')
+            earn_code = request.session.get('campaign_earncode', '')
             
             # Check if item already exists
             item_found = False
             for item in cart['items']:
                 if item['product_id'] == product_id and item.get('variant') == variant:
                     item['quantity'] += quantity
-                    # Preserve existing earn_code or set new one if not present
+                    # Preserve campaign info if not already set
+                    if not item.get('campaign_id') and campaign_id:
+                        item['campaign_id'] = campaign_id
                     if not item.get('earn_code') and earn_code:
                         item['earn_code'] = earn_code
                     item_found = True
                     break
             
             if not item_found:
-                cart['items'].append({
+                cart_item = {
                     'product_id': product_id,
                     'variant': variant,
                     'quantity': quantity,
                     'price': price,
-                    'earn_code': earn_code,
-                })
+                }
+                # Add campaign info if available
+                if campaign_id:
+                    cart_item['campaign_id'] = campaign_id
+                if earn_code:
+                    cart_item['earn_code'] = earn_code
+                cart['items'].append(cart_item)
             
             request.session.modified = True
             messages.success(request, 'Product added to cart')

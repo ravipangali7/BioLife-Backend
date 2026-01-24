@@ -26,6 +26,15 @@ def login_view(request):
             user = authenticate(request, email=email, password=password)
             if user:
                 login(request, user)
+                # Check for campaign redirect
+                campaign_redirect = request.session.get('campaign_redirect')
+                if campaign_redirect:
+                    from django.urls import reverse
+                    product_url = reverse('website:product_detail', kwargs={'pk': campaign_redirect['product_id']})
+                    redirect_url = f"{product_url}?earncode={campaign_redirect.get('earncode', '')}&campaign={campaign_redirect.get('campaign_id', '')}"
+                    request.session.pop('campaign_redirect', None)
+                    request.session.modified = True
+                    return redirect(redirect_url)
                 next_url = request.GET.get('next')
                 if next_url:
                     return redirect(next_url)
@@ -101,38 +110,60 @@ def register_view(request):
                 login(request, user)
                 messages.success(request, f'Welcome to BioLife, {user.name}!')
                 
-                # Process referral if earn_code provided
+                # Check for campaign redirect
+                campaign_redirect = request.session.get('campaign_redirect')
+                redirect_url = None
+                if campaign_redirect:
+                    from django.urls import reverse
+                    product_url = reverse('website:product_detail', kwargs={'pk': campaign_redirect['product_id']})
+                    redirect_url = f"{product_url}?earncode={campaign_redirect.get('earncode', '')}&campaign={campaign_redirect.get('campaign_id', '')}"
+                    request.session.pop('campaign_redirect', None)
+                    request.session.modified = True
+                    # Use earncode from campaign redirect if available
+                    if campaign_redirect.get('earncode'):
+                        earn_code = campaign_redirect.get('earncode')
+                    else:
+                        earn_code = request.POST.get('earn_code', '').strip() or request.GET.get('earn_code', '').strip()
+                else:
+                    earn_code = request.POST.get('earn_code', '').strip() or request.GET.get('earn_code', '').strip()
+                
+                # Process referral if earn_code provided and referral system is active
                 if earn_code:
-                    try:
-                        # Find influencer with matching earn_code
-                        influencer = User.objects.get(earn_code=earn_code, is_influencer=True)
-                        setting = Setting.objects.first()
-                        
-                        if setting and setting.user_refer_amount and setting.user_refer_amount > 0:
-                            refer_amount = Decimal(str(setting.user_refer_amount))
+                    setting = Setting.objects.first()
+                    if setting and setting.active_referal_system:
+                        try:
+                            # Find influencer with matching earn_code
+                            influencer = User.objects.get(earn_code=earn_code, is_influencer=True)
                             
-                            # Add balance to influencer's wallet
-                            influencer.balance = Decimal(str(influencer.balance)) + refer_amount
-                            influencer.save()
-                            
-                            # Create transaction record
-                            Transaction.objects.create(
-                                user=influencer,
-                                amount=refer_amount,
-                                transaction_type='in',
-                                remarks=f'Referral reward for user registration: {user.email}',
-                                status='success'
-                            )
-                            
-                            messages.info(request, f'Thank you for using referral code! The referrer has been rewarded.')
-                    except User.DoesNotExist:
-                        # Invalid earn_code, silently ignore
-                        pass
-                    except Exception as e:
-                        # Log error but don't fail registration
-                        import logging
-                        logger = logging.getLogger(__name__)
-                        logger.error(f'Error processing referral: {str(e)}')
+                            if setting.user_refer_amount and setting.user_refer_amount > 0:
+                                refer_amount = Decimal(str(setting.user_refer_amount))
+                                
+                                # Add balance to influencer's wallet
+                                influencer.balance = Decimal(str(influencer.balance)) + refer_amount
+                                influencer.save()
+                                
+                                # Create transaction record
+                                Transaction.objects.create(
+                                    user=influencer,
+                                    amount=refer_amount,
+                                    transaction_type='in',
+                                    remarks=f'Referral reward for user registration: {user.email}',
+                                    status='success'
+                                )
+                                
+                                messages.info(request, f'Thank you for using referral code! The referrer has been rewarded.')
+                        except User.DoesNotExist:
+                            # Invalid earn_code, silently ignore
+                            pass
+                        except Exception as e:
+                            # Log error but don't fail registration
+                            import logging
+                            logger = logging.getLogger(__name__)
+                            logger.error(f'Error processing referral: {str(e)}')
+                
+                # Handle campaign redirect
+                if campaign_redirect:
+                    return redirect(redirect_url)
                 
                 # Redirect influencers to profile to complete KYC
                 if is_influencer:

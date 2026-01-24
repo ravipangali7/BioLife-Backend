@@ -420,6 +420,27 @@ class Product(models.Model):
         return 'in_stock'
 
 
+class Campaign(models.Model):
+    """Product promotion campaigns"""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='campaigns')
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='campaigns/', blank=True, null=True)
+    video_link = models.URLField(blank=True, null=True)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Commission percentage")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Campaign'
+        verbose_name_plural = 'Campaigns'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.name} - {self.product.name}"
+
+
 class ProductImage(models.Model):
     """Additional product images"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
@@ -664,6 +685,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='order_items')
     product_varient = models.CharField(max_length=255, blank=True, null=True)  # Store variant combination string
+    campaign = models.ForeignKey('Campaign', on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
     earn_code = models.CharField(max_length=50, blank=True, null=True) # Check if used via referral
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -689,8 +711,8 @@ class OrderItem(models.Model):
 class Setting(models.Model):
     """Global system settings"""
     system_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    sale_commision = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    user_refer_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Amount credited to influencer when they refer a new user")
+    user_refer_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Amount credited to IBO when they refer a new user")
+    active_referal_system = models.BooleanField(default=False, help_text="Enable/disable referral and earn system")
     is_withdrawal = models.BooleanField(default=True)
     min_withdrawal = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
     max_withdrawal = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
@@ -716,85 +738,6 @@ class Setting(models.Model):
         
     def __str__(self):
         return "System Settings"
-
-
-class Task(models.Model):
-    """Admin created tasks"""
-    SOCIAL_MEDIA_CHOICES = [
-        ('youtube', 'Youtube'),
-        ('facebook', 'Facebook'),
-        ('instagram', 'Instagram'),
-        ('tiktok', 'TikTok'),
-    ]
-    
-    social_media = models.CharField(max_length=20, choices=SOCIAL_MEDIA_CHOICES)
-    title = models.CharField(max_length=255)
-    target = models.CharField(max_length=255, help_text="Goal/Target for the task")
-    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = 'Task'
-        verbose_name_plural = 'Tasks'
-        ordering = ['-created_at']
-        
-    def __str__(self):
-        return self.title
-
-
-class UserTask(models.Model):
-    """User attempts at tasks"""
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-    ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_tasks')
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='user_submissions')
-    description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    reject_reason = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = 'User Task'
-        verbose_name_plural = 'User Tasks'
-        ordering = ['-created_at']
-        
-    def __str__(self):
-        return f"{self.user.email} - {self.task.title}"
-
-
-class UserTaskImage(models.Model):
-    """Image proofs for user tasks"""
-    user_task = models.ForeignKey(UserTask, on_delete=models.CASCADE, related_name='images')
-    title = models.CharField(max_length=255, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='tasks/proofs/')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = 'User Task Image'
-        verbose_name_plural = 'User Task Images'
-
-
-class UserTaskLink(models.Model):
-    """Link proofs for user tasks"""
-    user_task = models.ForeignKey(UserTask, on_delete=models.CASCADE, related_name='links')
-    title = models.CharField(max_length=255, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    url = models.URLField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name = 'User Task Link'
-        verbose_name_plural = 'User Task Links'
 
 
 class Withdrawal(models.Model):

@@ -9,7 +9,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 from core.models import (
     Order, OrderItem, Product, User, Category, Setting,
-    Withdrawal, Transaction, UserTask, Task
+    Withdrawal, Transaction
 )
 from django.http import HttpResponse
 import csv
@@ -534,10 +534,6 @@ def finance_report(request):
     total_commissions = commissions.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
     commission_count = commissions.count()
     
-    # Task rewards (from Transaction remarks containing "Task Reward")
-    task_rewards = transactions.filter(remarks__icontains='Task Reward')
-    total_task_rewards = task_rewards.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    
     # Grouping by date
     group_by = request.GET.get('group_by', 'day')
     if group_by == 'day':
@@ -591,7 +587,6 @@ def finance_report(request):
         'transactions_by_type': transactions_by_type,
         'total_commissions': total_commissions,
         'commission_count': commission_count,
-        'total_task_rewards': total_task_rewards,
         'system_balance': system_balance,
         'withdrawals_by_date': withdrawals_by_date,
         'transactions_by_date': transactions_by_date,
@@ -656,7 +651,6 @@ def influencer_report(request):
             ),
             Decimal('0.00')
         ),
-        task_count=Count('user_tasks', filter=Q(user_tasks__created_at__range=[start_date, end_date])),
         commission_count=Count(
             'transactions',
             filter=Q(
@@ -664,17 +658,6 @@ def influencer_report(request):
                 transactions__remarks__icontains='Commission',
                 transactions__status='success'
             )
-        ),
-        task_earnings=Coalesce(
-            Sum(
-                'transactions__amount',
-                filter=Q(
-                    transactions__created_at__range=[start_date, end_date],
-                    transactions__remarks__icontains='Task Reward',
-                    transactions__status='success'
-                )
-            ),
-            Decimal('0.00')
         ),
         commission_earnings=Coalesce(
             Sum(
@@ -692,17 +675,6 @@ def influencer_report(request):
     # Top influencers
     top_influencers = influencer_stats[:20]
     
-    # Task statistics
-    task_stats = UserTask.objects.filter(
-        created_at__range=[start_date, end_date],
-        user__is_influencer=True
-    ).select_related('user', 'task')
-    
-    tasks_by_status = task_stats.values('status').annotate(
-        count=Count('id'),
-        total_amount=Sum('task__amount')
-    ).order_by('status')
-    
     # KYC status distribution
     kyc_distribution = influencers.values('kyc_status').annotate(
         count=Count('id')
@@ -714,7 +686,6 @@ def influencer_report(request):
         total=Sum('total_earnings')
     )['total'] or Decimal('0.00')
     
-    total_task_submissions = task_stats.count()
     total_commissions = transactions_in_range.filter(remarks__icontains='Commission').count()
     
     # Average earnings per influencer
@@ -723,16 +694,14 @@ def influencer_report(request):
     # Export
     export_format = request.GET.get('export')
     if export_format == 'csv':
-        return export_influencer_report_csv(influencer_stats, task_stats, start_date, end_date)
+        return export_influencer_report_csv(influencer_stats, start_date, end_date)
     
     context = {
         'influencer_stats': influencer_stats[:50],
         'top_influencers': top_influencers,
-        'tasks_by_status': tasks_by_status,
         'kyc_distribution': kyc_distribution,
         'total_influencers': total_influencers,
         'total_earnings_all': total_earnings_all,
-        'total_task_submissions': total_task_submissions,
         'total_commissions': total_commissions,
         'avg_earnings': avg_earnings,
         'start_date': start_date.strftime('%Y-%m-%d'),
@@ -795,7 +764,7 @@ def export_finance_report_csv(withdrawals, transactions, start_date, end_date):
     return response
 
 
-def export_influencer_report_csv(influencer_stats, task_stats, start_date, end_date):
+def export_influencer_report_csv(influencer_stats, start_date, end_date):
     """Export influencer report to CSV"""
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="influencer_report_{start_date.strftime("%Y%m%d")}_{end_date.strftime("%Y%m%d")}.csv"'
@@ -804,31 +773,15 @@ def export_influencer_report_csv(influencer_stats, task_stats, start_date, end_d
     
     # Influencers section
     writer.writerow(['=== INFLUENCERS ==='])
-    writer.writerow(['Name', 'Email', 'Total Earnings', 'Task Count', 'Commission Count', 'Task Earnings', 'Commission Earnings', 'KYC Status'])
+    writer.writerow(['Name', 'Email', 'Total Earnings', 'Commission Count', 'Commission Earnings', 'KYC Status'])
     for influencer in influencer_stats:
         writer.writerow([
             influencer.name or '-',
             influencer.email,
             influencer.total_earnings or 0,
-            influencer.task_count or 0,
             influencer.commission_count or 0,
-            influencer.task_earnings or 0,
             influencer.commission_earnings or 0,
             influencer.get_kyc_status_display() if influencer.kyc_status else 'Not Submitted'
-        ])
-    
-    writer.writerow([])
-    
-    # Task submissions section
-    writer.writerow(['=== TASK SUBMISSIONS ==='])
-    writer.writerow(['Task Title', 'Influencer', 'Status', 'Amount', 'Date'])
-    for task_stat in task_stats:
-        writer.writerow([
-            task_stat.task.title,
-            task_stat.user.email,
-            task_stat.get_status_display(),
-            task_stat.task.amount,
-            task_stat.created_at.strftime('%Y-%m-%d %H:%M:%S')
         ])
     
     return response

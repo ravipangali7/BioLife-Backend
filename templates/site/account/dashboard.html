@@ -74,7 +74,46 @@
                 </div>
             </div>
 
+            <!-- Upgrade to IBO Section (for customers) -->
+            {% if not user.is_influencer %}
+            <div class="card p-4 md:p-6 mb-3 md:mb-6 overflow-hidden max-w-full">
+                <div class="bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-purple-300/20">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-white text-lg md:text-xl font-bold mb-2">Upgrade to IBO</h3>
+                            <p class="text-white/90 text-sm md:text-base">Unlock exclusive{% if active_referal_system %} earning{% endif %} opportunities!</p>
+                        </div>
+                        <div class="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                            <i data-feather="trending-up" class="w-8 h-8 md:w-10 md:h-10 text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <p class="text-white/90 text-sm md:text-base mb-4">As an IBO (Independent Business Owner), you can:</p>
+                        <ul class="text-white/90 text-sm md:text-base space-y-2 list-disc list-inside mb-4">
+                            {% if active_referal_system %}
+                            <li>Earn rewards by completing social media tasks</li>
+                            <li>Get commissions on product sales through your referral links</li>
+                            <li>Earn rewards when you refer new users</li>
+                            <li>Access wallet features and withdrawal options</li>
+                            {% else %}
+                            <li>Access exclusive IBO features and benefits</li>
+                            <li>Get priority support and services</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <a href="{% url 'website:account_kyc' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-white text-purple-600 rounded-xl hover:bg-gray-100 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-105 active:scale-100">
+                        <i data-feather="shield" class="w-5 h-5 mr-2"></i>
+                        Complete KYC to Upgrade
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Referral Section -->
+            {% if active_referal_system %}
             <div class="card p-4 md:p-6 mb-3 md:mb-6 overflow-hidden max-w-full">
                 <h2 class="text-lg md:text-2xl font-bold text-gray-800 mb-3 md:mb-6">Refer & Earn</h2>
                 
@@ -153,6 +192,7 @@
                 </div>
                 {% endif %}
             </div>
+            {% endif %}
 
             <!-- Recent Orders -->
             <div class="card p-4 md:p-6">

@@ -18,7 +18,7 @@
         <div class="lg:col-span-3">
             {% if not has_access %}
                 {% if user.is_influencer %}
-                <!-- Influencer without approved KYC -->
+                <!-- IBO without approved KYC -->
                 <div class="{% if user.kyc_status == 'rejected' %}bg-red-50 border-l-4 border-red-400{% elif user.kyc_status == 'pending' %}bg-yellow-50 border-l-4 border-yellow-400{% else %}bg-yellow-50 border-l-4 border-yellow-400{% endif %} p-4 mb-8">
                     <div class="flex">
                         <div class="flex-shrink-0">
@@ -64,10 +64,10 @@
                         </div>
                         <div class="ml-3">
                             <p class="text-sm text-blue-700 font-semibold mb-1">
-                                Influencer Feature
+                                IBO Feature
                             </p>
                             <p class="text-sm text-blue-700">
-                                Wallet is only available for verified influencers. If you're an influencer, please register with an influencer account and complete KYC verification.
+                                Wallet is only available for verified IBOs. If you're an IBO, please register with an IBO account and complete KYC verification.
                             </p>
                         </div>
                     </div>
@@ -146,7 +146,7 @@
                                 {% if user.is_influencer %}
                                 Complete KYC verification to access withdrawal features.
                                 {% else %}
-                                This feature is only available for verified influencers.
+                                This feature is only available for verified IBOs.
                                 {% endif %}
                             </p>
                         </div>

@@ -53,11 +53,33 @@ def order_detail(request, pk):
         'user', 'billing_address', 'shipping_address'
     ), pk=pk)
     
-    items = OrderItem.objects.filter(order=order).select_related('product')
+    items = OrderItem.objects.filter(order=order).select_related('product', 'campaign')
+    
+    # Get referrer users for items with earn_code
+    from core.models import User
+    from decimal import Decimal
+    earn_codes = [item.earn_code for item in items if item.earn_code]
+    referrers = {}
+    if earn_codes:
+        referrer_users = User.objects.filter(earn_code__in=earn_codes, is_influencer=True)
+        referrers = {user.earn_code: user for user in referrer_users}
+    
+    # Prepare items with reward calculations
+    items_with_rewards = []
+    for item in items:
+        reward_amount = None
+        if item.campaign and item.earn_code and order.order_status == 'delivered' and order.payment_status == 'paid':
+            reward_amount = Decimal(str(item.price)) * (Decimal(str(item.campaign.percentage)) / Decimal('100'))
+        items_with_rewards.append({
+            'item': item,
+            'reward_amount': reward_amount,
+        })
     
     context = {
         'order': order,
         'items': items,
+        'items_with_rewards': items_with_rewards,
+        'referrers': referrers,
     }
     
     return render(request, 'admin/orders/detail.html', context)

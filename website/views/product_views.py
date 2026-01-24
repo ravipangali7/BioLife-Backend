@@ -5,8 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
-from core.models import Product, ProductReview, Category, SubCategory, ChildCategory, Brand, OrderItem, Wishlist, User, Setting
-from website.views.earn_views import check_influencer_kyc_access
+from core.models import Product, ProductReview, Category, SubCategory, ChildCategory, Brand, OrderItem, Wishlist, Setting, Campaign, User
 
 
 def can_user_review_product(user, product):
@@ -138,21 +137,51 @@ def product_list(request):
     return render(request, 'site/products/list.html', context)
 
 
-def product_detail(request, pk, earn_code=None):
-    """Product detail page with variants and reviews. Supports affiliate links."""
+def product_detail(request, pk):
+    """Product detail page with variants and reviews."""
     product = get_object_or_404(Product, pk=pk, is_active=True)
     
-    # If earn_code is provided, validate and store in session
-    affiliate_user = None
-    if earn_code:
+    # Check if referral system is active
+    setting = Setting.objects.first()
+    active_referal_system = setting.active_referal_system if setting else False
+    
+    # Handle campaign and earncode from query params
+    earncode = request.GET.get('earncode', '').strip()
+    campaign_id = request.GET.get('campaign', '').strip()
+    
+    # If not authenticated and has campaign/earncode, redirect to login/register
+    if (earncode or campaign_id) and not request.user.is_authenticated:
+        from django.urls import reverse
+        login_url = reverse('website:login')
+        register_url = reverse('website:register')
+        # Store params in session for after login
+        request.session['campaign_redirect'] = {
+            'product_id': pk,
+            'earncode': earncode,
+            'campaign_id': campaign_id,
+        }
+        request.session.modified = True
+        messages.info(request, 'Please login or register to continue with the referral link.')
+        return redirect('website:login')
+    
+    # Validate and store campaign/earncode if authenticated
+    campaign = None
+    referrer_user = None
+    if request.user.is_authenticated and earncode and campaign_id:
         try:
-            affiliate_user = User.objects.get(earn_code=earn_code, is_influencer=True, kyc_status='approved')
-            # Store earn_code in session for cart/checkout tracking
-            request.session['affiliate_earn_code'] = earn_code
+            # Validate earncode
+            referrer_user = User.objects.get(earn_code=earncode, is_influencer=True, kyc_status='approved')
+            # Validate campaign
+            campaign = Campaign.objects.get(pk=campaign_id, is_active=True, product=product)
+            # Store in session for cart tracking
+            request.session['campaign_earncode'] = earncode
+            request.session['campaign_id'] = campaign_id
             request.session.modified = True
-        except User.DoesNotExist:
-            messages.warning(request, 'Invalid affiliate link')
-            return redirect('website:product_detail', pk=pk)
+        except (User.DoesNotExist, Campaign.DoesNotExist):
+            messages.warning(request, 'Invalid referral link')
+            # Clear invalid session data
+            request.session.pop('campaign_earncode', None)
+            request.session.pop('campaign_id', None)
     
     # Get product images
     product_images = product.images.all()
@@ -178,9 +207,6 @@ def product_detail(request, pk, earn_code=None):
     can_review = False
     user_review = None
     is_in_wishlist = False
-    can_earn = False
-    user_earn_code = None
-    commission_percent = None
     
     if request.user.is_authenticated:
         can_review = can_user_review_product(request.user, product)
@@ -188,15 +214,6 @@ def product_detail(request, pk, earn_code=None):
             user_review = ProductReview.objects.filter(user=request.user, product=product).first()
         # Check if product is in user's wishlist
         is_in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
-        
-        # Check if user can earn from this product (influencer with approved KYC)
-        has_access, _ = check_influencer_kyc_access(request.user)
-        if has_access:
-            can_earn = True
-            user_earn_code = request.user.earn_code
-            setting = Setting.objects.first()
-            if setting:
-                commission_percent = setting.sale_commision
     
     context = {
         'product': product,
@@ -208,11 +225,9 @@ def product_detail(request, pk, earn_code=None):
         'can_review': can_review,
         'user_review': user_review,
         'is_in_wishlist': is_in_wishlist,
-        'can_earn': can_earn,
-        'user_earn_code': user_earn_code,
-        'commission_percent': commission_percent,
-        'affiliate_user': affiliate_user,
-        'is_affiliate_link': bool(earn_code),
+        'active_referal_system': active_referal_system,
+        'campaign': campaign,
+        'referrer_user': referrer_user,
     }
     
     return render(request, 'site/products/detail.html', context)

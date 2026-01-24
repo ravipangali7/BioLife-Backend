@@ -9,6 +9,7 @@ from .views import (
     category_views,
     brand_views,
     earn_views,
+    campaign_views,
 )
 
 app_name = 'website'
@@ -20,7 +21,6 @@ urlpatterns = [
     # Products
     path('products/', product_views.product_list, name='product_list'),
     path('products/<int:pk>/review/', product_views.submit_review, name='submit_review'),
-    path('products/<int:pk>/<str:earn_code>/', product_views.product_detail, name='product_detail_affiliate'),
     path('products/<int:pk>/', product_views.product_detail, name='product_detail'),
     
     # Cart
@@ -70,8 +70,9 @@ urlpatterns = [
     path('brand/<int:brand_id>/', brand_views.brand_list, name='brand_detail'),
     
     # Earn & Wallet
-    path('earn/', earn_views.task_list, name='task_list'),
-    path('earn/task/<int:task_id>/', earn_views.task_detail, name='task_detail'),
+    path('earn/', campaign_views.campaign_list, name='campaign_list'),
+    path('earn/campaign/<int:campaign_id>/', campaign_views.campaign_detail, name='campaign_detail'),
+    path('earn/campaign/<int:campaign_id>/enroll/', campaign_views.campaign_enroll, name='campaign_enroll'),
     path('wallet/', earn_views.wallet_view, name='wallet'),
     
     # CMS Pages

@@ -1,22 +1,24 @@
 {% extends 'admin/layouts/base.html' %}
-{% load static %}
 
 {% block content %}
 <div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Delete Campaign</h1>
+    </div>
+
     <div class="row">
-        <div class="col-12 col-md-6 mx-auto">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Delete Task</h5>
+                    <h5 class="card-title mb-0">Confirm Delete</h5>
                 </div>
                 <div class="card-body">
-                    <p>Are you sure you want to delete the task <strong>"{{ task.title }}"</strong>?</p>
+                    <p>Are you sure you want to delete <strong>{{ campaign.name }}</strong>?</p>
                     <p class="text-danger">This action cannot be undone.</p>
-
                     <form method="post">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger">Delete</button>
-                        <a href="{% url 'myadmin:task_list' %}" class="btn btn-secondary">Cancel</a>
+                        <a href="{% url 'myadmin:campaign_detail' campaign.pk %}" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>
             </div>

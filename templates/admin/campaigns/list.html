@@ -1,0 +1,116 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Campaigns</h1>
+        <a href="{% url 'myadmin:campaign_create' %}" class="btn btn-primary ms-2">
+            <i class="align-middle" data-feather="plus"></i> Add Campaign
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Campaign List</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Filter -->
+                    <div class="mb-3">
+                        <a href="?is_active=true" class="btn btn-sm {% if is_active_filter == True %}btn-primary{% else %}btn-outline-primary{% endif %}">Active</a>
+                        <a href="?is_active=false" class="btn btn-sm {% if is_active_filter == False %}btn-primary{% else %}btn-outline-primary{% endif %}">Inactive</a>
+                        <a href="?" class="btn btn-sm btn-outline-secondary">All</a>
+                    </div>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Product</th>
+                                <th>Percentage</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in page_obj %}
+                            <tr>
+                                <td>
+                                    {% if campaign.image %}
+                                    <img src="{{ campaign.image.url }}" alt="{{ campaign.name }}" width="80" height="80" class="rounded">
+                                    {% else %}
+                                    <span class="text-muted">No Image</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ campaign.name }}</strong></td>
+                                <td><a href="{% url 'myadmin:product_detail' campaign.product.pk %}">{{ campaign.product.name }}</a></td>
+                                <td><strong>{{ campaign.percentage }}%</strong></td>
+                                <td>
+                                    {% if campaign.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ campaign.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'myadmin:campaign_detail' campaign.pk %}" class="btn btn-sm btn-info">
+                                            <i class="align-middle" data-feather="eye"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:campaign_edit' campaign.pk %}" class="btn btn-sm btn-primary">
+                                            <i class="align-middle" data-feather="edit"></i>
+                                        </a>
+                                        <a href="{% url 'myadmin:campaign_delete' campaign.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="align-middle" data-feather="trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No campaigns found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if is_active_filter is not None %}&is_active={{ is_active_filter }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if is_active_filter is not None %}&is_active={{ is_active_filter }}{% endif %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if is_active_filter is not None %}&is_active={{ is_active_filter }}{% endif %}">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

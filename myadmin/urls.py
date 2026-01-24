@@ -12,6 +12,7 @@ from .views import (
     system_views,
     inventory_views,
     report_views,
+    campaign_views,
 )
 
 app_name = 'myadmin'
@@ -132,15 +133,12 @@ urlpatterns = [
     # System Settings
     path('settings/', system_views.settings_view, name='settings_view'),
     
-    # Tasks
-    path('tasks/', system_views.task_list, name='task_list'),
-    path('tasks/create/', system_views.task_create, name='task_create'),
-    path('tasks/<int:pk>/edit/', system_views.task_edit, name='task_edit'),
-    path('tasks/<int:pk>/delete/', system_views.task_delete, name='task_delete'),
-    
-    # User Tasks (Submissions)
-    path('submissions/', system_views.usertask_list, name='usertask_list'),
-    path('submissions/<int:pk>/', system_views.usertask_detail, name='usertask_detail'),
+    # Campaigns
+    path('campaigns/', campaign_views.campaign_list, name='campaign_list'),
+    path('campaigns/create/', campaign_views.campaign_create, name='campaign_create'),
+    path('campaigns/<int:pk>/', campaign_views.campaign_detail, name='campaign_detail'),
+    path('campaigns/<int:pk>/edit/', campaign_views.campaign_edit, name='campaign_edit'),
+    path('campaigns/<int:pk>/delete/', campaign_views.campaign_delete, name='campaign_delete'),
     
     # Withdrawals
     path('withdrawals/', system_views.withdrawal_list, name='withdrawal_list'),

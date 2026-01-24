@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container-fluid p-0">
     <div class="mb-3">
-        <h1 class="h3 d-inline align-middle">Influencer Report</h1>
+        <h1 class="h3 d-inline align-middle">IBO Report</h1>
         <a href="{% url 'myadmin:reports_index' %}" class="btn btn-secondary ms-2">
             <i class="align-middle" data-feather="arrow-left"></i> Back to Reports
         </a>
@@ -52,7 +52,7 @@
         <div class="col-xl-3 col-lg-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Total Influencers</h5>
+                    <h5 class="card-title">Total IBOs</h5>
                     <h2 class="mb-0">{{ total_influencers }}</h2>
                 </div>
             </div>
@@ -78,7 +78,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Average Earnings</h5>
                     <h2 class="mb-0">Rs {{ avg_earnings|floatformat:2 }}</h2>
-                    <small class="text-muted">Per influencer</small>
+                    <small class="text-muted">Per IBO</small>
                 </div>
             </div>
         </div>
@@ -129,7 +129,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="9" class="text-center">No influencers found</td>
+                                    <td colspan="9" class="text-center">No IBOs found</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -222,7 +222,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">All Influencers Performance</h5>
+                    <h5 class="card-title mb-0">All IBOs Performance</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -261,7 +261,7 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="8" class="text-center">No influencers found</td>
+                                    <td colspan="8" class="text-center">No IBOs found</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

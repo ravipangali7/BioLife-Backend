@@ -1,0 +1,109 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Campaign Details</h1>
+        <div class="btn-group ms-2">
+            <a href="{% url 'myadmin:campaign_list' %}" class="btn btn-secondary">
+                <i class="align-middle" data-feather="arrow-left"></i> Back
+            </a>
+            <a href="{% url 'myadmin:campaign_edit' campaign.pk %}" class="btn btn-primary">
+                <i class="align-middle" data-feather="edit"></i> Edit
+            </a>
+            <a href="{% url 'myadmin:campaign_delete' campaign.pk %}" class="btn btn-danger">
+                <i class="align-middle" data-feather="trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Campaign Image</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if campaign.image %}
+                    <img src="{{ campaign.image.url }}" alt="{{ campaign.name }}" class="img-fluid rounded">
+                    {% else %}
+                    <span class="text-muted">No Image</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if campaign.video_link %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Video</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ campaign.video_link }}" target="_blank" class="btn btn-primary">
+                        <i class="align-middle" data-feather="play"></i> Watch Video
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Campaign Information</h5>
+                </div>
+                <div class="card-body">
+                    <h3>{{ campaign.name }}</h3>
+                    <hr>
+                    <p><strong>Product:</strong> 
+                        <a href="{% url 'myadmin:product_detail' campaign.product.pk %}">{{ campaign.product.name }}</a>
+                    </p>
+                    <p><strong>Commission Percentage:</strong> 
+                        <span class="badge bg-info">{{ campaign.percentage }}%</span>
+                    </p>
+                    <p><strong>Status:</strong>
+                        {% if campaign.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </p>
+                    {% if campaign.description %}
+                    <p><strong>Description:</strong></p>
+                    <p>{{ campaign.description|linebreaks }}</p>
+                    {% endif %}
+                    <p><strong>Created:</strong> {{ campaign.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Updated:</strong> {{ campaign.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+
+            {% if order_items %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Orders ({{ order_items|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order_item in order_items %}
+                            <tr>
+                                <td><a href="{% url 'myadmin:order_detail' order_item.order.pk %}">#{{ order_item.order.id }}</a></td>
+                                <td>{{ order_item.product.name }}</td>
+                                <td>{{ order_item.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

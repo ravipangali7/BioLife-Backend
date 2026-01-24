@@ -15,19 +15,21 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="mb-3 col-md-4">
+                            <div class="mb-3 col-md-6">
                                 <label class="form-label" for="id_system_balance">System Balance (Rs)</label>
                                 {{ form.system_balance }}
                             </div>
-                            <div class="mb-3 col-md-4">
-                                <label class="form-label" for="id_sale_commision">Sale Commission (%)</label>
-                                {{ form.sale_commision }}
-                            </div>
-                            <div class="mb-3 col-md-4">
+                            <div class="mb-3 col-md-6">
                                 <label class="form-label" for="id_user_refer_amount">User Refer Amount (Rs)</label>
                                 {{ form.user_refer_amount }}
-                                <small class="form-text text-muted">Amount credited to influencer when they refer a new user</small>
+                                <small class="form-text text-muted">Amount credited to IBO when they refer a new user</small>
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-check-label">
+                                {{ form.active_referal_system }} Active Referral System
+                            </label>
+                            <small class="form-text text-muted d-block">Enable/disable referral and earn system across the site</small>
                         </div>
                         <div class="row">
                             <div class="mb-3 col-md-6">

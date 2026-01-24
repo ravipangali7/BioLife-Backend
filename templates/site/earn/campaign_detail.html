@@ -1,0 +1,157 @@
+{% extends 'site/layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ campaign.name }} - BioLife{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 md:py-12">
+    <div class="mb-8">
+        <a href="{% url 'website:campaign_list' %}" class="text-biolife-green hover:text-biolife-green-dark mb-4 inline-flex items-center">
+            <i data-feather="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Campaigns
+        </a>
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-3">{{ campaign.name }}</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        {% include 'site/layouts/account_sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            {% if not has_access %}
+                {% if user.is_influencer %}
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                    <p class="text-sm text-yellow-700">Please complete KYC verification to enroll in campaigns.</p>
+                </div>
+                {% else %}
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+                    <p class="text-sm text-blue-700">Campaigns are only available for verified IBOs.</p>
+                </div>
+                {% endif %}
+            {% endif %}
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                {% if campaign.image %}
+                <img src="{{ campaign.image.url }}" alt="{{ campaign.name }}" class="w-full h-64 md:h-96 object-cover">
+                {% endif %}
+
+                <div class="p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ campaign.name }}</h2>
+                            <p class="text-gray-600">
+                                <strong>Product:</strong> 
+                                <a href="{% url 'website:product_detail' campaign.product.id %}" class="text-biolife-green hover:underline">
+                                    {{ campaign.product.name }}
+                                </a>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <div class="inline-flex items-center px-4 py-2 rounded-full bg-biolife-green-light text-biolife-green-dark font-bold text-lg">
+                                <i data-feather="percent" class="w-5 h-5 mr-2"></i>
+                                {{ campaign.percentage }}% Commission
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if campaign.description %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                        <p class="text-gray-700 whitespace-pre-line">{{ campaign.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if campaign.video_link %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Video</h3>
+                        <a href="{{ campaign.video_link }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            <i data-feather="play" class="w-5 h-5 mr-2"></i>
+                            Watch Video
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <div class="border-t border-gray-200 pt-6 mt-6">
+                        {% if has_access and user_earn_code %}
+                        <div id="enroll-section">
+                            <button onclick="enrollCampaign()" class="w-full bg-biolife-green text-white py-4 rounded-lg hover:bg-biolife-green-dark transition-colors font-bold text-lg shadow-md hover:shadow-lg">
+                                <i data-feather="target" class="w-5 h-5 inline mr-2"></i>
+                                Enroll in Campaign
+                            </button>
+                        </div>
+                        <div id="referral-link-section" class="hidden mt-6 p-4 bg-biolife-green-light rounded-lg border border-biolife-green">
+                            <h4 class="font-semibold text-gray-800 mb-3">Your Referral Link</h4>
+                            <div class="flex gap-2 mb-3">
+                                <input type="text" id="referral-link-input" readonly
+                                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700">
+                                <button onclick="copyReferralLink()" class="px-6 py-2 bg-biolife-green text-white rounded-lg hover:bg-biolife-green-dark transition-colors font-semibold">
+                                    <i data-feather="copy" class="w-4 h-4 inline mr-2"></i>
+                                    Copy
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600">
+                                Share this link to earn {{ campaign.percentage }}% commission on each sale. Commission will be added to your balance when the order is delivered and paid.
+                            </p>
+                        </div>
+                        {% elif has_access and not user_earn_code %}
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <p class="text-yellow-800">You need to complete KYC verification to get an earn code and enroll in campaigns.</p>
+                            <a href="{% url 'website:account_kyc' %}" class="text-yellow-900 font-semibold underline">Complete KYC →</a>
+                        </div>
+                        {% else %}
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <p class="text-gray-600">Please complete KYC verification to enroll in campaigns.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    feather.replace();
+
+    function enrollCampaign() {
+        fetch("{% url 'website:campaign_enroll' campaign.id %}", {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('enroll-section').classList.add('hidden');
+                document.getElementById('referral-link-section').classList.remove('hidden');
+                document.getElementById('referral-link-input').value = data.referral_link;
+            } else {
+                alert(data.error || 'Failed to enroll in campaign');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+
+    function copyReferralLink() {
+        const linkInput = document.getElementById('referral-link-input');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i data-feather="check" class="w-4 h-4 inline mr-2"></i>Copied!';
+        feather.replace();
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            feather.replace();
+        }, 2000);
+    }
+</script>
+{% endblock %}

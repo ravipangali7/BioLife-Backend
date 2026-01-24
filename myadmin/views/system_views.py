@@ -3,7 +3,7 @@ from myadmin.decorators import superuser_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from core.models import Setting, Task, UserTask, UserTaskImage, UserTaskLink, Withdrawal, Transaction, User
+from core.models import Setting, Withdrawal, Transaction, User
 from django.forms import modelform_factory
 from django import forms
 
@@ -18,12 +18,12 @@ def settings_view(request):
         
     SettingForm = modelform_factory(
         Setting,
-        fields=['system_balance', 'sale_commision', 'user_refer_amount', 'is_withdrawal', 'min_withdrawal', 'max_withdrawal', 'low_stock_threshold',
+        fields=['system_balance', 'user_refer_amount', 'active_referal_system', 'is_withdrawal', 'min_withdrawal', 'max_withdrawal', 'low_stock_threshold',
                 'email', 'phone', 'address', 'facebook_url', 'instagram_url', 'youtube_url', 'tiktok_url'],
         widgets={
             'system_balance': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'sale_commision': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'user_refer_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'active_referal_system': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_withdrawal': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'min_withdrawal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'max_withdrawal': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
@@ -48,156 +48,6 @@ def settings_view(request):
         form = SettingForm(instance=setting)
         
     return render(request, 'admin/system/settings.html', {'form': form, 'setting': setting})
-
-
-# --- TASKS ---
-@superuser_required
-def task_list(request):
-    """List all tasks"""
-    tasks = Task.objects.all()
-    
-    paginator = Paginator(tasks, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'admin/system/task_list.html', {'page_obj': page_obj})
-
-@superuser_required
-def task_create(request):
-    """Create new task"""
-    TaskForm = modelform_factory(
-        Task,
-        fields=['social_media', 'title', 'target', 'amount', 'is_active'],
-        widgets={
-            'social_media': forms.Select(attrs={'class': 'form-select'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'target': forms.TextInput(attrs={'class': 'form-control'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
-    )
-    
-    if request.method == 'POST':
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            task = form.save()
-            messages.success(request, f'Task "{task.title}" created successfully.')
-            return redirect('myadmin:task_list')
-    else:
-        form = TaskForm()
-        
-    return render(request, 'admin/system/task_form.html', {'form': form})
-
-@superuser_required
-def task_edit(request, pk):
-    """Edit task"""
-    task = get_object_or_404(Task, pk=pk)
-    
-    TaskForm = modelform_factory(
-        Task,
-        fields=['social_media', 'title', 'target', 'amount', 'is_active'],
-        widgets={
-            'social_media': forms.Select(attrs={'class': 'form-select'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'target': forms.TextInput(attrs={'class': 'form-control'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
-    )
-    
-    if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Task "{task.title}" updated successfully.')
-            return redirect('myadmin:task_list')
-    else:
-        form = TaskForm(instance=task)
-        
-    return render(request, 'admin/system/task_form.html', {'form': form, 'task': task})
-
-@superuser_required
-def task_delete(request, pk):
-    """Delete task"""
-    task = get_object_or_404(Task, pk=pk)
-    
-    if request.method == 'POST':
-        title = task.title
-        task.delete()
-        messages.success(request, f'Task "{title}" deleted successfully.')
-        return redirect('myadmin:task_list')
-        
-    return render(request, 'admin/system/task_delete.html', {'task': task})
-
-
-# --- USER TASKS (SUBMISSIONS) ---
-@superuser_required
-def usertask_list(request):
-    """List user submissions"""
-    usertasks = UserTask.objects.select_related('user', 'task').all().order_by('-created_at')
-    
-    status_filter = request.GET.get('status')
-    if status_filter:
-        usertasks = usertasks.filter(status=status_filter)
-        
-    paginator = Paginator(usertasks, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'admin/system/usertask_list_v2.html', {
-        'page_obj': page_obj,
-        'status_filter': status_filter
-    })
-
-@superuser_required
-def usertask_detail(request, pk):
-    """View submission detail"""
-    usertask = get_object_or_404(UserTask.objects.select_related('user', 'task'), pk=pk)
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'approve':
-            if usertask.status != 'approved':
-                # Use Transaction to add balance safely
-                amount = usertask.task.amount
-                user = usertask.user
-                
-                # Check setting balance? (Optional based on requirements, assuming system generates money or system_balance is a pool)
-                setting = Setting.objects.first()
-                if setting and setting.system_balance < amount:
-                    messages.error(request, 'Insufficient system balance to approve task.')
-                    return redirect('myadmin:usertask_detail', pk=pk)
-
-                user.balance += amount
-                user.save()
-                
-                # Deduct from system
-                if setting:
-                    setting.system_balance -= amount
-                    setting.save()
-
-                Transaction.objects.create(
-                    user=user,
-                    amount=amount,
-                    transaction_type='in',
-                    remarks=f'Task Reward: {usertask.task.title}',
-                    status='success'
-                )
-                
-                usertask.status = 'approved'
-                usertask.save()
-                messages.success(request, 'Task approved and reward sent.')
-                
-        elif action == 'reject':
-            reason = request.POST.get('reject_reason', '')
-            usertask.status = 'rejected'
-            usertask.reject_reason = reason
-            usertask.save()
-            messages.success(request, 'Task rejected.')
-            
-        return redirect('myadmin:usertask_detail', pk=pk)
-
-    return render(request, 'admin/system/usertask_detail.html', {'usertask': usertask})
 
 
 # --- WITHDRAWALS ---

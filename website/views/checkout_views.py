@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from core.models import Order, OrderItem, Address, Coupon, Product, ShippingCharge
+from core.models import Order, OrderItem, Address, Coupon, Product, ShippingCharge, Setting, Campaign
 from core.stock_utils import deduct_stock, validate_stock_availability
 from .cart_views import get_cart
 from decimal import Decimal
@@ -133,12 +133,25 @@ def checkout(request):
                                     variant = combo_key
                                     break
                         
+                        # Get campaign and earncode from cart item
+                        campaign = None
+                        earn_code = ''
+                        campaign_id = item.get('campaign_id', '')
+                        if campaign_id:
+                            try:
+                                campaign = Campaign.objects.get(pk=campaign_id, is_active=True, product=product)
+                            except Campaign.DoesNotExist:
+                                pass
+                        
+                        earn_code = item.get('earn_code', '')
+                        
                         # Create order item
                         OrderItem.objects.create(
                             order=order,
                             product=product,
                             product_varient=variant,
-                            earn_code=item.get('earn_code', ''),
+                            campaign=campaign,
+                            earn_code=earn_code,
                             quantity=item['quantity'],
                             price=price,
                             total=price * item['quantity'],
@@ -150,9 +163,11 @@ def checkout(request):
                     except Product.DoesNotExist:
                         continue
                 
-                # Clear cart
+                # Clear cart and campaign session data
                 cart['items'] = []
                 cart['coupon_code'] = None
+                request.session.pop('campaign_earncode', None)
+                request.session.pop('campaign_id', None)
                 request.session.modified = True
                 
                 # Update coupon usage

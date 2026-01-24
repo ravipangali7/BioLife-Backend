@@ -105,7 +105,7 @@
                                     </h3>
                                     {% if user.kyc_status == 'approved' %}
                                     <p class="text-sm text-gray-600 mb-3">
-                                        Your KYC verification is complete. You can now access all Earn Rewards and Wallet features.
+                                        Your KYC verification is complete.{% if active_referal_system %} You can now access all Earn Rewards and Wallet features.{% endif %}
                                     </p>
                                     {% elif user.kyc_status == 'rejected' %}
                                     <p class="text-sm text-red-700 mb-2">
@@ -125,7 +125,7 @@
                                     </p>
                                     {% else %}
                                     <p class="text-sm text-yellow-700 mb-3">
-                                        <strong>Complete your KYC verification to access Earn Rewards and Wallet features.</strong>
+                                        <strong>Complete your KYC verification{% if active_referal_system %} to access Earn Rewards and Wallet features{% endif %}.</strong>
                                         Upload your citizenship documents for verification.
                                     </p>
                                     {% endif %}

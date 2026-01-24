@@ -98,17 +98,48 @@
                                 <th>Qty</th>
                                 <th>Price</th>
                                 <th>Total</th>
+                                <th>Campaign</th>
+                                <th>Earn Code / Referrer</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for item in items %}
+                            {% for item_data in items_with_rewards %}
+                            {% with item=item_data.item %}
                             <tr>
                                 <td><a href="{% url 'myadmin:product_detail' item.product.pk %}">{{ item.product.name }}</a></td>
                                 <td>{{ item.product_varient|default:"-" }}</td>
                                 <td>{{ item.quantity }}</td>
                                 <td>Rs {{ item.price|floatformat:2 }}</td>
                                 <td>Rs {{ item.total|floatformat:2 }}</td>
+                                <td>
+                                    {% if item.campaign %}
+                                        <a href="{% url 'myadmin:campaign_detail' item.campaign.pk %}">{{ item.campaign.name }}</a><br>
+                                        <small class="text-muted">{{ item.campaign.percentage }}% commission</small>
+                                        {% if item_data.reward_amount %}
+                                            <br><small class="text-success">Reward: Rs {{ item_data.reward_amount|floatformat:2 }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.earn_code %}
+                                        <code>{{ item.earn_code }}</code>
+                                        {% for earn_code, referrer in referrers.items %}
+                                            {% if earn_code == item.earn_code %}
+                                                <br><small>
+                                                    <a href="{% url 'myadmin:user_detail' referrer.pk %}">
+                                                        {{ referrer.name }} ({{ referrer.email }})
+                                                    </a>
+                                                </small>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
                             </tr>
+                            {% endwith %}
                             {% endfor %}
                         </tbody>
                     </table>

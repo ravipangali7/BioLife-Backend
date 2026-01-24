@@ -28,7 +28,7 @@
                             <div class="col-md-2">
                                 <select name="influencer" class="form-select">
                                     <option value="">All Users</option>
-                                    <option value="yes" {% if influencer_filter == 'yes' %}selected{% endif %}>Influencers</option>
+                                    <option value="yes" {% if influencer_filter == 'yes' %}selected{% endif %}>IBOs</option>
                                     <option value="no" {% if influencer_filter == 'no' %}selected{% endif %}>Regular</option>
                                 </select>
                             </div>
@@ -70,7 +70,7 @@
                                     {% if user.is_superuser or user.is_staff %}
                                     <span class="badge bg-danger">Admin</span>
                                     {% elif user.is_influencer %}
-                                    <span class="badge bg-info">Influencer</span>
+                                    <span class="badge bg-info">IBO</span>
                                     {% else %}
                                     <span class="badge bg-secondary">Customer</span>
                                     {% endif %}

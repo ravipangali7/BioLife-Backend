@@ -1,4 +1,5 @@
 {% with route=request.resolver_match.url_name %}
+{% with active_referal_system=site_settings.active_referal_system|default:False %}
 <nav class="space-y-1.5 md:space-y-2">
     <!-- Dashboard -->
     <a href="{% url 'website:account_dashboard' %}"
@@ -30,10 +31,10 @@
 
     <!-- Earn Rewards -->
     {% if user.is_influencer and user.kyc_status == 'approved' %}
-    <a href="{% url 'website:task_list' %}"
-        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if 'task_' in route %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
+    <a href="{% url 'website:campaign_list' %}"
+        class="flex items-center px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-colors text-sm md:text-base {% if 'campaign' in route %}bg-biolife-green text-white font-semibold{% else %}text-gray-700 hover:bg-biolife-green-light{% endif %}">
         <i data-feather="award" class="w-5 h-5 mr-3"></i>
-        Earn Rewards
+        Campaigns
     </a>
     {% elif user.is_influencer and user.kyc_status != 'approved' %}
     <div class="relative group">
@@ -55,7 +56,7 @@
             <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
         </div>
         <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-            This feature is only available for verified influencers
+            This feature is only available for verified IBOs
         </div>
     </div>
     {% endif %}
@@ -87,7 +88,7 @@
             <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
         </div>
         <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-            This feature is only available for verified influencers
+            This feature is only available for verified IBOs
         </div>
     </div>
     {% endif %}
@@ -128,7 +129,7 @@
             <i data-feather="lock" class="w-3.5 h-3.5 md:w-4 md:h-4 ml-auto"></i>
         </div>
         <div class="hidden md:block absolute left-full ml-2 top-0 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-            This feature is only available for verified influencers
+            This feature is only available for verified IBOs
         </div>
     </div>
     {% endif %}
@@ -140,4 +141,5 @@
         Addresses
     </a>
 </nav>
+{% endwith %}
 {% endwith %}

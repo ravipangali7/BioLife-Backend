@@ -12,9 +12,13 @@ def account_dashboard(request):
     recent_orders = Order.objects.filter(user=user).order_by('-created_at')[:5]
     pending_orders = Order.objects.filter(user=user, order_status='pending').count()
     
-    # Build referral URL if user has earn_code
+    # Get setting to check if referral system is active
+    setting = Setting.objects.first() or Setting.objects.create()
+    active_referal_system = setting.active_referal_system
+    
+    # Build referral URL if user has earn_code and referral system is active
     referral_url = None
-    if user.earn_code:
+    if user.earn_code and active_referal_system:
         referral_url = request.build_absolute_uri(f'/register/?earn_code={user.earn_code}')
     
     context = {
@@ -22,6 +26,8 @@ def account_dashboard(request):
         'recent_orders': recent_orders,
         'pending_orders': pending_orders,
         'referral_url': referral_url,
+        'setting': setting,
+        'active_referal_system': active_referal_system,
     }
     
     return render(request, 'site/account/dashboard.html', context)
@@ -54,8 +60,13 @@ def account_profile(request):
         messages.success(request, 'Profile updated successfully')
         return redirect('website:account_profile')
     
+    # Get setting for template
+    setting = Setting.objects.first() or Setting.objects.create()
+    
     context = {
         'user': user,
+        'setting': setting,
+        'active_referal_system': setting.active_referal_system,
     }
     
     return render(request, 'site/account/profile.html', context)
@@ -264,12 +275,13 @@ def remove_from_wishlist(request, product_id):
 
 @login_required
 def account_kyc(request):
-    """Dedicated KYC verification page"""
+    """Dedicated KYC verification page - allows customers to upgrade to IBO"""
     user = request.user
     
     if request.method == 'POST':
         # Store previous status for messaging
         previous_status = user.kyc_status
+        was_customer = not user.is_influencer
         
         # Update KYC fields
         user.citizenship_no = request.POST.get('citizenship_no', '').strip()
@@ -289,22 +301,33 @@ def account_kyc(request):
             # If all fields provided, set to pending and clear reject reason
             user.kyc_status = 'pending'
             user.kyc_reject_reason = None
-            user.save()
             
-            # Provide appropriate success messages based on previous status
-            if previous_status == 'approved':
-                messages.success(request, 'KYC documents updated successfully. Your account will be re-verified by our admin team. You will be notified once verification is complete.')
-            elif previous_status == 'rejected':
-                messages.success(request, 'KYC documents resubmitted successfully. Our admin team will review and verify your account. You will be notified once verification is complete.')
+            # If customer is submitting KYC for first time, automatically upgrade to IBO
+            if was_customer:
+                user.is_influencer = True
+                messages.success(request, 'KYC documents submitted successfully! Your account has been upgraded to IBO (Independent Business Owner). Our admin team will review and verify your account. You will be notified once verification is complete.')
             else:
-                messages.success(request, 'KYC documents submitted successfully. Our admin team will review and verify your account. You will be notified once verification is complete.')
+                # Existing IBO updating KYC
+                if previous_status == 'approved':
+                    messages.success(request, 'KYC documents updated successfully. Your account will be re-verified by our admin team. You will be notified once verification is complete.')
+                elif previous_status == 'rejected':
+                    messages.success(request, 'KYC documents resubmitted successfully. Our admin team will review and verify your account. You will be notified once verification is complete.')
+                else:
+                    messages.success(request, 'KYC documents submitted successfully. Our admin team will review and verify your account. You will be notified once verification is complete.')
+            
+            user.save()
         else:
             messages.warning(request, 'Please complete all KYC fields (Citizenship Number, Front, and Back) to submit for verification.')
         
         return redirect('website:account_kyc')
     
+    # Get setting for template
+    setting = Setting.objects.first() or Setting.objects.create()
+    
     context = {
         'user': user,
+        'setting': setting,
+        'active_referal_system': setting.active_referal_system,
     }
     
     return render(request, 'site/account/kyc.html', context)
@@ -315,9 +338,9 @@ def account_payment(request):
     """Payment setup page for influencers"""
     user = request.user
     
-    # Only allow influencers to access this page
+    # Only allow IBOs to access this page
     if not user.is_influencer:
-        messages.error(request, 'This page is only available for influencers.')
+        messages.error(request, 'This page is only available for IBOs.')
         return redirect('website:account_dashboard')
     
     # Check if payment setting is approved - if so, disable editing
@@ -354,9 +377,9 @@ def account_withdrawals(request):
     """Withdrawal request page for influencers"""
     user = request.user
     
-    # Check if user is influencer with approved KYC
+    # Check if user is IBO with approved KYC
     if not user.is_influencer:
-        messages.error(request, 'This page is only available for influencers.')
+        messages.error(request, 'This page is only available for IBOs.')
         return redirect('website:account_dashboard')
     
     if user.kyc_status != 'approved':
@@ -438,9 +461,9 @@ def account_withdrawal_detail(request, withdrawal_id):
     """Withdrawal detail view for influencers"""
     user = request.user
     
-    # Check if user is influencer with approved KYC
+    # Check if user is IBO with approved KYC
     if not user.is_influencer:
-        messages.error(request, 'This page is only available for influencers.')
+        messages.error(request, 'This page is only available for IBOs.')
         return redirect('website:account_dashboard')
     
     if user.kyc_status != 'approved':

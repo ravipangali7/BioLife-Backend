@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from .models import (
     User, Address, ShippingCharge, Unit, Category, SubCategory, ChildCategory,
     Brand, Product, ProductImage, ProductReview, Wishlist, Banner, Coupon,
-    CMSPage, Order, OrderItem, PasswordResetOTP, FlashDeal
+    CMSPage, Order, OrderItem, PasswordResetOTP, FlashDeal, Campaign
 )
 
 
@@ -281,6 +281,37 @@ class FlashDealAdmin(admin.ModelAdmin):
     def product_count(self, obj):
         return obj.products.count()
     product_count.short_description = 'Products'
+
+
+@admin.register(Campaign)
+class CampaignAdmin(admin.ModelAdmin):
+    list_display = ['name', 'product', 'percentage', 'is_active', 'image_preview', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'product__name', 'description']
+    readonly_fields = ['created_at', 'updated_at', 'image_preview']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('product', 'name', 'description', 'image', 'image_preview')
+        }),
+        ('Media', {
+            'fields': ('video_link',)
+        }),
+        ('Commission', {
+            'fields': ('percentage',)
+        }),
+        ('Status', {
+            'fields': ('is_active',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="100" height="100" />', obj.image.url)
+        return "No Image"
+    image_preview.short_description = 'Image'
 
 
 @admin.register(CMSPage)
