@@ -69,7 +69,14 @@ def order_detail(request, pk):
     for item in items:
         reward_amount = None
         if item.campaign and item.earn_code and order.order_status == 'delivered' and order.payment_status == 'paid':
-            reward_amount = Decimal(str(item.price)) * (Decimal(str(item.campaign.percentage)) / Decimal('100'))
+            camp = item.campaign
+            if camp.commission_type == 'percentage':
+                reward_amount = (
+                    Decimal(str(item.price)) * item.quantity
+                    * (Decimal(str(camp.commission_value)) / Decimal('100'))
+                )
+            else:
+                reward_amount = Decimal(str(camp.commission_value)) * item.quantity
         items_with_rewards.append({
             'item': item,
             'reward_amount': reward_amount,

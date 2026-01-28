@@ -32,14 +32,15 @@ def campaign_create(request):
     """Create new campaign"""
     CampaignForm = modelform_factory(
         Campaign,
-        fields=['product', 'name', 'description', 'image', 'video_link', 'percentage', 'is_active'],
+        fields=['product', 'name', 'description', 'image', 'video_link', 'commission_type', 'commission_value', 'is_active'],
         widgets={
             'product': forms.Select(attrs={'class': 'form-select'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'video_link': forms.URLInput(attrs={'class': 'form-control'}),
-            'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'commission_type': forms.Select(attrs={'class': 'form-select'}),
+            'commission_value': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     )
@@ -78,14 +79,15 @@ def campaign_edit(request, pk):
     
     CampaignForm = modelform_factory(
         Campaign,
-        fields=['product', 'name', 'description', 'image', 'video_link', 'percentage', 'is_active'],
+        fields=['product', 'name', 'description', 'image', 'video_link', 'commission_type', 'commission_value', 'is_active'],
         widgets={
             'product': forms.Select(attrs={'class': 'form-select'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'video_link': forms.URLInput(attrs={'class': 'form-control'}),
-            'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'commission_type': forms.Select(attrs={'class': 'form-select'}),
+            'commission_value': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     )

@@ -114,7 +114,9 @@
                                 <td>
                                     {% if item.campaign %}
                                         <a href="{% url 'myadmin:campaign_detail' item.campaign.pk %}">{{ item.campaign.name }}</a><br>
-                                        <small class="text-muted">{{ item.campaign.percentage }}% commission</small>
+                                        <small class="text-muted">
+                                            {% if item.campaign.commission_type == 'percentage' %}{{ item.campaign.commission_value }}% reward{% else %}Rs {{ item.campaign.commission_value }} flat reward{% endif %}
+                                        </small>
                                         {% if item_data.reward_amount %}
                                             <br><small class="text-success">Reward: Rs {{ item_data.reward_amount|floatformat:2 }}</small>
                                         {% endif %}

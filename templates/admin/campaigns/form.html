@@ -62,11 +62,20 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Commission Percentage (%) *</label>
-                            {{ form.percentage }}
-                            <small class="form-text text-muted">Commission percentage (0-100)</small>
-                            {% if form.percentage.errors %}
-                            <div class="text-danger">{{ form.percentage.errors }}</div>
+                            <label class="form-label">Commission Type *</label>
+                            {{ form.commission_type }}
+                            <small class="form-text text-muted">Flat: fixed amount per unit. Percentage: % of sale.</small>
+                            {% if form.commission_type.errors %}
+                            <div class="text-danger">{{ form.commission_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Commission Value *</label>
+                            {{ form.commission_value }}
+                            <small class="form-text text-muted">Flat: amount in Rs per unit. Percentage: 0-100.</small>
+                            {% if form.commission_value.errors %}
+                            <div class="text-danger">{{ form.commission_value.errors }}</div>
                             {% endif %}
                         </div>
 

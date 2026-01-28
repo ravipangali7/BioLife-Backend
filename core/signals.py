@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.db import transaction as db_transaction
 from decimal import Decimal
-from .models import Order, OrderItem, User, Transaction
+from .models import Order, OrderItem, User, Transaction, Campaign
 from .stock_utils import deduct_stock
 
 
@@ -57,9 +57,14 @@ def process_campaign_rewards(order):
         except User.DoesNotExist:
             continue  # Skip if earn_code doesn't belong to a valid IBO
         
-        # Calculate reward: order_item.price * (campaign.percentage / 100)
-        # Note: order_item.price is the unit price
-        reward_amount = Decimal(str(order_item.price)) * (Decimal(str(order_item.campaign.percentage)) / Decimal('100'))
+        campaign = order_item.campaign
+        if campaign.commission_type == Campaign.COMMISSION_TYPE_PERCENTAGE:
+            reward_amount = (
+                Decimal(str(order_item.price)) * order_item.quantity
+                * (Decimal(str(campaign.commission_value)) / Decimal('100'))
+            )
+        else:
+            reward_amount = Decimal(str(campaign.commission_value)) * order_item.quantity
         
         if reward_amount > 0:
             with db_transaction.atomic():
@@ -67,12 +72,15 @@ def process_campaign_rewards(order):
                 referrer.balance = Decimal(str(referrer.balance)) + reward_amount
                 referrer.save()
                 
-                # Create transaction record
+                reward_label = (
+                    f"{campaign.commission_value}%" if campaign.commission_type == Campaign.COMMISSION_TYPE_PERCENTAGE
+                    else f"Rs {campaign.commission_value} flat"
+                )
                 Transaction.objects.create(
                     user=referrer,
                     amount=reward_amount,
                     transaction_type='in',
-                    remarks=f'Campaign reward for Order #{order.id}, Item #{order_item.id} - {order_item.product.name} (Campaign: {order_item.campaign.name}, {order_item.campaign.percentage}%)',
+                    remarks=f'Campaign reward for Order #{order.id}, Item #{order_item.id} - {order_item.product.name} (Campaign: {campaign.name}, {reward_label})',
                     status='success'
                 )
 

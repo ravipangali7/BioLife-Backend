@@ -47,7 +47,7 @@
                                 </td>
                                 <td><strong>{{ campaign.name }}</strong></td>
                                 <td><a href="{% url 'myadmin:product_detail' campaign.product.pk %}">{{ campaign.product.name }}</a></td>
-                                <td><strong>{{ campaign.percentage }}%</strong></td>
+                                <td><strong>{% if campaign.commission_type == 'percentage' %}{{ campaign.commission_value }}%{% else %}Rs {{ campaign.commission_value }} flat{% endif %}</strong></td>
                                 <td>
                                     {% if campaign.is_active %}
                                     <span class="badge bg-success">Active</span>

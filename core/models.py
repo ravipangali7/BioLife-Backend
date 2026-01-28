@@ -422,12 +422,31 @@ class Product(models.Model):
 
 class Campaign(models.Model):
     """Product promotion campaigns"""
+    COMMISSION_TYPE_FLAT = 'flat'
+    COMMISSION_TYPE_PERCENTAGE = 'percentage'
+    COMMISSION_TYPE_CHOICES = [
+        (COMMISSION_TYPE_FLAT, 'Flat'),
+        (COMMISSION_TYPE_PERCENTAGE, 'Percentage'),
+    ]
+
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='campaigns')
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='campaigns/', blank=True, null=True)
     video_link = models.URLField(blank=True, null=True)
-    percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Commission percentage")
+    commission_type = models.CharField(
+        max_length=20,
+        choices=COMMISSION_TYPE_CHOICES,
+        default=COMMISSION_TYPE_PERCENTAGE,
+        help_text="Reward type: flat amount or percentage of sale",
+    )
+    commission_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text="Flat: amount in Rs per unit. Percentage: 0-100.",
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

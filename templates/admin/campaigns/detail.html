@@ -57,8 +57,12 @@
                     <p><strong>Product:</strong> 
                         <a href="{% url 'myadmin:product_detail' campaign.product.pk %}">{{ campaign.product.name }}</a>
                     </p>
-                    <p><strong>Commission Percentage:</strong> 
-                        <span class="badge bg-info">{{ campaign.percentage }}%</span>
+                    <p><strong>Reward:</strong>
+                        {% if campaign.commission_type == 'percentage' %}
+                            <span class="badge bg-info">{{ campaign.commission_value }}%</span>
+                        {% else %}
+                            <span class="badge bg-info">Rs {{ campaign.commission_value }} flat per unit</span>
+                        {% endif %}
                     </p>
                     <p><strong>Status:</strong>
                         {% if campaign.is_active %}

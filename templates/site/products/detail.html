@@ -152,7 +152,7 @@
                     {% if product.stock > 0 %}
                         <span class="text-green-600 font-semibold flex items-center">
                             <i data-feather="check-circle" class="w-5 h-5 mr-2"></i>
-                            In Stock (<span id="stock-count">{{ product.stock }}</span> available)
+                            In Stock
                         </span>
                     {% else %}
                         <span class="text-red-600 font-semibold flex items-center">
@@ -485,7 +485,7 @@
                                 // Update button styles
                                 const btn = document.querySelector(`[data-variant-type="${variantType.name}"][data-variant-value="${values[index]}"]`);
                                 if (btn) {
-                                    btn.classList.add('bg-biolife-green', 'text-white', 'border-biolife-green');
+                                    btn.classList.add('bg-gradient-to-r', 'from-biolife-green', 'to-biolife-green-dark', 'text-white', 'border-biolife-green', 'shadow-md');
                                     btn.classList.remove('border-gray-300');
                                 }
                             }
@@ -576,23 +576,18 @@
             originalPriceElement.classList.remove('hidden');
         }
         
-        // Update stock
+        // Update stock (display only In Stock / Out of Stock, no count)
         const variantStock = comboData.stock !== undefined ? comboData.stock : productData.baseStock;
-        const stockCountElement = document.getElementById('stock-count');
         const stockStatusElement = document.getElementById('stock-status');
         const quantityInput = document.getElementById('quantity-input');
         const addToCartBtn = document.getElementById('add-to-cart-btn');
-        
-        if (stockCountElement) {
-            stockCountElement.textContent = variantStock;
-        }
         
         if (stockStatusElement) {
             if (variantStock > 0) {
                 stockStatusElement.innerHTML = `
                     <span class="text-green-600 font-semibold flex items-center">
                         <i data-feather="check-circle" class="w-5 h-5 mr-2"></i>
-                        In Stock (${variantStock} available)
+                        In Stock
                     </span>
                 `;
             } else {
@@ -641,10 +636,10 @@
             // Update selected value for this variant type
             selectedVariantValues[variantType] = variantValue;
             
-            // Update button styles for this variant type only
+            // Update button styles for this variant type only (remove all active styles so only the clicked one stays active)
             document.querySelectorAll(`[data-variant-type="${variantType}"]`).forEach(b => {
                 if (!b.disabled) {
-                    b.classList.remove('bg-gradient-to-r', 'from-biolife-green', 'to-biolife-green-dark', 'text-white', 'border-biolife-green', 'shadow-md');
+                    b.classList.remove('bg-gradient-to-r', 'from-biolife-green', 'to-biolife-green-dark', 'text-white', 'border-biolife-green', 'shadow-md', 'bg-biolife-green');
                     b.classList.add('border-gray-300');
                 }
             });

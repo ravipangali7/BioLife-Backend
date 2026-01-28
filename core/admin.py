@@ -285,8 +285,8 @@ class FlashDealAdmin(admin.ModelAdmin):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    list_display = ['name', 'product', 'percentage', 'is_active', 'image_preview', 'created_at']
-    list_filter = ['is_active', 'created_at']
+    list_display = ['name', 'product', 'reward_display', 'is_active', 'image_preview', 'created_at']
+    list_filter = ['is_active', 'commission_type', 'created_at']
     search_fields = ['name', 'product__name', 'description']
     readonly_fields = ['created_at', 'updated_at', 'image_preview']
     fieldsets = (
@@ -296,8 +296,8 @@ class CampaignAdmin(admin.ModelAdmin):
         ('Media', {
             'fields': ('video_link',)
         }),
-        ('Commission', {
-            'fields': ('percentage',)
+        ('Reward', {
+            'fields': ('commission_type', 'commission_value')
         }),
         ('Status', {
             'fields': ('is_active',)
@@ -306,6 +306,12 @@ class CampaignAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+    
+    def reward_display(self, obj):
+        if obj.commission_type == 'percentage':
+            return f'{obj.commission_value}%'
+        return f'Rs {obj.commission_value} flat'
+    reward_display.short_description = 'Reward'
     
     def image_preview(self, obj):
         if obj.image:
